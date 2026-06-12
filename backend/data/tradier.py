@@ -257,11 +257,52 @@ class TradierClient:
         return account.get("account_number")
 
 
-_client: TradierClient | None = None
+class NullTradierClient:
+    """
+    Drop-in replacement when TRADIER_API_KEY is not configured.
+    All methods return safe empty values so the rest of the pipeline
+    degrades gracefully instead of crashing with auth errors.
+    Options-specific features (IV, chains) simply produce no signals.
+    """
+
+    async def get_quote(self, symbol: str) -> dict:
+        return {}
+
+    async def get_quotes_bulk(self, symbols: list[str]) -> list[dict]:
+        return []
+
+    async def get_expirations(self, symbol: str) -> list[str]:
+        return []
+
+    async def get_options_chain(self, symbol: str, expiration: str, greeks: bool = True) -> list[dict]:
+        return []
+
+    async def get_best_chain(self, symbol: str, **kwargs) -> list[dict]:
+        return []
+
+    async def get_iv_surface(self, symbol: str) -> dict:
+        return {}
+
+    async def get_historical(self, symbol: str, **kwargs) -> list[dict]:
+        return []
+
+    async def place_order(self, *args, **kwargs) -> dict:
+        logger.warning("Tradier not configured — paper order not placed")
+        return {}
+
+    async def get_account_number(self) -> str | None:
+        return None
 
 
-def get_tradier() -> TradierClient:
+_client: TradierClient | NullTradierClient | None = None
+
+
+def get_tradier() -> TradierClient | NullTradierClient:
     global _client
     if _client is None:
-        _client = TradierClient()
+        if not settings.TRADIER_API_KEY:
+            logger.warning("TRADIER_API_KEY not set — using NullTradierClient (options features disabled)")
+            _client = NullTradierClient()
+        else:
+            _client = TradierClient()
     return _client

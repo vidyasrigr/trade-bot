@@ -1,0 +1,96 @@
+from functools import lru_cache
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    # Database
+    DATABASE_URL: str = "postgresql://options:options_secret@localhost:5432/options_trading"
+    POSTGRES_USER: str = "options"
+    POSTGRES_PASSWORD: str = "options_secret"
+    POSTGRES_DB: str = "options_trading"
+
+    # Redis
+    REDIS_URL: str = "redis://localhost:6379/0"
+
+    # LLMs
+    ANTHROPIC_API_KEY: str = ""
+    ANTHROPIC_MODEL: str = "claude-sonnet-4-6"          # analysts + risk manager (checklist tasks)
+    ANTHROPIC_TRADER_MODEL: str = "claude-opus-4-7"     # trader synthesis only (weighs all factors)
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_CHAT_MODEL: str = "llama3.1:8b"
+    OLLAMA_ADVERSARY_MODEL: str = "deepseek-r1:7b"      # adversary/devil's advocate (reasoning model)
+    OLLAMA_EMBED_MODEL: str = "nomic-embed-text"
+
+    # Market data APIs
+    TRADIER_API_KEY: str = ""
+    TRADIER_BASE_URL: str = "https://sandbox.tradier.com/v1"
+    ALPHA_VANTAGE_API_KEY: str = ""
+    FRED_API_KEY: str = ""
+    NEWS_API_KEY: str = ""
+    FMP_API_KEY: str = ""
+
+    # Twilio (optional)
+    TWILIO_ACCOUNT_SID: str = ""
+    TWILIO_AUTH_TOKEN: str = ""
+    TWILIO_FROM_NUMBER: str = ""
+    TWILIO_TO_NUMBER: str = ""
+
+    # Discord (recommended — free, instant alerts on phone)
+    DISCORD_WEBHOOK_URL: str = ""  # Get from Discord: Server Settings → Integrations → Webhooks
+
+    # Auth
+    SECRET_KEY: str = "change-this-to-a-random-64-char-string-before-deploy"
+
+    # App
+    APP_ENV: str = "development"
+    LOG_LEVEL: str = "INFO"
+    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+
+    # Trading parameters
+    MAX_PORTFOLIO_HEAT: float = 0.30
+    MAX_SECTOR_CONCENTRATION: float = 0.35
+    MAX_NET_DELTA_BIAS: float = 0.60
+    POSITION_MONITOR_INTERVAL: int = 900
+    STAGE1_MIN_OPTIONS_VOLUME: int = 500_000
+
+    # Options strategy defaults (tastytrade research)
+    DIRECTIONAL_DELTA: float = 0.40       # target delta for directional trades
+    PREMIUM_SELL_DELTA: float = 0.16      # target delta for premium-selling
+    SWING_DTE_MIN: int = 14
+    SWING_DTE_MAX: int = 21
+    POSITION_DTE_MIN: int = 30
+    POSITION_DTE_MAX: int = 60
+    PROFIT_TARGET_PCT: float = 0.50       # close at 50% max profit (premium-selling)
+    STOP_LOSS_DEBIT_PCT: float = 0.50     # max loss on debit = 50% of debit paid
+    STOP_LOSS_CREDIT_MULT: float = 2.0    # max loss on credit = 2x credit received
+    ROLL_ALERT_DTE: int = 21              # roll alert when DTE <= this
+
+    # Circuit breaker parameters
+    DAILY_LOSS_CAP_PCT: float = 0.05      # halt new trades if daily loss > 5% of portfolio
+    MAX_DRAWDOWN_PCT: float = 0.15        # halt if portfolio is down > 15% from peak
+    MAX_OPEN_POSITIONS: int = 10          # max concurrent open positions
+    PAPER_PORTFOLIO_VALUE: float = 150_000.0  # starting paper portfolio value ($)
+
+    # Position sizing — half-Kelly (professional standard)
+    # Full Kelly = max growth but massive drawdown. Half-Kelly = ~75% optimal growth, ~50% less drawdown.
+    # Reference: NBER 2025 options sizing research, tastytrade capital allocation research
+    KELLY_FRACTION: float = 0.50          # half-Kelly (was 0.25 quarter-Kelly — updated per research)
+    BASE_POSITION_SIZE_PCT: float = 0.02  # 2% base size per trade
+    MAX_POSITION_SIZE_PCT: float = 0.04   # 4% maximum (conviction-scaled)
+    MIN_SIGNALS_REQUIRED: int = 3         # minimum independent category signals before any entry
+
+    # VIX regime thresholds (research-backed from SpotGamma/CBOE/Tastytrade)
+    VIX_CALM: float = 15.0      # < 15: directional buys, thin premium
+    VIX_NORMAL: float = 20.0    # 15-20: iron condors, calendar spreads
+    VIX_ELEVATED: float = 30.0  # 20-30: credit spreads, rich premium
+                                 # > 30: crisis — reduce size, hedge only
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
+
+
+settings = get_settings()

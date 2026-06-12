@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+.next/
+.vercel/
+*.tsbuildinfo
+
+# Database
+*.db
+*.sqlite
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Secrets — NEVER COMMIT
+.env
+.env.local
+.env.*.local
+backend/.env
+*.secret
+
+# Logs
+*.log
+logs/
+
+# Claude local settings
+.claude/settings.local.json
+
+# Build artifacts
+frontend/out/
+backend/dist/
+
+# Large data / model files
+*.pkl
+*.parquet
+*.h5
+*.npy
+faiss_index/

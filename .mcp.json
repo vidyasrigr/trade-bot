@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "tradier": {
+      "command": "python",
+      "args": ["backend/mcp_servers/tradier_server.py"],
+      "env": {
+        "TRADIER_API_KEY": "",
+        "TRADIER_BASE_URL": "https://sandbox.tradier.com/v1"
+      }
+    },
+    "fmp": {
+      "command": "python",
+      "args": ["backend/mcp_servers/fmp_server.py"],
+      "env": {
+        "FMP_API_KEY": ""
+      }
+    }
+  }
+}

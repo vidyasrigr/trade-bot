@@ -37,11 +37,16 @@ CACHE_TTL_S = 1800  # 30 min — Reddit moves slowly enough
 
 # Common false-positive uppercase tokens to never count as tickers
 STOP_TOKENS = {
+    # Pronouns / articles / common short words
     "A", "I", "AM", "AN", "AS", "AT", "BE", "BY", "DO", "GO", "HE", "IF", "IN",
     "IS", "IT", "MY", "NO", "OF", "ON", "OR", "SO", "TO", "UP", "US", "WE",
     "ALL", "AND", "ARE", "BUT", "CAN", "DAY", "FOR", "GET", "GOT", "HAS", "HAD",
     "HER", "HIM", "HIS", "HOW", "ITS", "MAY", "NEW", "NOT", "NOW", "OUR", "OUT",
     "SAW", "SHE", "THE", "TOO", "TWO", "USE", "WAS", "WHO", "WHY", "YOU",
+    # Adjectives / common nouns frequently uppercased on Reddit
+    "BIG", "OLD", "BAD", "WAY", "TOP", "LOW", "ONE", "OWN",
+    "PUT", "SET", "TRY", "RUN", "WIN", "BUY", "ADD", "BIT", "EYE", "FUN",
+    # Finance acronyms
     "ATH", "EOD", "DCA", "DD",  "DOW", "EPS", "ETF", "FED", "FOMC", "GDP",
     "IPO", "IRA", "IRS", "KEY", "LOL", "OTC", "PR",  "PSA", "ROI", "SEC",
     "WSB", "YOLO", "FOMO", "MOON", "BULL", "BEAR", "EDIT", "TLDR", "AKA",

@@ -1,13 +1,6 @@
-import { NextResponse } from "next/server";
-import { PAPER_TRADES } from "@/lib/mockData";
+import { proxyJson } from "@/lib/backendProxy";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const status = searchParams.get("status") || "all";
-
-  const trades = status === "all"
-    ? PAPER_TRADES.trades
-    : PAPER_TRADES.trades.filter(t => t.status === status);
-
-  return NextResponse.json({ trades });
+export async function GET(req: Request) {
+  const status = new URL(req.url).searchParams.get("status") || "all";
+  return proxyJson(`/trades/paper?status=${encodeURIComponent(status)}`);
 }

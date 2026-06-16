@@ -1,9 +1,5 @@
-import { NextResponse } from "next/server";
+import { proxyJson } from "@/lib/backendProxy";
 
 export async function GET() {
-  return NextResponse.json({
-    status: "started",
-    message: "Scan queued. Stage 1 pre-screen running on 4,823 symbols.",
-    estimated_seconds: 480,
-  });
+  return proxyJson("/scanner/run");
 }

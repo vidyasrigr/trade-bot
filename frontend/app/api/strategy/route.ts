@@ -1,12 +1,14 @@
-import { NextResponse } from "next/server";
-import { STRATEGY_DATA } from "@/lib/mockData";
+import { proxyJson } from "@/lib/backendProxy";
 
 export async function GET() {
-  return NextResponse.json(STRATEGY_DATA);
+  return proxyJson("/strategy");
 }
 
 export async function PATCH(req: Request) {
-  // In production: save override to DB with author + timestamp
-  const body = await req.json();
-  return NextResponse.json({ ok: true, applied: body });
+  const body = await req.text();
+  return proxyJson("/strategy", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body,
+  });
 }

@@ -17,7 +17,6 @@ interface StockDNA {
   symbol: string;
   earnings_realized_implied_ratio: number;
   earnings_direction_bias_on_beat: number;
-  iv_crush_avg_pct: number;
   beat_and_raise_pead_rate: number;
   earnings_events_count: number;
   sell_news_conditions: Record<string, number>;
@@ -27,8 +26,6 @@ interface StockDNA {
   momentum_persistence_days: number;
   volume_leads_price_days: number;
   best_indicator_ic: Record<string, number>;
-  semis_cascade_member: boolean;
-  hyperscaler_lag_days: number;
   uses_behavioral_twins: boolean;
   twin_symbols: string[];
   data_quality_score: number;
@@ -338,15 +335,6 @@ function DNAPanel({ dna, loading, symbol }: { dna: StockDNA | null; loading: boo
               </div>
             )}
 
-            {dna.iv_crush_avg_pct > 0 && (
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-xs">IV crush avg</span>
-                <span className={`text-sm font-bold ${dna.iv_crush_avg_pct > 30 ? "text-amber-400" : "text-gray-300"}`}>
-                  {(dna.iv_crush_avg_pct * 100).toFixed(0)}%
-                </span>
-              </div>
-            )}
-
             {dna.beat_and_raise_pead_rate > 0 && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-500 text-xs">Beat+raise PEAD</span>
@@ -459,22 +447,6 @@ function DNAPanel({ dna, loading, symbol }: { dna: StockDNA | null; loading: boo
               <div className="text-gray-600 text-xs">IC data not yet available</div>
             )}
 
-            {(dna.semis_cascade_member || dna.hyperscaler_lag_days > 0) && (
-              <div className="mt-3 pt-3 border-t border-gray-800 space-y-1.5">
-                {dna.semis_cascade_member && (
-                  <div className="flex items-center gap-1.5 text-xs text-amber-400">
-                    <Zap className="w-3 h-3" />
-                    Semis cascade member
-                  </div>
-                )}
-                {dna.hyperscaler_lag_days > 0 && (
-                  <div className="flex items-center gap-1.5 text-xs text-blue-400">
-                    <TrendingUp className="w-3 h-3" />
-                    Hyperscaler lag: {dna.hyperscaler_lag_days}d
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}

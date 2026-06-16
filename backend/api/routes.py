@@ -135,7 +135,7 @@ async def _analysis_stream(symbol: str) -> AsyncGenerator[str, None]:
         from agents.graph import (
             fundamental_analyst, technical_analyst,
             volatility_analyst, sentiment_analyst_ollama,
-            trader_agent, risk_manager_agent, options_selection_agent,
+            _run_trader, _run_risk_manager, options_selection_agent,
             _retrieve_memory, _build_order_ticket,
         )
 
@@ -156,6 +156,7 @@ async def _analysis_stream(symbol: str) -> AsyncGenerator[str, None]:
             "total_score": analysis.total_score,
             "direction": analysis.direction,
             "vol_regime": analysis.vol_regime,
+            "underlying_price": analysis.underlying_price or 0.0,
         }
 
         memory_context = await _retrieve_memory(symbol, analysis)
@@ -182,11 +183,11 @@ async def _analysis_stream(symbol: str) -> AsyncGenerator[str, None]:
         })
 
         yield await send("status", {"stage": "trader_synthesis", "message": "Claude synthesizing trade thesis..."})
-        state["trader_thesis"] = await trader_agent(state, memory_context)
+        await _run_trader(state, str(memory_context))
         yield await send("trader_thesis", {"thesis": state["trader_thesis"]})
 
         yield await send("status", {"stage": "risk_manager", "message": "Risk manager reviewing..."})
-        state["risk_assessment"] = await risk_manager_agent(state)
+        await _run_risk_manager(state)
         yield await send("risk_assessment", {"assessment": state["risk_assessment"]})
 
         yield await send("status", {"stage": "options_selection", "message": "Selecting optimal strike..."})
@@ -206,6 +207,82 @@ async def _analysis_stream(symbol: str) -> AsyncGenerator[str, None]:
         yield await send("error", {"message": str(e)})
 
 
+@router.get("/analysis/{symbol}/optimizer")
+async def get_optimizer(symbol: str):
+    """Strike/expiry return grid (P of +30%/+100%) computed from real price/vol data."""
+    from api.optimizer import compute_optimizer
+    return await compute_optimizer(symbol.upper())
+
+
+# ------------------------------------------------------------------
+# INFLUENCERS / YOUTUBE CREDIBILITY
+# ------------------------------------------------------------------
+
+@router.get("/influencers")
+async def get_influencers():
+    """Tracked YouTube channels with credibility stats + recent point-in-time logged calls."""
+    from core.database import AsyncSessionLocal
+    from sqlalchemy import text
+
+    async with AsyncSessionLocal() as session:
+        ch_result = await session.execute(text("""
+            SELECT channel_id, channel_name, subscriber_count, total_calls,
+                   accurate_calls, credibility_score, last_video_at
+            FROM youtube_channels
+            ORDER BY credibility_score DESC
+        """))
+        channels = [dict(r) for r in ch_result.mappings().all()]
+
+        call_result = await session.execute(text("""
+            SELECT yc.symbol, yc.direction, yc.published_at, yc.video_title,
+                   yc.reasoning_type, yc.reasoning_quality, yc.price_at_publish,
+                   yc.price_t5, yc.price_t20, yc.outcome, yc.pump_signal,
+                   ch.channel_name
+            FROM youtube_calls yc
+            LEFT JOIN youtube_channels ch ON ch.channel_id = yc.channel_id
+            ORDER BY yc.published_at DESC NULLS LAST
+            LIMIT 50
+        """))
+        calls = [dict(r) for r in call_result.mappings().all()]
+
+    return {
+        "channels": channels,
+        "recent_calls": calls,
+        "message": "" if channels else "No channels tracked yet — run backtest/seed_data.py then the ingestion job.",
+    }
+
+
+# ------------------------------------------------------------------
+# BACKTEST RESULTS
+# ------------------------------------------------------------------
+
+@router.get("/backtest/results")
+async def get_backtest_results():
+    """Real backtest runs. Empty (with an honest message) until the backtester has produced results."""
+    from core.database import AsyncSessionLocal
+    from sqlalchemy import text
+
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("""
+                SELECT id, strategy, symbol, start_date, end_date, num_trades,
+                       win_rate, total_pnl, sharpe, deflated_sharpe, max_drawdown,
+                       params, created_at
+                FROM backtest_runs
+                ORDER BY created_at DESC
+                LIMIT 50
+            """))
+            runs = [dict(r) for r in result.mappings().all()]
+        return {"runs": runs, "message": "" if runs else "No backtests run yet."}
+    except Exception as e:
+        logger.debug(f"backtest_runs unavailable: {e}")
+        return {
+            "runs": [],
+            "message": "No backtest results — the options backtester has not been run yet "
+                       "(requires historical options data via ThetaData).",
+        }
+
+
 # ------------------------------------------------------------------
 # PAPER TRADES
 # ------------------------------------------------------------------
@@ -222,6 +299,7 @@ class OpenTradeRequest(BaseModel):
     max_loss: float
     max_profit: float
     analysis_id: int | None = None
+    conviction: float | None = None   # system conviction at entry — feeds calibration
 
 
 @router.post("/trades/paper/open")
@@ -252,16 +330,17 @@ async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTa
         result = await session.execute(text("""
             INSERT INTO paper_trades
                 (symbol, analysis_id, direction, strategy, expiry, long_strike,
-                 contracts, entry_price, max_loss, max_profit, status)
+                 contracts, entry_price, max_loss, max_profit, conviction, status)
             VALUES
                 (:sym, :aid, :dir, :strat, :exp, :strike,
-                 :contracts, :entry, :max_loss, :max_profit, 'open')
+                 :contracts, :entry, :max_loss, :max_profit, :conviction, 'open')
             RETURNING id
         """), {
             "sym": req.symbol, "aid": req.analysis_id, "dir": req.direction,
             "strat": req.strategy, "exp": req.expiry, "strike": req.strike,
             "contracts": req.contracts, "entry": req.entry_price,
             "max_loss": req.max_loss, "max_profit": req.max_profit,
+            "conviction": req.conviction,
         })
         trade_id = result.fetchone()[0]
         await session.commit()
@@ -333,6 +412,39 @@ async def close_paper_trade(trade_id: int, req: CloseTradeRequest, background_ta
 # ------------------------------------------------------------------
 # MEMORY / JOURNAL
 # ------------------------------------------------------------------
+
+@router.get("/calibration/conviction")
+async def conviction_calibration():
+    """Brier score + calibration buckets: is stated conviction a real probability?"""
+    from scoring.calibration import get_conviction_calibration
+    return await get_conviction_calibration()
+
+
+# ------------------------------------------------------------------
+# STRATEGY DOCUMENT — current rules, version history, pending review
+# ------------------------------------------------------------------
+
+@router.get("/strategy")
+async def get_strategy_endpoint():
+    from api.strategy import get_strategy
+    return await get_strategy()
+
+
+@router.patch("/strategy")
+async def patch_strategy_endpoint(body: dict):
+    from api.strategy import patch_strategy_override
+    return await patch_strategy_override(body)
+
+
+# ------------------------------------------------------------------
+# DAILY BRIEFING — 3 streams (options / swing / long-term)
+# ------------------------------------------------------------------
+
+@router.get("/briefing/daily")
+async def daily_briefing_endpoint():
+    from api.briefing import build_briefing
+    return await build_briefing()
+
 
 @router.get("/memory/journal")
 async def get_journal(limit: int = 50):

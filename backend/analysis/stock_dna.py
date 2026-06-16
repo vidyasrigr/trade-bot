@@ -34,7 +34,6 @@ class StockBehavioralDNA:
     # Earnings behavior
     earnings_realized_implied_ratio: float = 0.0
     earnings_direction_bias_on_beat: float = 0.5
-    iv_crush_avg_pct: float = 0.0
     beat_and_raise_pead_rate: float = 0.0
     earnings_events_count: int = 0
     sell_news_conditions: dict[str, float] = field(default_factory=dict)
@@ -48,12 +47,14 @@ class StockBehavioralDNA:
     momentum_persistence_days: int = 5
     volume_leads_price_days: int = 2
 
-    # Per-stock indicator IC (information coefficient)
+    # Per-stock indicator IC (information coefficient).
+    # Phase D will add FDR correction; per-stock ICs without it overfit on
+    # ~1000 bars × thousands of stocks.
     best_indicator_ic: dict[str, float] = field(default_factory=dict)
 
-    # Sector / cascade membership
-    semis_cascade_member: bool = False
-    hyperscaler_lag_days: int = 0
+    # NOTE: semis_cascade_member + hyperscaler_lag_days removed 2026-06-14
+    # (Phase A). The supply-chain lead-lag graph in Phase D is the data-driven
+    # replacement — no more hand-coded sector lookup tables.
 
     # Data quality
     uses_behavioral_twins: bool = False
@@ -151,8 +152,34 @@ async def _load_earnings_history(symbol: str) -> list[dict]:
 # Core DNA computation
 # ---------------------------------------------------------------------------
 
+def _event_reaction(df_indexed: pd.DataFrame, event_date: pd.Timestamp) -> tuple[int, int, float, float] | None:
+    """
+    (pre_pos, post_pos, pre_close, post_close) around an earnings event,
+    robust to BMO/AMC timing: pre = last close strictly BEFORE the event date,
+    post = first close strictly AFTER it. The 2-day window captures the reaction
+    whichever session the report landed in (the old ±1-day searchsorted could
+    grab the event-day close as "pre" for BMO reports, corrupting every stat).
+    """
+    idx = df_indexed.index
+    pre_pos = int(idx.searchsorted(event_date)) - 1
+    post_pos = int(idx.searchsorted(event_date, side="right"))
+    if pre_pos < 0 or post_pos >= len(idx):
+        return None
+    pre_close = float(df_indexed["close"].iloc[pre_pos])
+    post_close = float(df_indexed["close"].iloc[post_pos])
+    if pre_close <= 0:
+        return None
+    return pre_pos, post_pos, pre_close, post_close
+
+
 def _compute_earnings_dna(earnings: list[dict], df: pd.DataFrame) -> dict[str, Any]:
-    """Compute earnings behavioral metrics from historical data."""
+    """
+    Compute earnings behavioral metrics from historical data.
+
+    NOTE: "realized_implied_ratio" uses pre-earnings 20d historical vol as the
+    expected-move proxy, NOT true options-implied move (no historical chain data
+    yet). Interpret as realized-vs-HV; swap in ThetaData implied moves when wired.
+    """
     if not earnings or df.empty:
         return {}
 
@@ -167,27 +194,14 @@ def _compute_earnings_dna(earnings: list[dict], df: pd.DataFrame) -> dict[str, A
     for event in earnings:
         try:
             event_date = pd.to_datetime(event["date"])
-
-            # Find price 1 day before and 1 day after earnings
-            pre_date = event_date - timedelta(days=1)
-            post_date = event_date + timedelta(days=1)
-
-            pre_idx = df.index.searchsorted(pre_date)
-            post_idx = df.index.searchsorted(post_date)
-
-            if pre_idx >= len(df) or post_idx >= len(df):
+            reaction = _event_reaction(df, event_date)
+            if reaction is None:
                 continue
-
-            pre_close = float(df["close"].iloc[pre_idx])
-            post_close = float(df["close"].iloc[min(post_idx, len(df)-1)])
-
-            if pre_close <= 0:
-                continue
+            pre_idx, post_idx, pre_close, post_close = reaction
 
             actual_move_pct = abs((post_close - pre_close) / pre_close)
 
-            # Estimate implied move from ATM straddle approximation (IV * sqrt(T))
-            # Simplified: use 30-day window volatility as proxy for implied move
+            # Expected-move proxy from pre-earnings 20-day historical vol
             window_start = pre_idx - 20
             if window_start >= 0:
                 window = df["close"].iloc[window_start:pre_idx]
@@ -320,11 +334,20 @@ def _compute_momentum_dna(df: pd.DataFrame) -> dict[str, Any]:
     return result
 
 
-def _compute_indicator_ic(df: pd.DataFrame) -> dict[str, float]:
+def _compute_indicator_ic(df: pd.DataFrame, fdr_q: float = 0.10) -> dict[str, float]:
     """
-    Compute per-stock information coefficients for key indicators.
-    IC = rank correlation between indicator signal and next-5-day return.
-    Range: -1 to +1. Higher = more predictive for this specific stock.
+    Per-stock information coefficient for a small panel of indicators.
+
+    Each IC is a Spearman correlation between an indicator and 5-day forward
+    returns. With 4 indicators × thousands of stocks × ~1000 bars, *every*
+    stock will appear to have a "best" indicator by pure noise. Without
+    multiple-testing correction, this whole feature is overfit-as-a-feature.
+
+    Fix (Phase H): Benjamini-Hochberg FDR control at q=fdr_q (default 10%).
+    Indicators whose nominal p-value doesn't survive the BH threshold are
+    NULLED OUT — they don't show up in the DNA dict and don't leak into the
+    trader prompt. A name with no statistically distinguishable indicator
+    returns an empty dict, which is the honest answer.
     """
     if df.empty or len(df) < 60:
         return {}
@@ -336,45 +359,51 @@ def _compute_indicator_ic(df: pd.DataFrame) -> dict[str, float]:
         close = df["close"]
         fwd_5 = close.pct_change(5).shift(-5)
 
-        ic: dict[str, float] = {}
+        raw: dict[str, tuple[float, float]] = {}  # name -> (ic, p-value)
 
-        # RSI-14
-        rsi = ta.rsi(close, length=14)
-        if rsi is not None:
-            valid = ~(rsi.isna() | fwd_5.isna())
-            if valid.sum() > 30:
-                corr, _ = spearmanr(rsi[valid], fwd_5[valid])
-                ic["rsi"] = round(float(corr), 4)
+        def _record(name: str, series):
+            if series is None:
+                return
+            valid = ~(series.isna() | fwd_5.isna())
+            n = int(valid.sum())
+            if n <= 30:
+                return
+            corr, p = spearmanr(series[valid], fwd_5[valid])
+            if corr is None or np.isnan(corr):
+                return
+            raw[name] = (float(corr), float(p) if not np.isnan(p) else 1.0)
 
-        # MACD histogram
+        _record("rsi", ta.rsi(close, length=14))
         macd_df = ta.macd(close)
-        if macd_df is not None:
-            hist = macd_df.iloc[:, 2]
-            valid = ~(hist.isna() | fwd_5.isna())
-            if valid.sum() > 30:
-                corr, _ = spearmanr(hist[valid], fwd_5[valid])
-                ic["macd_hist"] = round(float(corr), 4)
-
-        # EMA21 crossover distance
+        if macd_df is not None and len(macd_df.columns) >= 3:
+            _record("macd_hist", macd_df.iloc[:, 2])
         ema21 = ta.ema(close, length=21)
         if ema21 is not None:
-            ema_dist = (close - ema21) / ema21
-            valid = ~(ema_dist.isna() | fwd_5.isna())
-            if valid.sum() > 30:
-                corr, _ = spearmanr(ema_dist[valid], fwd_5[valid])
-                ic["ema21_dist"] = round(float(corr), 4)
-
-        # OBV trend
+            _record("ema21_dist", (close - ema21) / ema21)
         if "volume" in df.columns:
             obv = ta.obv(close, df["volume"])
             if obv is not None:
-                obv_slope = obv.diff(5)
-                valid = ~(obv_slope.isna() | fwd_5.isna())
-                if valid.sum() > 30:
-                    corr, _ = spearmanr(obv_slope[valid], fwd_5[valid])
-                    ic["obv_slope"] = round(float(corr), 4)
+                _record("obv_slope", obv.diff(5))
 
-        return ic
+        if not raw:
+            return {}
+
+        # Benjamini-Hochberg FDR: sort p-values ascending; the largest k for
+        # which p_(k) <= (k/m) * q is the BH threshold. Reject H0 for all
+        # ranks up to k. ICs not rejected are nulled out.
+        items = sorted(raw.items(), key=lambda kv: kv[1][1])
+        m = len(items)
+        k_thresh = 0
+        for rank, (_, (_, p_val)) in enumerate(items, start=1):
+            if p_val <= (rank / m) * fdr_q:
+                k_thresh = rank
+        survivors_names = {items[i][0] for i in range(k_thresh)}
+
+        result: dict[str, float] = {
+            name: round(ic, 4) for name, (ic, _) in raw.items()
+            if name in survivors_names
+        }
+        return result
     except ImportError:
         return {}
     except Exception as e:
@@ -403,13 +432,10 @@ def _compute_sell_news_conditions(
     for event in earnings:
         try:
             event_date = pd.to_datetime(event["date"])
-            pre_idx = df.index.searchsorted(event_date - timedelta(days=1))
-            post_idx = df.index.searchsorted(event_date + timedelta(days=1))
-            if pre_idx >= len(df) or post_idx >= len(df):
+            reaction = _event_reaction(df, event_date)
+            if reaction is None:
                 continue
-
-            pre_close = float(df["close"].iloc[pre_idx])
-            post_close = float(df["close"].iloc[min(post_idx, len(df)-1)])
+            _, _, pre_close, post_close = reaction
             went_down = post_close < pre_close
 
             eps_est = event.get("eps_estimate", 0)
@@ -440,17 +466,6 @@ def _compute_sell_news_conditions(
 
 
 # ---------------------------------------------------------------------------
-# Semis cascade detection (seeded in DB; updated here if Tradier available)
-# ---------------------------------------------------------------------------
-
-SEMIS_CASCADE_MEMBERS = {"NVDA", "AMD", "INTC", "AVGO", "QCOM", "MU", "TSM", "AMAT", "LRCX", "KLAC"}
-HYPERSCALER_LAG: dict[str, int] = {
-    "NVDA": 14, "AMD": 7, "AVGO": 7, "INTC": 7, "QCOM": 7,
-    "MU": 10, "TSM": 10, "AMAT": 7, "LRCX": 7, "KLAC": 7,
-}
-
-
-# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
@@ -468,10 +483,6 @@ async def compute_dna(symbol: str) -> StockBehavioralDNA:
 
     dna = StockBehavioralDNA(symbol=symbol)
     dna.computed_at = datetime.utcnow().isoformat()
-
-    # Semis cascade membership (from hardcoded list; DB overrides at runtime)
-    dna.semis_cascade_member = symbol in SEMIS_CASCADE_MEMBERS
-    dna.hyperscaler_lag_days = HYPERSCALER_LAG.get(symbol, 0)
 
     # Load data concurrently
     df, earnings = await asyncio.gather(
@@ -539,25 +550,27 @@ async def save_dna_to_db(dna: StockBehavioralDNA, session) -> None:
     """Upsert DNA record to the stock_dna table."""
     from sqlalchemy import text
 
+    # NOTE: iv_crush_avg_pct, semis_cascade_member, hyperscaler_lag_days columns
+    # dropped in migration 010 (Phase A cleanup). Lookup-table sector membership
+    # is replaced by the learned lead-lag graph in Phase D.
     await session.execute(
         text("""
             INSERT INTO stock_dna (
                 symbol, earnings_realized_implied_ratio, earnings_direction_bias_on_beat,
-                iv_crush_avg_pct, beat_and_raise_pead_rate, earnings_events_count,
+                beat_and_raise_pead_rate, earnings_events_count,
                 sell_news_conditions, post_ath_5d_median_return, post_ath_20d_median_return,
                 ath_continuation_rate, momentum_persistence_days, volume_leads_price_days,
-                best_indicator_ic, semis_cascade_member, hyperscaler_lag_days,
+                best_indicator_ic,
                 uses_behavioral_twins, twin_symbols, data_quality_score, computed_at, updated_at
             ) VALUES (
-                :symbol, :eirr, :edbob, :ivcp, :barp, :eec,
+                :symbol, :eirr, :edbob, :barp, :eec,
                 :snc::jsonb, :pa5r, :pa20r, :acr, :mpd, :vlpd,
-                :biic::jsonb, :scm, :hld,
+                :biic::jsonb,
                 :ubt, :ts, :dqs, NOW(), NOW()
             )
             ON CONFLICT (symbol) DO UPDATE SET
                 earnings_realized_implied_ratio = EXCLUDED.earnings_realized_implied_ratio,
                 earnings_direction_bias_on_beat = EXCLUDED.earnings_direction_bias_on_beat,
-                iv_crush_avg_pct = EXCLUDED.iv_crush_avg_pct,
                 beat_and_raise_pead_rate = EXCLUDED.beat_and_raise_pead_rate,
                 earnings_events_count = EXCLUDED.earnings_events_count,
                 sell_news_conditions = EXCLUDED.sell_news_conditions,
@@ -567,8 +580,6 @@ async def save_dna_to_db(dna: StockBehavioralDNA, session) -> None:
                 momentum_persistence_days = EXCLUDED.momentum_persistence_days,
                 volume_leads_price_days = EXCLUDED.volume_leads_price_days,
                 best_indicator_ic = EXCLUDED.best_indicator_ic,
-                semis_cascade_member = EXCLUDED.semis_cascade_member,
-                hyperscaler_lag_days = EXCLUDED.hyperscaler_lag_days,
                 uses_behavioral_twins = EXCLUDED.uses_behavioral_twins,
                 twin_symbols = EXCLUDED.twin_symbols,
                 data_quality_score = EXCLUDED.data_quality_score,
@@ -578,7 +589,6 @@ async def save_dna_to_db(dna: StockBehavioralDNA, session) -> None:
             "symbol": dna.symbol,
             "eirr": dna.earnings_realized_implied_ratio or None,
             "edbob": dna.earnings_direction_bias_on_beat or None,
-            "ivcp": dna.iv_crush_avg_pct or None,
             "barp": dna.beat_and_raise_pead_rate or None,
             "eec": dna.earnings_events_count,
             "snc": __import__("orjson").dumps(dna.sell_news_conditions).decode(),
@@ -588,8 +598,6 @@ async def save_dna_to_db(dna: StockBehavioralDNA, session) -> None:
             "mpd": dna.momentum_persistence_days or None,
             "vlpd": dna.volume_leads_price_days or None,
             "biic": __import__("orjson").dumps(dna.best_indicator_ic).decode(),
-            "scm": dna.semis_cascade_member,
-            "hld": dna.hyperscaler_lag_days,
             "ubt": dna.uses_behavioral_twins,
             "ts": dna.twin_symbols or [],
             "dqs": dna.data_quality_score,
@@ -622,7 +630,6 @@ async def get_dna(symbol: str, session=None) -> StockBehavioralDNA | None:
                 symbol=r["symbol"],
                 earnings_realized_implied_ratio=float(r["earnings_realized_implied_ratio"] or 0),
                 earnings_direction_bias_on_beat=float(r["earnings_direction_bias_on_beat"] or 0.5),
-                iv_crush_avg_pct=float(r["iv_crush_avg_pct"] or 0),
                 beat_and_raise_pead_rate=float(r["beat_and_raise_pead_rate"] or 0),
                 earnings_events_count=int(r["earnings_events_count"] or 0),
                 sell_news_conditions=r["sell_news_conditions"] or {},
@@ -632,8 +639,6 @@ async def get_dna(symbol: str, session=None) -> StockBehavioralDNA | None:
                 momentum_persistence_days=int(r["momentum_persistence_days"] or 5),
                 volume_leads_price_days=int(r["volume_leads_price_days"] or 2),
                 best_indicator_ic=r["best_indicator_ic"] or {},
-                semis_cascade_member=bool(r["semis_cascade_member"]),
-                hyperscaler_lag_days=int(r["hyperscaler_lag_days"] or 0),
                 uses_behavioral_twins=bool(r["uses_behavioral_twins"]),
                 twin_symbols=list(r["twin_symbols"] or []),
                 data_quality_score=float(r["data_quality_score"] or 0),
@@ -656,11 +661,13 @@ def format_dna_context(dna: StockBehavioralDNA) -> str:
     lines = [f"[{dna.symbol} Behavioral DNA — quality {dna.data_quality_score:.0f}/100]"]
 
     if dna.earnings_events_count >= 4:
-        lines.append(
+        line = (
             f"Earnings: {dna.earnings_events_count} events, "
-            f"direction-on-beat={dna.earnings_direction_bias_on_beat:.0%} up, "
-            f"IV crush avg={dna.iv_crush_avg_pct:.0%}"
+            f"direction-on-beat={dna.earnings_direction_bias_on_beat:.0%} up"
         )
+        if dna.earnings_realized_implied_ratio:
+            line += f", realized-vs-HV-proxy move ratio={dna.earnings_realized_implied_ratio:.2f}"
+        lines.append(line)
 
     if dna.sell_news_conditions:
         sn = dna.sell_news_conditions
@@ -681,8 +688,9 @@ def format_dna_context(dna: StockBehavioralDNA) -> str:
         ic_str = ", ".join(f"{k}={v:+.3f}" for k, v in best)
         lines.append(f"Best indicators for this stock: {ic_str}")
 
-    if dna.semis_cascade_member:
-        lines.append(f"Semiconductor cascade member — moves {dna.hyperscaler_lag_days}d after hyperscaler capex beats")
+    # Sector cascade / hyperscaler lag context removed 2026-06-14 (Phase A).
+    # The supply-chain lead-lag graph (Phase D) will inject data-driven peer
+    # context here instead of a hand-coded lookup.
 
     return "\n".join(lines)
 

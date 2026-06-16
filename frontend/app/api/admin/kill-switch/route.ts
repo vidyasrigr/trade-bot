@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { proxyJson } from "@/lib/backendProxy";
 
-export async function POST(request: Request) {
-  const body = await request.json();
-  return NextResponse.json({
-    ok: true,
-    status: body.active ? "halted" : "active",
-    reason: body.active ? (body.reason || "Manual override") : null,
+export async function POST(req: Request) {
+  const body = await req.text();
+  return proxyJson("/admin/kill-switch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
   });
 }

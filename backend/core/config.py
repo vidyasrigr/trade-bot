@@ -20,12 +20,25 @@ class Settings(BaseSettings):
     ANTHROPIC_TRADER_MODEL: str = "claude-opus-4-7"     # trader synthesis only (weighs all factors)
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_CHAT_MODEL: str = "llama3.1:8b"
-    OLLAMA_ADVERSARY_MODEL: str = "deepseek-r1:7b"      # adversary/devil's advocate (reasoning model)
+    # Adversary / devil's-advocate model. Recommended (in order):
+    #   - "qwq:32b-q3_k_m"     — Alibaba QwQ-32B, reasoning specialist, ~15GB on RTX 5080 (best quality)
+    #   - "qwen3:14b-instruct" — Qwen3 instruction-tuned, ~9GB, faster than QwQ-32B
+    #   - "deepseek-r1:7b"     — original, ~5GB, weakest reasoning
+    # Switch by `ollama pull qwq:32b-q3_k_m` then setting this var.
+    OLLAMA_ADVERSARY_MODEL: str = "deepseek-r1:7b"
     OLLAMA_EMBED_MODEL: str = "nomic-embed-text"
+    # Optional GPU-resident heavy lifter — used for batch NLP (8-K classification,
+    # transcript embedding, news dedup). When unset, falls back to OLLAMA_CHAT_MODEL.
+    OLLAMA_NLP_MODEL: str = "qwen3:14b-instruct"
 
     # Market data APIs
     TRADIER_API_KEY: str = ""
     TRADIER_BASE_URL: str = "https://sandbox.tradier.com/v1"
+    # MarketData.app — preferred for options data (historical chains supported)
+    # When MARKETDATA_API_KEY is set, get_tradier() returns a MarketDataClient
+    # in Tradier-compatible shape; Tradier sandbox is then used only for paper
+    # order execution. See data/marketdata.py for the migration rationale.
+    MARKETDATA_API_KEY: str = ""
     ALPHA_VANTAGE_API_KEY: str = ""
     FRED_API_KEY: str = ""
     NEWS_API_KEY: str = ""

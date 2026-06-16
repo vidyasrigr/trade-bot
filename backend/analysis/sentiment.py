@@ -24,7 +24,10 @@ async def analyze(symbol: str, df: pd.DataFrame, chain: list[dict]) -> CategoryS
     except Exception:
         pass
 
-    # Short interest (from AV overview)
+    # Short interest (from AV overview).
+    # High SI predicts UNDERperformance on average (Drechsler & Drechsler 2014,
+    # "The Shorting Premium") — it is squeeze fuel only when a catalyst and price
+    # momentum confirm. So: mild bearish on its own, flagged for squeeze detectors.
     try:
         from data.market import get_av
         av = get_av()
@@ -32,10 +35,12 @@ async def analyze(symbol: str, df: pd.DataFrame, chain: list[dict]) -> CategoryS
         short_pct = float(overview.get("ShortPercentOutstanding", 0) or 0)
         if short_pct > 0.15:
             signals.append({"name": "very_high_short_interest", "value": round(short_pct * 100, 1),
-                           "note": "Potential squeeze catalyst", "direction": "bullish"})
-            score += 1
+                           "note": "Bearish drag on average; squeeze fuel only WITH catalyst + momentum",
+                           "direction": "bearish", "squeeze_fuel": True})
+            score -= 0.5
         elif short_pct > 0.08:
-            signals.append({"name": "elevated_short_interest", "value": round(short_pct * 100, 1)})
+            signals.append({"name": "elevated_short_interest", "value": round(short_pct * 100, 1),
+                           "squeeze_fuel": True})
     except Exception:
         pass
 

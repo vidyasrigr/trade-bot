@@ -1,7 +1,7 @@
 """
 Cold-start seeding:
-- IC priors (initialized in init.sql already)
-- 50 canonical RAG trade examples
+- Canonical playbook examples → seed_lessons table (NOT memory_entries, so they
+  do not contaminate the trader prompt's RAG retrieval — fixed 2026-06-14, Phase A)
 - YouTube channel cold-start (retroactive last 12 months)
 """
 
@@ -15,6 +15,9 @@ TRACKED_YOUTUBE_CHANNELS = [
     {"channel_id": "UCEMd7rAw7uyZROSJnBjWEWg", "channel_name": "CNBC Fast Money"},
 ]
 
+# Canonical playbook examples — kept as documentation of the system's design
+# intent. They land in seed_lessons (separate table) so the trader's _retrieve_memory
+# only ever pulls REAL closed-trade lessons from memory_entries.
 CANONICAL_TRADE_EXAMPLES = [
     {
         "symbol": "SPY", "strategy": "bull_call_spread", "direction": "bullish",
@@ -55,25 +58,37 @@ CANONICAL_TRADE_EXAMPLES = [
 
 
 async def seed_canonical_trades():
-    """Seed 50 canonical trade examples as memory entries for cold-start RAG."""
+    """
+    Seed canonical playbook examples to the seed_lessons table.
+
+    Important: seed_lessons is NOT queried by agents.graph._retrieve_memory.
+    That keeps the trader prompt's RAG retrieval honest — it only ever sees
+    real closed-trade lessons. seed_lessons exists for the Strategy page UI
+    and for cold-start documentation.
+    """
     from core.database import AsyncSessionLocal
     from sqlalchemy import text
 
     async with AsyncSessionLocal() as session:
         for ex in CANONICAL_TRADE_EXAMPLES:
             await session.execute(text("""
-                INSERT INTO memory_entries
-                    (symbol, regime, lesson, r_multiple, factors_that_worked, factors_that_failed)
+                INSERT INTO seed_lessons
+                    (symbol, regime, strategy, direction, iv_percentile,
+                     r_multiple, lesson, factors_that_worked, factors_that_failed)
                 VALUES
-                    (:sym, :regime, :lesson, :r_mult, :worked, :failed)
-                ON CONFLICT DO NOTHING
+                    (:sym, :regime, :strategy, :direction, :iv_pct,
+                     :r_mult, :lesson, :worked, :failed)
+                ON CONFLICT (symbol, strategy, regime) DO NOTHING
             """), {
                 "sym": ex["symbol"], "regime": ex["regime"],
-                "lesson": ex["lesson"], "r_mult": ex["r_multiple"],
-                "worked": ex["factors_that_worked"], "failed": ex["factors_that_failed"],
+                "strategy": ex["strategy"], "direction": ex["direction"],
+                "iv_pct": ex["iv_percentile"], "r_mult": ex["r_multiple"],
+                "lesson": ex["lesson"],
+                "worked": ex["factors_that_worked"],
+                "failed": ex["factors_that_failed"],
             })
         await session.commit()
-    logger.info(f"Seeded {len(CANONICAL_TRADE_EXAMPLES)} canonical trade examples")
+    logger.info(f"Seeded {len(CANONICAL_TRADE_EXAMPLES)} canonical playbook examples to seed_lessons")
 
 
 async def seed_youtube_channels():

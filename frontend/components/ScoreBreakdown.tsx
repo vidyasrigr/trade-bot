@@ -32,7 +32,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   trade_structure: "Trade Structure",
   sentiment: "Sentiment",
   liquidity: "Liquidity",
-  dow_bias: "DOW Bias",
   risk: "Risk Mgmt",
   gex_dex: "GEX/DEX",
   options_flow: "Inst. Flow",

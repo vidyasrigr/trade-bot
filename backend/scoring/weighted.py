@@ -25,27 +25,26 @@ INDEPENDENT_GROUPS = {
     "options_specific":   ["options_chain", "greeks", "trade_structure"],
     "flow_and_sentiment": ["sentiment", "options_flow", "gex_dex"],
     "fundamental_macro":  ["fundamental", "macro"],
-    "catalyst_specific":  ["calendar", "dow_bias"],
+    "catalyst_specific":  ["calendar"],
     "risk_liquidity":     ["liquidity", "risk"],
 }
 
 # Category weight base table (same as engine.py — kept in sync)
 BASE_WEIGHTS = {
-    "macro":              8.0,
-    "calendar":           7.0,
-    "fundamental":        8.0,
-    "trend":             10.0,
-    "support_resistance": 8.0,
-    "candles":            7.0,
-    "chart_patterns":     7.0,
-    "momentum":           7.0,
-    "iv_analysis":       12.0,
-    "options_chain":     10.0,
+    "macro":              6.0,
+    "calendar":           6.0,
+    "fundamental":        7.0,
+    "trend":              9.0,
+    "support_resistance": 7.0,
+    "candles":            5.0,
+    "chart_patterns":     6.0,
+    "momentum":           6.0,
+    "iv_analysis":       11.0,
+    "options_chain":      9.0,
     "greeks":             8.0,
     "trade_structure":    5.0,
     "sentiment":          5.0,
     "liquidity":          5.0,
-    "dow_bias":           4.0,
     "risk":               5.0,
     "gex_dex":            0.0,   # overlaid on top of sentiment
     "options_flow":       0.0,   # overlaid on top of sentiment
@@ -178,13 +177,30 @@ async def compute_final_score(
         conviction_score = min(conviction_score, 55.0)
         conviction_score = round(conviction_score, 2)
 
-    # 7. Half-Kelly position sizing
+    # 7. Conviction-multiplier sizing (Phase I.1).
+    # Half-Kelly is the default policy because it gives ~75% of full-Kelly
+    # compounding growth at ~50% the drawdown. But when the system identifies a
+    # *genuinely* stacked setup — 5+ independent signal groups firing AND a tail
+    # signal aligned (insider cluster, VRP-z>+1, or whale sweep) — that's where
+    # the 2-5x trades live. We tier the Kelly fraction by stacking count:
+    #     3-4 groups          → half-Kelly  (current behavior)
+    #     5 groups            → 0.75 Kelly
+    #     6+ groups + tail    → full Kelly  (subject to MAX_POSITION_SIZE_PCT cap)
+    tail_aligned = _detect_tail_alignment(category_scores)
     account = account_value or portfolio_value or settings.PAPER_PORTFOLIO_VALUE
-    position_size_pct, suggested_contracts = _kelly_size(
+    position_size_pct, suggested_contracts, kelly_used = _kelly_size(
         conviction_score=conviction_score,
         portfolio_value=account,
         confirmation_met=confirmation_met,
+        independent_signals_count=independent_count,
+        tail_signal_aligned=tail_aligned,
     )
+    if kelly_used > settings.KELLY_FRACTION + 1e-6:
+        warnings.append(
+            f"CONVICTION_STACK: {independent_count} independent groups firing"
+            f"{' + tail signal aligned' if tail_aligned else ''} → "
+            f"Kelly fraction lifted to {kelly_used:.2f} (default {settings.KELLY_FRACTION:.2f})"
+        )
 
     return ScoringResult(
         total_score=total_score,
@@ -201,35 +217,99 @@ async def compute_final_score(
     )
 
 
+def _detect_tail_alignment(category_scores: dict) -> bool:
+    """
+    A "tail" signal is one whose firing has historically preceded outsized
+    moves: deep variance risk premium, insider cluster buying, or institutional
+    whale sweep. When one of these is aligned with strong overall conviction,
+    the system has more reason to believe this isn't an average setup.
+
+    We look at the raw signals embedded in each category:
+      - iv_analysis: vrp_z >= +1 (rich premium)  OR  vrp_z <= -1 (cheap premium)
+      - sentiment / options_flow: 'whale_sweep' or 'insider_cluster' name found
+      - macro: 'pre_fomc_gate_passed' (Lucca-Moench drift window)
+    """
+    def _signals_for(cat_name: str) -> list[dict]:
+        cat = category_scores.get(cat_name)
+        if cat is None:
+            return []
+        return getattr(cat, "signals", []) or []
+
+    for sig in _signals_for("iv_analysis"):
+        if sig.get("name") in ("vrp_z", "iv_premium", "iv_discount"):
+            try:
+                z = abs(float(sig.get("z_score", sig.get("value", 0))))
+                if z >= 1.0:
+                    return True
+            except (TypeError, ValueError):
+                continue
+    for cat_name in ("sentiment", "options_flow"):
+        for sig in _signals_for(cat_name):
+            name = (sig.get("name") or "").lower()
+            if name in {"whale_sweep", "insider_cluster", "unusual_call_volume",
+                         "unusual_put_volume", "call_flow_dominant"}:
+                return True
+    for sig in _signals_for("macro"):
+        if sig.get("name") == "pre_fomc_gate_passed" and sig.get("value"):
+            return True
+    return False
+
+
+def _choose_kelly_fraction(independent_signals_count: int, tail_signal_aligned: bool) -> float:
+    """
+    Tiered Kelly fraction (Phase I.1 — conviction multiplier).
+
+      <= 4 groups               → settings.KELLY_FRACTION (half-Kelly default)
+      = 5 groups                → midpoint between half-Kelly and full
+      >= 6 groups + tail signal → full Kelly (clamped at 1.0)
+      >= 6 groups, no tail      → 0.75 Kelly (still bumped, but cautiously)
+    """
+    base = float(settings.KELLY_FRACTION)
+    if independent_signals_count <= 4:
+        return base
+    if independent_signals_count == 5:
+        return min(1.0, base + (1.0 - base) * 0.5)
+    if independent_signals_count >= 6 and tail_signal_aligned:
+        return 1.0
+    return min(1.0, base + (1.0 - base) * 0.5)
+
+
 def _kelly_size(
     conviction_score: float,
     portfolio_value: float,
     confirmation_met: bool,
+    independent_signals_count: int = 0,
+    tail_signal_aligned: bool = False,
     option_price: float = 2.50,
-) -> tuple[float, int]:
+) -> tuple[float, int, float]:
     """
-    Half-Kelly position sizing scaled by conviction.
-    Research: half-Kelly = 75% of optimal compounding growth with ~50% less drawdown vs full Kelly.
+    Conviction-scaled Kelly position sizing.
+
+    Returns (position_size_pct, suggested_contracts, kelly_fraction_used).
+
+    Default = half-Kelly (settings.KELLY_FRACTION). Stacked-signal trades lift
+    the Kelly fraction up to full when 6+ independent groups fire AND a tail
+    signal aligns. The MAX_POSITION_SIZE_PCT cap is enforced regardless — so
+    even at full Kelly, no single trade exceeds the portfolio cap.
     """
     if not confirmation_met or conviction_score < 60:
-        return (0.0, 0)
+        return (0.0, 0, 0.0)
 
-    # Conviction 60-100 → position size 1.0-4.0% of portfolio (half-Kelly scaled)
+    # Conviction 60-100 → position size 1.0-4.0% of portfolio (pre-Kelly scaling)
     normalized_conviction = (conviction_score - 60) / 40  # 0.0 to 1.0
     raw_pct = settings.BASE_POSITION_SIZE_PCT + (
         normalized_conviction * (settings.MAX_POSITION_SIZE_PCT - settings.BASE_POSITION_SIZE_PCT)
     )
 
-    # Apply half-Kelly fraction
-    kelly_scaled_pct = raw_pct * settings.KELLY_FRACTION
+    kelly_fraction = _choose_kelly_fraction(independent_signals_count, tail_signal_aligned)
+    kelly_scaled_pct = raw_pct * kelly_fraction
     kelly_scaled_pct = round(min(kelly_scaled_pct, settings.MAX_POSITION_SIZE_PCT), 4)
 
-    # Derive suggested contracts
     dollar_risk = portfolio_value * kelly_scaled_pct
     contracts = max(1, round(dollar_risk / (option_price * 100)))
     contracts = min(contracts, 10)  # hard cap
 
-    return (kelly_scaled_pct, contracts)
+    return (kelly_scaled_pct, contracts, kelly_fraction)
 
 
 async def _get_ic_multipliers(regime: str) -> dict[str, float]:

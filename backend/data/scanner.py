@@ -55,8 +55,8 @@ TIER2_THEME_STOCKS = {
     "photonics": ["LITE", "COHR", "FN", "TSEM"],
     # Semis supply chain (2nd-order)
     "semis_supply": ["AMAT", "ENTG", "ONTO", "AMKR", "ASML", "LRCX"],
-    # Space economy
-    "space": ["RDW", "RKLB", "ASTS", "VORB"],
+    # Space economy (VORB removed — Virgin Orbit delisted/bankrupt 2023)
+    "space": ["RDW", "RKLB", "ASTS"],
     # Nuclear / energy
     "nuclear_energy": ["OKLO", "SMR", "LEU", "CCJ", "CEG", "BWXT", "ATI"],
     # Defense / autonomous drones
@@ -70,7 +70,7 @@ TIER2_THEME_STOCKS = {
         "LULU", "NKE",  # fitness 2nd-order WIN
     ],
     # Robotics / humanoid
-    "robotics": ["TSLA", "BOTT"],
+    "robotics": ["TSLA"],
     # Auto / EV / manufacturing
     "auto_ev": ["GM", "F", "RACE", "RIVN"],
     # AI software / fintech
@@ -83,12 +83,39 @@ TIER3_CATALYST_WATCHLIST: list[str] = []  # populated dynamically by catalyst.py
 
 
 def get_full_universe() -> list[str]:
-    """Returns deduplicated full symbol universe across all tiers."""
+    """Static always-include set: tier lists + catalyst watchlist (~150 symbols)."""
     symbols = set(TIER1_UNIVERSE)
     for group in TIER2_THEME_STOCKS.values():
         symbols.update(group)
     symbols.update(TIER3_CATALYST_WATCHLIST)
     return sorted(symbols)
+
+
+def _theme_symbols() -> set[str]:
+    s: set[str] = set()
+    for group in TIER2_THEME_STOCKS.values():
+        s.update(group)
+    return s
+
+
+async def get_scan_universe() -> list[str]:
+    """
+    Dynamic universe (full Nasdaq Trader directory, ~5,000+ names) unioned with
+    the static always-include set. The static lists used to BE the universe,
+    which made the scanner a mirror of pre-existing theme convictions —
+    now themes are a stage-1 score boost, not the boundary.
+    """
+    from data.universe import get_dynamic_universe
+
+    static = set(get_full_universe())
+    dynamic = await get_dynamic_universe()
+    if not dynamic:
+        logger.warning(
+            "Dynamic universe fetch FAILED — scanning static ~150-symbol list only. "
+            "Results will be biased toward pre-existing themes."
+        )
+        return sorted(static)
+    return sorted(static | set(dynamic))
 
 
 # ------------------------------------------------------------------
@@ -110,8 +137,16 @@ async def stage1_prescreen(symbols: list[str]) -> list[dict]:
     """
     logger.info(f"Stage 1: screening {len(symbols)} symbols...")
 
-    # Batch download 1 year of history
-    data = get_multi_ohlcv_yfinance(symbols, period="3mo")
+    theme_set = _theme_symbols()
+
+    # Chunked batch download (single 5,000-ticker yfinance call is unreliable)
+    chunk_size = 250
+    data: dict[str, pd.DataFrame] = {}
+    for i in range(0, len(symbols), chunk_size):
+        chunk = symbols[i : i + chunk_size]
+        data.update(get_multi_ohlcv_yfinance(chunk, period="3mo"))
+        if len(symbols) > chunk_size:
+            await asyncio.sleep(0.5)  # be polite to yfinance on full-universe scans
 
     results = []
     for symbol, df in data.items():
@@ -124,11 +159,16 @@ async def stage1_prescreen(symbols: list[str]) -> list[dict]:
             if not (5 <= last_close <= 2000):
                 continue
 
+            # Liquidity floor: $5M avg daily dollar volume — below this the
+            # options chain (if any) will not pass the liquidity gate anyway
+            avg_vol = df["volume"].iloc[-21:-1].mean()
+            if avg_vol * last_close < 5_000_000:
+                continue
+
             # 20-day momentum (simple return)
             ret_20d = (df["close"].iloc[-1] / df["close"].iloc[-21] - 1) if len(df) >= 21 else 0
 
             # Volume anomaly: today vs 20-day avg
-            avg_vol = df["volume"].iloc[-21:-1].mean()
             today_vol = float(df["volume"].iloc[-1])
             vol_ratio = today_vol / avg_vol if avg_vol > 0 else 1.0
 
@@ -142,6 +182,11 @@ async def stage1_prescreen(symbols: list[str]) -> list[dict]:
             score += min(vol_ratio, 3.0) * 10   # vol spike (capped at 3x)
             score += (1 - abs(price_pct_52range - 0.9)) * 10  # near 52-week high
 
+            # Theme boost — conviction themes get priority, not exclusivity
+            is_theme = symbol in theme_set
+            if is_theme:
+                score += 2.0
+
             results.append({
                 "symbol": symbol,
                 "stage1_score": round(score, 3),
@@ -149,6 +194,7 @@ async def stage1_prescreen(symbols: list[str]) -> list[dict]:
                 "ret_20d": round(ret_20d, 4),
                 "vol_ratio": round(vol_ratio, 3),
                 "price_pct_52range": round(price_pct_52range, 3),
+                "theme_member": is_theme,
             })
         except Exception as e:
             logger.debug(f"Stage 1 skip {symbol}: {e}")
@@ -172,6 +218,11 @@ async def stage2_technical_scoring(stage1_results: list[dict]) -> list[dict]:
     """
     Scores each stock on 20 analysis categories.
     Returns top ~75 with per-category breakdown.
+
+    SIDE EFFECT: persists a feature snapshot to the point-in-time feature store
+    for today before returning. The snapshot includes every category raw_score
+    + underlying_price + iv_percentile so downstream backtests can replay the
+    exact state the scanner saw.
     """
     from analysis.engine import run_analysis
     from analysis.liquidity_gate import check_options_liquidity
@@ -207,8 +258,70 @@ async def stage2_technical_scoring(stage1_results: list[dict]) -> list[dict]:
     cutoff = min(75, len(passed_liquidity))
     survivors = passed_liquidity[:cutoff]
 
+    # Persist today's feature snapshot for point-in-time backtests.
+    await _persist_feature_snapshot(scored)
+
     logger.info(f"Stage 2 complete: {len(scored)} → {len(survivors)} survivors")
     return survivors
+
+
+async def _persist_feature_snapshot(scored: list[dict]) -> None:
+    """
+    Append today's stage-2 scores to the point-in-time feature store.
+
+    Long-format rows: (symbol, feature_name, value). Idempotent within a day
+    (the store refuses overwrite unless explicit) — a second scan the same day
+    is a no-op rather than corrupting history.
+    """
+    if not scored:
+        return
+    try:
+        from store.feature_store import get_feature_store
+        import pandas as pd
+        from datetime import date
+
+        rows: list[dict] = []
+        for item in scored:
+            symbol = item.get("symbol")
+            if not symbol:
+                continue
+            stage1 = item.get("stage1_data") or {}
+
+            # Scalar features that go straight in
+            for name, value in (
+                ("total_score", item.get("total_score")),
+                ("ret_20d", stage1.get("ret_20d")),
+                ("vol_ratio", stage1.get("vol_ratio")),
+                ("price_pct_52range", stage1.get("price_pct_52range")),
+                ("last_close", stage1.get("last_close")),
+                ("theme_member", 1.0 if stage1.get("theme_member") else 0.0),
+            ):
+                if value is not None:
+                    try:
+                        rows.append({"symbol": symbol, "feature_name": name, "value": float(value)})
+                    except (TypeError, ValueError):
+                        continue
+
+            # Per-category raw_scores from quick_score (Stage 2)
+            for cat_key, cat in (item.get("category_scores") or {}).items():
+                raw = cat.get("raw_score") if isinstance(cat, dict) else None
+                if raw is not None:
+                    try:
+                        rows.append({"symbol": symbol, "feature_name": f"cat_{cat_key}",
+                                     "value": float(raw)})
+                    except (TypeError, ValueError):
+                        continue
+
+        if not rows:
+            return
+        df = pd.DataFrame(rows)
+        store = get_feature_store()
+        try:
+            store.write_snapshot(date.today(), df)
+        except FileExistsError:
+            logger.debug(f"feature_store: snapshot for {date.today()} already exists, skipping")
+    except Exception as e:
+        logger.warning(f"feature_store snapshot write failed (non-fatal): {e}")
 
 
 async def _score_single(s1: dict) -> dict | None:
@@ -249,27 +362,27 @@ async def stage3_catalyst_filter(stage2_results: list[dict]) -> list[dict]:
         symbol = item["symbol"]
         try:
             flags = await get_catalyst_flags(symbol)
+            # political_boost AND halo_boost are both captured as *features* surfaced
+            # to the LLM and the UI, but NOT added to adjusted_score. Both are weak
+            # signals (NBER on political disclosures; IPO halo edge ranges 0-5% in the
+            # literature). Rolling them into ranking previously overweighted them; the
+            # LightGBM ranker (Phase E) is the right place to learn their actual weight.
             political_boost = await get_political_boost(symbol)
             halo_boost = await get_halo_boost(symbol)
 
             adjusted_score = item["total_score"]
             adjusted_score += flags.get("score_delta", 0)
-            adjusted_score += political_boost
-            adjusted_score += halo_boost
 
-            # Anti-crowding: penalize over-hyped picks
+            # Crowding is flagged here but penalized ONCE, in scoring/weighted.py
+            # (compute_final_score) — applying it in both places double-counted it.
             yt_mentions = flags.get("yt_mentions_this_week", 0)
-            if yt_mentions >= 5:
-                adjusted_score *= 0.80
-                flags["crowded"] = True
-            else:
-                flags["crowded"] = False
+            flags["crowded"] = yt_mentions >= 5
 
             item.update({
                 "adjusted_score": round(adjusted_score, 2),
                 "catalyst_flags": flags,
-                "political_boost": political_boost,
-                "halo_boost": halo_boost,
+                "political_boost": political_boost,  # feature only, not in score
+                "halo_boost": halo_boost,            # feature only, not in score
             })
             augmented.append(item)
         except Exception as e:
@@ -278,12 +391,77 @@ async def stage3_catalyst_filter(stage2_results: list[dict]) -> list[dict]:
             item["catalyst_flags"] = {}
             augmented.append(item)
 
+    # Apply LightGBM ranker (Phase E) when a trained model is available — the
+    # ranker's predicted excess return is added to adjusted_score as a multiplicative
+    # tilt, so symbols the *learned* model expects to outperform get prioritized.
+    # When no model exists (e.g. before the first weekly retrain), this is a no-op
+    # and ranking falls back to the hand-tuned BASE_WEIGHTS × IC path.
+    augmented = await _apply_ml_ranker(augmented)
+
     augmented.sort(key=lambda x: x.get("adjusted_score", 0), reverse=True)
     cutoff = min(25, len(augmented))
     survivors = augmented[:cutoff]
 
     logger.info(f"Stage 3 complete: {len(augmented)} → {len(survivors)} survivors")
     return survivors
+
+
+async def _apply_ml_ranker(augmented: list[dict]) -> list[dict]:
+    """
+    Multiply each stage-3 score by (1 + ranker_z) where ranker_z is the
+    predicted forward 21d excess return standardized cross-sectionally.
+    Tilt magnitude is capped at ±25% to keep the hand-tuned baseline
+    influential until the ML model is calibrated.
+    """
+    try:
+        from scoring.ranker import score_symbols, latest_artifact
+        from store.feature_store import get_feature_store
+    except ImportError:
+        return augmented
+
+    if latest_artifact(horizon=21) is None:
+        return augmented
+
+    try:
+        store = get_feature_store()
+        latest = store.latest_snapshot()
+        if not latest:
+            return augmented
+        latest_d, _ = latest
+        symbols = [item["symbol"] for item in augmented]
+        panel = store.read_panel(
+            features=[
+                "total_score", "ret_20d", "vol_ratio", "price_pct_52range",
+                "cat_iv_analysis", "cat_momentum", "cat_trend", "cat_options_flow",
+                "cat_gex_dex", "cat_volatility_regime",
+            ],
+            start=latest_d, end=latest_d, symbols=symbols,
+        )
+        if panel.empty:
+            return augmented
+        rows = {r["symbol"]: {k: v for k, v in r.items()
+                              if k not in ("as_of_date", "symbol")}
+                for _, r in panel.iterrows()}
+        preds = score_symbols(rows, horizon=21)
+        if not preds:
+            return augmented
+
+        import numpy as np
+        vals = np.array(list(preds.values()), dtype=float)
+        mean, std = float(vals.mean()), float(vals.std(ddof=1) or 1.0)
+        for item in augmented:
+            sym = item["symbol"]
+            if sym not in preds:
+                item["ranker_score"] = None
+                continue
+            z = (float(preds[sym]) - mean) / std
+            tilt = max(-0.25, min(0.25, z * 0.10))  # cap at ±25%
+            item["ranker_score"] = round(float(preds[sym]), 6)
+            item["ranker_tilt"] = round(tilt, 4)
+            item["adjusted_score"] = round(item["adjusted_score"] * (1.0 + tilt), 2)
+    except Exception as e:
+        logger.debug(f"ML ranker tilt skipped: {e}")
+    return augmented
 
 
 # ------------------------------------------------------------------
@@ -336,7 +514,7 @@ async def run_scan(symbols: list[str] | None = None) -> list[dict]:
     logger.info("=== Starting nightly scan ===")
 
     if symbols is None:
-        symbols = get_full_universe()
+        symbols = await get_scan_universe()
 
     logger.info(f"Universe: {len(symbols)} symbols")
 

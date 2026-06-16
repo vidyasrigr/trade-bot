@@ -178,7 +178,7 @@ async def get_holdings(user: dict = Depends(get_current_user)):
                     ph.lt_score, ph.lt_tier, ph.covered_call_flag,
                     ph.sell_trigger_active, ph.sell_trigger_reason,
                     ph.tranche_levels, ph.updated_at,
-                    sd.semis_cascade_member, sd.earnings_direction_bias_on_beat,
+                    sd.earnings_direction_bias_on_beat,
                     sd.post_ath_20d_median_return, sd.data_quality_score as dna_quality
                 FROM portfolio_holdings ph
                 LEFT JOIN stock_dna sd ON sd.symbol = ph.symbol

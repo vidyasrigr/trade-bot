@@ -7,16 +7,58 @@ from loguru import logger
 from core.config import settings
 
 
+_CREDIT_STRUCTURES = {
+    "iron_condor", "iron_butterfly",
+    "bull_put_spread", "bear_call_spread",
+    "credit_spread", "short_strangle", "short_straddle",
+    "covered_call", "cash_secured_put", "naked_put",
+}
+
+
+def _compute_r_multiple(trade: dict) -> float:
+    """
+    R-multiple = realized_pnl / initial_dollar_risk.
+
+    - Credit structures (spreads, condors, short premium): initial risk is the
+      structure's max_loss in dollars (already net of credit received).
+    - Long-premium structures (long calls/puts, debit spreads): initial risk is
+      entry_debit × contracts × 100 (you can't lose more than the debit paid).
+    - max_loss when present and >0 wins; otherwise we derive from entry_price.
+
+    Returns 0.0 when risk can't be determined (rather than fabricating a number).
+    """
+    pnl = float(trade.get("realized_pnl") or 0)
+    contracts = abs(int(trade.get("contracts") or 1)) or 1
+    entry_price = abs(float(trade.get("entry_price") or 0))
+    max_loss = float(trade.get("max_loss") or 0)
+    strategy = (trade.get("strategy") or "").lower()
+
+    if max_loss and max_loss > 1.0:  # ">1" filters away cases stored per-share
+        risk = abs(max_loss)
+    elif strategy in _CREDIT_STRUCTURES:
+        # Spread/short structures must have max_loss recorded; without it we
+        # can't honestly compute R (refusing to guess is the point).
+        risk = 0.0
+    elif entry_price > 0:
+        risk = entry_price * contracts * 100
+    else:
+        risk = 0.0
+
+    return pnl / risk if risk > 0 else 0.0
+
+
 async def run_postmortem(trade_id: int):
     """Called when a paper trade closes."""
     trade = await _get_trade(trade_id)
     if not trade:
         return
 
-    # R-multiple
-    entry_risk = abs(float(trade.get("max_loss") or trade.get("entry_price") or 1))
-    pnl = float(trade.get("realized_pnl") or 0)
-    r_multiple = pnl / entry_risk if entry_risk > 0 else 0
+    # R-multiple — entry_risk in DOLLARS, matching realized_pnl units.
+    # Previous bug: fell back to entry_price (per-contract, in $/share), so a
+    # $1.00 long call earning a $50 win reported R=50x. For naked longs the
+    # at-risk capital is entry_price × contracts × 100; for short premium /
+    # spreads it's the structure's max_loss; never per-share.
+    r_multiple = _compute_r_multiple(trade)
 
     # Update trade with R-multiple
     await _update_r_multiple(trade_id, r_multiple)
@@ -35,11 +77,17 @@ async def run_postmortem(trade_id: int):
             factor_scores=factor_scores,
         )
 
+    pnl = float(trade.get("realized_pnl") or 0)
+
     # Generate lesson via Claude
     lesson = await _generate_lesson(trade, r_multiple, factor_scores)
 
     # Store in memory with embedding
     await _store_memory(trade, r_multiple, lesson, factor_scores)
+
+    # Track whether stated conviction is calibrated against realized outcomes
+    from scoring.calibration import log_calibration_snapshot
+    await log_calibration_snapshot()
 
     logger.info(f"Post-mortem complete for trade {trade_id}: R={r_multiple:.2f}x")
 

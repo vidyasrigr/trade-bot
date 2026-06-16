@@ -1,22 +1,25 @@
 """
-Compound Signal Detector — multi-stock, multi-indicator patterns with documented alpha.
+Compound Signal Detector — multi-stock patterns with documented alpha.
 
-Signals:
-  1. Semiconductor Sector Cascade (March 2026 documented — SOX rally preceded by cross-sector call sweeps)
-  2. VIX Spike Buy (April 2025 documented — VIX 17→60 → 35%+ rally, 80%+ win rate historically)
-  3. Beat-and-Raise PEAD — mid/small cap only (<$50B market cap)
-  4. Hyperscaler Lead for Semis (MSFT/GOOGL/META capex beats → NVDA/AMD 2-week lag)
-  5. Analyst Revision Cascade (3+ analysts raise EPS >5% within 7 days)
-  6. Sector Dispersion (Kakushadze 6.3 — short vol on ETF, long vol on components)
+Surviving signals (after 2026-06-14 Phase A cleanup):
+  1. Beat-and-Raise PEAD — mid/small cap only (<$50B market cap) — Bernard & Thomas 1989
+  2. Analyst Revision Cascade (3+ analysts raise EPS >5% within 7 days) — ExtractAlpha
+  3. Sector Dispersion (Kakushadze 6.3 — short vol on ETF, long vol on components)
 
-Each signal fires a Discord alert and saves to compound_signal_events table.
+REMOVED:
+  - VIX Spike Buy (n≈3 episodes — anecdote, not a rule)
+  - Semis Cascade (hardcoded SEMIS_CASCADE_SYMBOLS — hindsight-fit lookup)
+  - Hyperscaler Lead for Semis (hardcoded HYPERSCALER_SYMBOLS + lag dict — same)
+
+The hyperscaler→semis lag and the semis cascade are being rebuilt in Phase D as
+a *learned* supply-chain lead-lag graph computed nightly from the point-in-time
+feature store, replacing the hand-coded dicts.
 """
 
 from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timedelta, date
-from typing import Any
 
 import httpx
 import numpy as np
@@ -26,118 +29,8 @@ from core.config import settings
 from core.redis_client import cache_get, cache_set
 
 
-SEMIS_CASCADE_SYMBOLS = ["NVDA", "AMD", "INTC", "AVGO", "QCOM"]
-HYPERSCALER_SYMBOLS = ["MSFT", "GOOGL", "META"]
-SEMIS_DOWNSTREAM = ["NVDA", "AMD", "AVGO"]  # target when hyperscalers beat on capex
-
-
 # ---------------------------------------------------------------------------
-# Signal 1: Semiconductor Sector Cascade
-# ---------------------------------------------------------------------------
-
-async def check_semis_cascade(
-    options_flow: dict[str, dict],  # {symbol: {call_volume, put_volume, avg_oi, ...}}
-) -> dict | None:
-    """
-    Trigger: 2+ of {NVDA, INTC, AMD, AVGO, QCOM} simultaneously have call sweeps
-    (volume >> OI, at-ask) on same trading day.
-    """
-    cascade_members_firing = []
-
-    for sym in SEMIS_CASCADE_SYMBOLS:
-        flow = options_flow.get(sym, {})
-        call_vol = flow.get("call_volume", 0)
-        avg_call_oi = flow.get("avg_call_oi", 0)
-        call_at_ask_pct = flow.get("call_at_ask_pct", 0)
-
-        if avg_call_oi > 0 and call_vol > avg_call_oi * 1.5 and call_at_ask_pct > 0.6:
-            cascade_members_firing.append(sym)
-
-    if len(cascade_members_firing) >= 2:
-        signal = {
-            "signal_type": "semis_cascade",
-            "symbols": cascade_members_firing,
-            "trigger_details": {
-                "members_firing": cascade_members_firing,
-                "action": f"Consider long SMH or individual semis — 1-2 week timeframe. "
-                          f"Firing: {', '.join(cascade_members_firing)}",
-            },
-            "confidence": min(95.0, 50 + len(cascade_members_firing) * 20),
-        }
-        return signal
-
-    return None
-
-
-# ---------------------------------------------------------------------------
-# Signal 2: VIX Spike Buy
-# ---------------------------------------------------------------------------
-
-async def check_vix_spike_buy() -> dict | None:
-    """
-    Trigger: VIX crosses above 35 from below, having been below 20 within the past 15 trading days.
-    Only for rapid spike (8+ point move in <10 days) — NOT slow creep.
-    Historical win rate: 80%+ for 3-6 month equity long.
-    """
-    cache_key = "vix_spike:history"
-    cached = await cache_get(cache_key)
-    if not cached:
-        return None
-
-    import orjson
-    vix_history: list[float] = orjson.loads(cached)  # last 20 trading days, most recent first
-
-    if len(vix_history) < 15:
-        return None
-
-    current_vix = vix_history[0]
-
-    # Check: current VIX above 35
-    if current_vix < 35:
-        return None
-
-    # Check: was below 20 within last 15 trading days
-    recent = vix_history[1:16]
-    was_below_20 = any(v < 20 for v in recent)
-    if not was_below_20:
-        return None
-
-    # Check: rapid spike (moved 8+ points in <10 days)
-    for i in range(1, 11):
-        if i < len(vix_history) and vix_history[i] < current_vix - 8:
-            was_rapid = True
-            break
-    else:
-        was_rapid = False
-
-    if not was_rapid:
-        return None
-
-    # Dedup: don't fire more than once per week
-    dedup_key = f"compound:vix_spike:{date.today().isocalendar()[1]}"
-    if await cache_get(dedup_key):
-        return None
-    await cache_set(dedup_key, "1", ttl=86400 * 7)
-
-    return {
-        "signal_type": "vix_spike_buy",
-        "symbols": ["SPY", "QQQ"],
-        "trigger_details": {
-            "current_vix": current_vix,
-            "was_below_20_recently": True,
-            "was_rapid_spike": True,
-            "action": (
-                f"VIX spike buy signal — VIX at {current_vix:.1f}, spiked from below 20 rapidly. "
-                "Historical 3-6 month equity long signal (80%+ win rate). "
-                "Consider SPX/QQQ 30-60 DTE calls."
-            ),
-        },
-        "confidence": 80.0,
-    }
-
-
-# ---------------------------------------------------------------------------
-# Signal 3: Beat-and-Raise PEAD (mid/small cap only)
+# Signal: Beat-and-Raise PEAD (mid/small cap only)
 # ---------------------------------------------------------------------------
 
 async def check_beat_and_raise_pead(
@@ -185,59 +78,7 @@ async def check_beat_and_raise_pead(
 
 
 # ---------------------------------------------------------------------------
-# Signal 4: Hyperscaler Lead for Semis
-# ---------------------------------------------------------------------------
-
-async def check_hyperscaler_lead(
-    hyperscaler_symbol: str,
-    capex_actual: float,
-    capex_prior_year: float,
-    eps_beat: bool = False,
-) -> dict | None:
-    """
-    Trigger: MSFT, GOOGL, or META reports earnings with capex guidance raised >10% YoY.
-    This signals GPU demand increase → NVDA, AMD, AVGO benefit 1-2 weeks later.
-    """
-    if hyperscaler_symbol not in HYPERSCALER_SYMBOLS:
-        return None
-
-    if capex_prior_year <= 0:
-        return None
-
-    capex_growth = (capex_actual - capex_prior_year) / capex_prior_year
-    if capex_growth < 0.10:  # <10% YoY capex increase
-        return None
-
-    # Dedup: once per earnings cycle
-    dedup_key = f"compound:hyperscaler:{hyperscaler_symbol}:{date.today().strftime('%Y-Q%q')}"
-    if await cache_get(dedup_key):
-        return None
-    await cache_set(dedup_key, "1", ttl=86400 * 90)
-
-    downstream = SEMIS_DOWNSTREAM.copy()
-    lag_days = {"NVDA": 14, "AMD": 7, "AVGO": 7}
-
-    return {
-        "signal_type": "hyperscaler_lead",
-        "symbols": downstream,
-        "trigger_details": {
-            "hyperscaler": hyperscaler_symbol,
-            "capex_growth_pct": round(capex_growth * 100, 1),
-            "eps_beat": eps_beat,
-            "target_symbols": downstream,
-            "lag_days": lag_days,
-            "action": (
-                f"{hyperscaler_symbol} capex +{capex_growth*100:.0f}% YoY. "
-                f"Semis buy window: {', '.join(downstream)}. "
-                f"NVDA entry window: next 14 days. AMD/AVGO: next 7 days."
-            ),
-        },
-        "confidence": 75.0 + (10.0 if eps_beat else 0.0),
-    }
-
-
-# ---------------------------------------------------------------------------
-# Signal 5: Analyst Revision Cascade
+# Signal: Analyst Revision Cascade
 # ---------------------------------------------------------------------------
 
 async def check_analyst_revision_cascade(
@@ -291,13 +132,13 @@ async def check_analyst_revision_cascade(
 
 
 # ---------------------------------------------------------------------------
-# Signal 6: Sector Dispersion (Kakushadze 6.3)
+# Signal: Sector Dispersion (Kakushadze 6.3)
 # ---------------------------------------------------------------------------
 
 async def check_sector_dispersion(
-    sector_etf: str,     # e.g., "SMH"
-    component_symbols: list[str],  # e.g., ["NVDA", "AMD", "AVGO"]
-    implied_correlation: float | None,  # CBOE COR1M (free)
+    sector_etf: str,
+    component_symbols: list[str],
+    implied_correlation: float | None,
     sector_ivr: float | None,
 ) -> dict | None:
     """
@@ -310,9 +151,7 @@ async def check_sector_dispersion(
     if implied_correlation is None or sector_ivr is None:
         return None
 
-    # CBOE COR1M historical mean ~39.5%, std ~8%
-    # 35th percentile ≈ mean - 0.38*std ≈ 36.5%
-    corr_threshold = 0.365
+    corr_threshold = 0.365  # CBOE COR1M mean ~39.5%, 35th pct ≈ 36.5%
 
     if implied_correlation < corr_threshold or sector_ivr < 50:
         return None
@@ -337,11 +176,10 @@ async def check_sector_dispersion(
 
 
 # ---------------------------------------------------------------------------
-# Discord alert sender
+# Discord alert + DB persistence
 # ---------------------------------------------------------------------------
 
 async def _send_compound_signal_alert(signal: dict) -> None:
-    """Send a compound signal alert to Discord."""
     if not settings.DISCORD_WEBHOOK_URL:
         return
 
@@ -352,10 +190,7 @@ async def _send_compound_signal_alert(signal: dict) -> None:
     action = details.get("action", "")
 
     color_map = {
-        "semis_cascade": 0x00aaff,
-        "vix_spike_buy": 0xff8800,
         "beat_raise_pead": 0x00cc66,
-        "hyperscaler_lead": 0x9966ff,
         "analyst_revision_cascade": 0xffcc00,
         "sector_dispersion": 0x66cccc,
     }
@@ -382,7 +217,6 @@ async def _send_compound_signal_alert(signal: dict) -> None:
 
 
 async def _save_to_db(signal: dict, session=None) -> None:
-    """Persist compound signal to compound_signal_events table."""
     if session is None:
         return
 
@@ -410,45 +244,24 @@ async def _save_to_db(signal: dict, session=None) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Main runner (called by watchlist_agent or scheduler)
+# Main runner
 # ---------------------------------------------------------------------------
 
 async def run_all_compound_checks(
-    options_flow: dict[str, dict] | None = None,
+    options_flow: dict[str, dict] | None = None,  # kept for API compat; no longer used
     session=None,
 ) -> list[dict]:
     """
-    Run all compound signal checks that can be evaluated without per-symbol data.
-    Returns list of fired signals.
+    Run compound signal checks that can fire without per-symbol triggers.
+    Beat-and-raise and analyst-revision-cascade fire from earnings/analyst pipelines.
+    Sector dispersion needs sector-specific input — call check_sector_dispersion() directly.
     """
-    fired: list[dict] = []
-
-    # Signal 1: Semis cascade
-    if options_flow:
-        cascade = await check_semis_cascade(options_flow)
-        if cascade:
-            fired.append(cascade)
-
-    # Signal 2: VIX spike
-    vix_signal = await check_vix_spike_buy()
-    if vix_signal:
-        fired.append(vix_signal)
-
-    # Fire alerts and persist
-    for signal in fired:
-        await asyncio.gather(
-            _send_compound_signal_alert(signal),
-            _save_to_db(signal, session),
-        )
-
-    if fired:
-        logger.info(f"Compound signals fired: {[s['signal_type'] for s in fired]}")
-
-    return fired
+    _ = options_flow  # placeholder; cascade signal removed in Phase A cleanup
+    return []
 
 
 # ---------------------------------------------------------------------------
-# Individual checkers called from watchlist_agent or earnings pipeline
+# Individual checkers called from earnings / analyst pipelines
 # ---------------------------------------------------------------------------
 
 async def fire_beat_and_raise(symbol: str, market_cap: float,
@@ -460,19 +273,6 @@ async def fire_beat_and_raise(symbol: str, market_cap: float,
     signal = await check_beat_and_raise_pead(
         symbol, market_cap, eps_actual, eps_estimate, rev_actual, rev_estimate, raised_guidance
     )
-    if signal:
-        await asyncio.gather(
-            _send_compound_signal_alert(signal),
-            _save_to_db(signal, session),
-        )
-    return signal
-
-
-async def fire_hyperscaler_lead(hyperscaler: str, capex_actual: float,
-                                 capex_prior: float, eps_beat: bool = False,
-                                 session=None) -> dict | None:
-    """Called by earnings pipeline when a hyperscaler (MSFT/GOOGL/META) reports."""
-    signal = await check_hyperscaler_lead(hyperscaler, capex_actual, capex_prior, eps_beat)
     if signal:
         await asyncio.gather(
             _send_compound_signal_alert(signal),

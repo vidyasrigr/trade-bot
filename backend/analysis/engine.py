@@ -55,6 +55,7 @@ class AnalysisResult:
     direction: str = "neutral"
     vol_regime: str = "unknown"
     iv_percentile: float | None = None
+    underlying_price: float | None = None
     category_scores: dict[str, CategoryScore] = field(default_factory=dict)
     trade_thesis: str = ""
     catalyst_flags: list[str] = field(default_factory=list)
@@ -72,6 +73,7 @@ class AnalysisResult:
             "direction": self.direction,
             "vol_regime": self.vol_regime,
             "iv_percentile": self.iv_percentile,
+            "underlying_price": self.underlying_price,
             "category_scores": {
                 k: {
                     "name": v.name,
@@ -92,25 +94,31 @@ class AnalysisResult:
         }
 
 
-# Category weights
+# Category weights — re-normalized 2026-06-15 to sum to exactly 100.
+# These are *initial priors*. The LightGBM cross-sectional ranker (Phase E)
+# learns the empirical weights from forward returns; until it has enough
+# training data, these priors drive the conviction score.
+# Previous version summed to 102 (hand-tuned, off-by-2).
 CATEGORY_WEIGHTS = {
-    "macro":              8.0,
-    "calendar":           7.0,
-    "fundamental":        8.0,
-    "trend":             10.0,
-    "support_resistance": 8.0,
-    "candles":            7.0,
-    "chart_patterns":     7.0,
-    "momentum":           7.0,
-    "iv_analysis":       12.0,
-    "options_chain":     10.0,
+    "macro":              6.0,
+    "calendar":           6.0,
+    "fundamental":        7.0,
+    "trend":              9.0,
+    "support_resistance": 7.0,
+    "candles":            5.0,
+    "chart_patterns":     6.0,
+    "momentum":           6.0,
+    "iv_analysis":       11.0,
+    "options_chain":      9.0,
     "greeks":             8.0,
     "trade_structure":    5.0,
     "sentiment":          5.0,
     "liquidity":          5.0,
-    "dow_bias":           4.0,
     "risk":               5.0,
 }
+assert sum(CATEGORY_WEIGHTS.values()) == 100, (
+    f"CATEGORY_WEIGHTS must sum to 100, got {sum(CATEGORY_WEIGHTS.values())}"
+)
 
 
 async def run_analysis(symbol: str, context: dict | None = None) -> AnalysisResult:
@@ -127,6 +135,8 @@ async def run_analysis(symbol: str, context: dict | None = None) -> AnalysisResu
     if not q.is_valid or df.empty:
         logger.warning(f"Data quality failed for {symbol}: {q.issues}")
         return result
+
+    result.underlying_price = float(df["close"].iloc[-1])
 
     # Fetch options data
     tradier = get_tradier()
@@ -153,7 +163,6 @@ async def run_analysis(symbol: str, context: dict | None = None) -> AnalysisResu
         trade_structure_analysis as ts_mod,
         sentiment as sent_mod,
         liquidity as liq_mod,
-        dow_bias as dow_mod,
         risk as risk_mod,
         gex_dex as gex_mod,
         options_flow as flow_mod,
@@ -177,7 +186,6 @@ async def run_analysis(symbol: str, context: dict | None = None) -> AnalysisResu
         "trade_structure":    ts_mod.analyze(symbol, df, chain),
         "sentiment":          sent_mod.analyze(symbol, df, chain),
         "liquidity":          liq_mod.analyze(symbol, df, chain),
-        "dow_bias":           dow_mod.analyze(symbol, df),
         "risk":               risk_mod.analyze(symbol, df),
         "gex_dex":            gex_mod.analyze(symbol, df, chain),
         "options_flow":       flow_mod.analyze(symbol, df, chain),
@@ -187,18 +195,24 @@ async def run_analysis(symbol: str, context: dict | None = None) -> AnalysisResu
 
     task_results = await asyncio.gather(*tasks.values(), return_exceptions=True)
 
+    # Failed analyzers contribute ZERO — scoring them 5/10 neutral inflated
+    # data-poor symbols (a symbol with every analyzer down used to score 50/100).
+    analyzer_failures: list[str] = []
     for key, task_result in zip(tasks.keys(), task_results):
         if isinstance(task_result, Exception):
             logger.debug(f"Analyzer {key} failed for {symbol}: {task_result}")
             weight = CATEGORY_WEIGHTS.get(key, 5.0)
+            analyzer_failures.append(key)
             result.category_scores[key] = CategoryScore(
-                name=key, weight=weight, raw_score=5.0,
-                weighted_score=weight * 0.5,
+                name=key, weight=weight, raw_score=0.0,
+                weighted_score=0.0,
                 direction="neutral", signals=[],
                 summary=f"Analyzer unavailable: {type(task_result).__name__}",
             )
         else:
             result.category_scores[key] = task_result
+    if analyzer_failures:
+        result.data_quality["analyzer_failures"] = analyzer_failures
 
     # Compute total score
     total = sum(c.weighted_score for c in result.category_scores.values())

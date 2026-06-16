@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
-import { INFLUENCERS_DATA } from "@/lib/mockData";
+import { proxyJson } from "@/lib/backendProxy";
 
 export async function GET() {
-  return NextResponse.json(INFLUENCERS_DATA);
+  return proxyJson("/influencers");
 }

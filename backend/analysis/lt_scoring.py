@@ -447,12 +447,27 @@ async def score_stock(
     momentum_positive: bool = True,
     ivr: float | None = None,
     high_52w: float | None = None,
+    *,
+    as_of: str | None = None,
 ) -> LTScore:
     """
     Compute full LT score for a symbol.
     Fetches all needed FMP data internally.
+
+    POINT-IN-TIME (as_of):
+      When None (default), this returns TODAY's score using TODAY's FMP data.
+      For backtests, pass an ISO date string ("YYYY-MM-DD") and we filter
+      cached statements to only include those whose `date` (publication date)
+      is on or before as_of. This prevents the catastrophic leakage of
+      backtesting a fundamental signal with restated numbers from the future.
+
+      The FMP free tier doesn't expose a true point-in-time endpoint, so we
+      rely on the `date` and `acceptedDate` fields it does include. For best
+      results, pair with FMP's premium "/v4/historical-key-metrics" once you
+      have a paid key.
     """
-    cache_key = f"lt_score:{symbol}"
+    cache_suffix = f":{as_of}" if as_of else ""
+    cache_key = f"lt_score:{symbol}{cache_suffix}"
     cached = await cache_get(cache_key)
     if cached:
         import orjson
@@ -478,12 +493,26 @@ async def score_stock(
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
-    inc_data = results[0] if isinstance(results[0], list) else []
-    bs_data = results[1] if isinstance(results[1], list) else []
-    cf_data = results[2] if isinstance(results[2], list) else []
-    km_data = results[3] if isinstance(results[3], list) else []
-    ae_data = results[4] if isinstance(results[4], list) else []
-    insider_data = results[5] if isinstance(results[5], list) else []
+
+    def _pit(rows, as_of):
+        """Drop statements that wouldn't have been known by `as_of`."""
+        if not as_of or not isinstance(rows, list):
+            return rows if isinstance(rows, list) else []
+        kept = []
+        for r in rows:
+            if not isinstance(r, dict):
+                continue
+            d = r.get("acceptedDate") or r.get("date") or r.get("fillingDate") or ""
+            if str(d)[:10] <= as_of:
+                kept.append(r)
+        return kept
+
+    inc_data = _pit(results[0], as_of)
+    bs_data = _pit(results[1], as_of)
+    cf_data = _pit(results[2], as_of)
+    km_data = _pit(results[3], as_of)
+    ae_data = _pit(results[4], as_of)
+    insider_data = _pit(results[5], as_of)
 
     # ── Extract metrics ───────────────────────────────────────────────────────
 

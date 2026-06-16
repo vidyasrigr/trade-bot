@@ -31,6 +31,21 @@ async def detect_catalysts() -> list[dict]:
     news_events = await _scan_news_catalysts(universe[:200])
     events.extend(news_events)
 
+    # 3. Earnings beat-and-raise compound signal (Phase H.8) —
+    # iterate today's earnings releases and fire PEAD signal for mid/small caps.
+    try:
+        earnings_events = await _fire_earnings_compound_signals(universe[:200])
+        events.extend(earnings_events)
+    except Exception as e:
+        logger.debug(f"earnings compound signals skipped: {e}")
+
+    # 4. Analyst-revision cascade (Phase H.8) — for symbols with recent revisions.
+    try:
+        revision_events = await _fire_revision_compound_signals(universe[:200])
+        events.extend(revision_events)
+    except Exception as e:
+        logger.debug(f"revision compound signals skipped: {e}")
+
     # Persist to DB
     await _persist_events(events)
 
@@ -41,6 +56,118 @@ async def detect_catalysts() -> list[dict]:
 
     logger.info(f"Catalyst detection complete: {len(events)} events")
     return events
+
+
+async def _fire_earnings_compound_signals(symbols: list[str]) -> list[dict]:
+    """
+    For each symbol that reported earnings in the last 2 trading days, fetch the
+    actuals + estimates and fire the beat_and_raise PEAD signal.
+    """
+    from core.config import settings
+    from agents.compound_signals import fire_beat_and_raise
+    from core.database import AsyncSessionLocal
+
+    if not settings.FMP_API_KEY:
+        return []
+
+    import httpx
+    fired: list[dict] = []
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for sym in symbols:
+            try:
+                # FMP earning-surprise — most recent quarter
+                resp = await client.get(
+                    f"https://financialmodelingprep.com/api/v3/earnings-surprises/{sym}",
+                    params={"apikey": settings.FMP_API_KEY},
+                )
+                data = resp.json() if resp.status_code == 200 else []
+                if not isinstance(data, list) or not data:
+                    continue
+                recent = data[0]
+                from datetime import date as _date, datetime as _dt, timedelta
+                event_date_str = recent.get("date") or ""
+                try:
+                    event_date = _dt.strptime(event_date_str[:10], "%Y-%m-%d").date()
+                except ValueError:
+                    continue
+                if (_date.today() - event_date) > timedelta(days=2):
+                    continue
+                eps_actual = float(recent.get("actualEarningResult") or 0)
+                eps_estimate = float(recent.get("estimatedEarning") or 0)
+                if eps_estimate == 0:
+                    continue
+
+                # Pull profile for market cap
+                profile_resp = await client.get(
+                    f"https://financialmodelingprep.com/api/v3/profile/{sym}",
+                    params={"apikey": settings.FMP_API_KEY},
+                )
+                profile = profile_resp.json() if profile_resp.status_code == 200 else []
+                market_cap = float(profile[0].get("mktCap", 0)) if profile else 0
+                if market_cap == 0:
+                    continue
+
+                async with AsyncSessionLocal() as session:
+                    signal = await fire_beat_and_raise(
+                        symbol=sym, market_cap=market_cap,
+                        eps_actual=eps_actual, eps_estimate=eps_estimate,
+                        # FMP earnings-surprises doesn't carry revenue actual/est —
+                        # treat as zeros (the function gates on either rev beat OR
+                        # raised_guidance; with both unknown the signal only fires
+                        # on a strong EPS beat).
+                        rev_actual=0, rev_estimate=0, raised_guidance=False,
+                        session=session,
+                    )
+                if signal:
+                    fired.append(signal)
+            except Exception as e:
+                logger.debug(f"earnings compound signal failed for {sym}: {e}")
+    return fired
+
+
+async def _fire_revision_compound_signals(symbols: list[str]) -> list[dict]:
+    """
+    For each symbol, pull recent analyst price-target / EPS revisions from FMP
+    and fire the revision-cascade signal when 3+ revisions cleared the threshold.
+    """
+    from core.config import settings
+    from agents.compound_signals import fire_revision_cascade
+    from core.database import AsyncSessionLocal
+
+    if not settings.FMP_API_KEY:
+        return []
+
+    import httpx
+    fired: list[dict] = []
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for sym in symbols:
+            try:
+                resp = await client.get(
+                    f"https://financialmodelingprep.com/api/v4/upgrades-downgrades",
+                    params={"symbol": sym, "apikey": settings.FMP_API_KEY},
+                )
+                data = resp.json() if resp.status_code == 200 else []
+                if not isinstance(data, list) or not data:
+                    continue
+                # Convert to the shape check_analyst_revision_cascade expects
+                revisions = []
+                for r in data[:20]:
+                    if not isinstance(r, dict):
+                        continue
+                    revisions.append({
+                        "analyst": r.get("analystName") or r.get("gradingCompany") or "",
+                        "firm": r.get("gradingCompany") or "",
+                        "old_eps": 0.0, "new_eps": 0.0,
+                        "direction": "up" if "upgrade" in str(r.get("action", "")).lower() else "neutral",
+                        "date": (r.get("publishedDate") or r.get("date") or "")[:10],
+                    })
+                async with AsyncSessionLocal() as session:
+                    signal = await fire_revision_cascade(sym, revisions, session=session)
+                if signal:
+                    fired.append(signal)
+            except Exception as e:
+                logger.debug(f"revision compound signal failed for {sym}: {e}")
+    return fired
 
 
 async def get_catalyst_flags(symbol: str) -> dict:
@@ -81,6 +208,13 @@ async def get_catalyst_flags(symbol: str) -> dict:
             }
     except Exception:
         flags = {"score_delta": 0, "yt_mentions_this_week": 0}
+
+    # Phase D.3: layer in pre-FOMC drift state (gated by SPX RV).
+    try:
+        from analysis.fomc_drift import apply_pre_fomc_overlay
+        await apply_pre_fomc_overlay(flags)
+    except Exception as e:
+        logger.debug(f"pre-fomc overlay skipped: {e}")
 
     await cache_set(f"catalyst:{symbol}", orjson.dumps(flags).decode(), ttl=1800)
     return flags

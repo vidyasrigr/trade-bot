@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
+import { proxyJson } from "@/lib/backendProxy";
 
 export async function DELETE(_req: Request, { params }: { params: { symbol: string } }) {
-  return NextResponse.json({ ok: true, symbol: params.symbol.toUpperCase() });
+  return proxyJson(`/watchlist/${params.symbol.toUpperCase()}`, { method: "DELETE" });
 }

@@ -294,15 +294,35 @@ class NullTradierClient:
         return None
 
 
-_client: TradierClient | NullTradierClient | None = None
+_client = None
 
 
-def get_tradier() -> TradierClient | NullTradierClient:
+def get_tradier():
+    """
+    Returns the active options-data client. Preference order:
+
+      1. MarketDataClient  — when MARKETDATA_API_KEY is set. Supports historical
+         chains via date= parameter (1 credit per 1000 contracts), eliminating
+         the ThetaData dependency for backtests.
+      2. TradierClient     — when TRADIER_API_KEY is set. Live chains only.
+      3. NullTradierClient — graceful degradation; options features return [].
+
+    The name `get_tradier` is kept for backwards compatibility — callers don't
+    need to change. All three return the same Tradier-shaped per-contract dicts.
+    """
     global _client
     if _client is None:
-        if not settings.TRADIER_API_KEY:
-            logger.warning("TRADIER_API_KEY not set — using NullTradierClient (options features disabled)")
-            _client = NullTradierClient()
-        else:
+        if settings.MARKETDATA_API_KEY:
+            from data.marketdata import MarketDataClient
+            logger.info("Options data: MarketData.app (historical chains supported)")
+            _client = MarketDataClient()
+        elif settings.TRADIER_API_KEY:
+            logger.info("Options data: Tradier sandbox (live chains only, no history)")
             _client = TradierClient()
+        else:
+            logger.warning(
+                "Neither MARKETDATA_API_KEY nor TRADIER_API_KEY set — "
+                "using NullTradierClient (options features disabled)"
+            )
+            _client = NullTradierClient()
     return _client

@@ -11,7 +11,8 @@ const API_ROOT = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
 
 interface Pick {
   symbol: string; sector?: string; total_score: number; conviction_score: number;
-  direction: "bullish" | "bearish" | "neutral"; stream: "alpha" | "income";
+  direction: "bullish" | "bearish" | "neutral";
+  stream: "alpha" | "income" | "premium_buying" | "premium_selling" | "neutral";
   order_ticket?: { strategy?: string; expiry?: string; strike?: number };
   trade_thesis?: string; price?: number; change_pct?: number;
   projected_profit?: number; max_loss?: number;
@@ -300,8 +301,8 @@ export default function DashboardPage() {
                               <DirSymbol d={p.direction} />
                             </div>
                             <div className="text-gray-700 text-[10px] mt-0.5 flex items-center gap-1.5">
-                              <span className={p.stream === "alpha" ? "text-purple-500" : "text-emerald-600"}>
-                                {p.stream === "alpha" ? "α" : "$"}
+                              <span className={(p.stream === "alpha" || p.stream === "premium_buying") ? "text-purple-500" : "text-emerald-600"}>
+                                {(p.stream === "alpha" || p.stream === "premium_buying") ? "α" : "$"}
                               </span>
                               {p.sector?.split(" ")[0]}
                             </div>

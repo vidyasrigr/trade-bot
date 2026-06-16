@@ -17,6 +17,7 @@ from api.routes import router
 from api.auth_routes import router as auth_router
 from api.lt_routes import router as lt_router
 from api.portfolio_import import router as portfolio_router
+from api.signals import get_router as get_signals_router
 from core.config import settings
 from core.database import init_db, close_db
 from core.redis_client import init_redis, close_redis
@@ -45,6 +46,87 @@ async def lifespan(app: FastAPI):
         run_nightly_scan,
         CronTrigger(hour=18, minute=0, timezone="America/New_York"),
         id="nightly_scan",
+        replace_existing=True,
+    )
+
+    # Nightly cross-sectional ranking (Phase C): 6:30 PM ET, after scan
+    scheduler.add_job(
+        run_nightly_cross_section,
+        CronTrigger(hour=18, minute=30, timezone="America/New_York"),
+        id="nightly_cross_section",
+        replace_existing=True,
+    )
+
+    # Nightly insider opportunistic-buy detector (Phase D.1): 6:45 PM ET
+    scheduler.add_job(
+        run_nightly_insider_flow,
+        CronTrigger(hour=18, minute=45, timezone="America/New_York"),
+        id="nightly_insider_flow",
+        replace_existing=True,
+    )
+
+    # Nightly supply-chain lead-lag graph rebuild (Phase D.2): 7:15 PM ET
+    scheduler.add_job(
+        run_nightly_lead_lag,
+        CronTrigger(hour=19, minute=15, timezone="America/New_York"),
+        id="nightly_lead_lag",
+        replace_existing=True,
+    )
+
+    # Nightly Markov regime forecast (Phase G.2): 7:30 PM ET
+    scheduler.add_job(
+        run_nightly_regime_markov,
+        CronTrigger(hour=19, minute=30, timezone="America/New_York"),
+        id="nightly_regime_markov",
+        replace_existing=True,
+    )
+
+    # Nightly whale flow (Phase I.2): 6:50 PM ET (after scan completes; uses chains)
+    scheduler.add_job(
+        run_nightly_whale_flow,
+        CronTrigger(hour=18, minute=50, timezone="America/New_York"),
+        id="nightly_whale_flow",
+        replace_existing=True,
+    )
+
+    # Nightly short squeeze detector (Phase I.3): 8:00 PM ET
+    scheduler.add_job(
+        run_nightly_short_squeeze,
+        CronTrigger(hour=20, minute=0, timezone="America/New_York"),
+        id="nightly_short_squeeze",
+        replace_existing=True,
+    )
+
+    # Reddit sentiment (Phase I.4): every 3 hours during US trading + once nightly
+    scheduler.add_job(
+        run_reddit_sentiment,
+        CronTrigger(hour="9,12,15,20", timezone="America/New_York"),
+        id="reddit_sentiment",
+        replace_existing=True,
+    )
+
+    # Signal registry audit (Phase K): nightly at 11 PM ET so the morning
+    # briefing has a fresh "all clear" or "🔴 contamination detected" flag.
+    scheduler.add_job(
+        run_nightly_signal_audit,
+        CronTrigger(hour=23, minute=0, timezone="America/New_York"),
+        id="signal_audit",
+        replace_existing=True,
+    )
+
+    # Weekly LightGBM ranker retrain (Phase E): Sunday 10 PM ET
+    scheduler.add_job(
+        run_weekly_ranker_retrain,
+        CronTrigger(day_of_week="sun", hour=22, timezone="America/New_York"),
+        id="weekly_ranker_retrain",
+        replace_existing=True,
+    )
+
+    # Daily 3-stream briefing (Phase F): 8:00 AM ET Mon-Fri
+    scheduler.add_job(
+        run_daily_briefing,
+        CronTrigger(day_of_week="mon-fri", hour=8, minute=0, timezone="America/New_York"),
+        id="daily_briefing",
         replace_existing=True,
     )
 
@@ -120,6 +202,107 @@ async def run_nightly_scan():
         await run_scan()
     except Exception as e:
         logger.error(f"Nightly scan failed: {e}")
+
+
+async def run_nightly_cross_section():
+    from analysis.cross_section_job import run_cross_section_job
+    try:
+        counts = await run_cross_section_job()
+        logger.info(f"Cross-section job complete: {counts}")
+    except Exception as e:
+        logger.error(f"Cross-section job failed: {e}")
+
+
+async def run_nightly_insider_flow():
+    from analysis.insider_flow import run_insider_flow_job
+    try:
+        await run_insider_flow_job()
+    except Exception as e:
+        logger.error(f"Insider-flow job failed: {e}")
+
+
+async def run_nightly_lead_lag():
+    from analysis.lead_lag import run_lead_lag_job
+    try:
+        await run_lead_lag_job()
+    except Exception as e:
+        logger.error(f"Lead-lag rebuild failed: {e}")
+
+
+async def run_nightly_regime_markov():
+    from analysis.regime_markov import run_regime_markov_job
+    try:
+        await run_regime_markov_job()
+    except Exception as e:
+        logger.error(f"Regime Markov job failed: {e}")
+
+
+async def run_nightly_whale_flow():
+    from analysis.whale_flow import run_whale_flow_job
+    try:
+        await run_whale_flow_job()
+    except Exception as e:
+        logger.error(f"Whale flow job failed: {e}")
+
+
+async def run_nightly_short_squeeze():
+    from analysis.short_squeeze import run_short_squeeze_job
+    try:
+        await run_short_squeeze_job()
+    except Exception as e:
+        logger.error(f"Short squeeze job failed: {e}")
+
+
+async def run_reddit_sentiment():
+    from analysis.reddit_sentiment import run_reddit_sentiment_job
+    try:
+        await run_reddit_sentiment_job()
+    except Exception as e:
+        logger.error(f"Reddit sentiment job failed: {e}")
+
+
+async def run_nightly_signal_audit():
+    """Nightly contamination check — fires Discord alert on any critical finding."""
+    from scoring.signal_registry import run_audit, format_audit_report
+    try:
+        report = await run_audit()
+        text = format_audit_report(report)
+        if report.critical_count > 0:
+            logger.error(f"SIGNAL AUDIT FAILED — {report.critical_count} critical\n{text}")
+            try:
+                import httpx
+                from core.config import settings
+                if settings.DISCORD_WEBHOOK_URL:
+                    async with httpx.AsyncClient(timeout=5.0) as client:
+                        await client.post(settings.DISCORD_WEBHOOK_URL, json={
+                            "embeds": [{
+                                "title": f"🔴 Signal contamination — {report.critical_count} critical",
+                                "description": f"```\n{text[:1900]}\n```",
+                                "color": 0xFF3333,
+                            }]
+                        })
+            except Exception:
+                pass
+        else:
+            logger.info(f"Signal audit clean ({report.warning_count} warnings)")
+    except Exception as e:
+        logger.error(f"Signal audit failed: {e}")
+
+
+async def run_weekly_ranker_retrain():
+    from scoring.ranker import retrain_ranker
+    try:
+        await retrain_ranker()
+    except Exception as e:
+        logger.error(f"Ranker retrain failed: {e}")
+
+
+async def run_daily_briefing():
+    from api.briefing import build_and_send_briefing
+    try:
+        await build_and_send_briefing()
+    except Exception as e:
+        logger.error(f"Daily briefing failed: {e}")
 
 
 async def run_position_monitor():
@@ -242,6 +425,7 @@ app.include_router(auth_router)
 app.include_router(router, prefix="/api")
 app.include_router(lt_router)
 app.include_router(portfolio_router)
+app.include_router(get_signals_router(), prefix="/api")
 
 
 @app.get("/health")

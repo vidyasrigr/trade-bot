@@ -17,7 +17,7 @@ interface ScanResult {
   iv_percentile: number;
   trade_thesis: string;
   catalyst_flags: Record<string, unknown>;
-  stream: "alpha" | "income";
+  stream: "alpha" | "income" | "premium_buying" | "premium_selling" | "neutral";
   order_ticket: {
     strategy: string;
     expiry: string;
@@ -28,6 +28,13 @@ interface ScanResult {
 }
 
 type StreamFilter = "all" | "alpha" | "income";
+
+// Map the new regime-correct stream names back to the legacy filter values
+function streamFilterKey(s: string): "alpha" | "income" | "neutral" {
+  if (s === "premium_buying" || s === "alpha") return "alpha";
+  if (s === "premium_selling" || s === "income") return "income";
+  return "neutral";
+}
 
 export default function ScannerPage() {
   const [results, setResults] = useState<ScanResult[]>([]);
@@ -55,9 +62,12 @@ export default function ScannerPage() {
 
   useEffect(() => { fetchResults(); }, []);
 
-  const filtered = streamFilter === "all" ? results : results.filter(r => r.stream === streamFilter);
-  const alphaCount = results.filter(r => r.stream === "alpha").length;
-  const incomeCount = results.filter(r => r.stream === "income").length;
+  const filtered =
+    streamFilter === "all"
+      ? results
+      : results.filter(r => streamFilterKey(r.stream) === streamFilter);
+  const alphaCount = results.filter(r => streamFilterKey(r.stream) === "alpha").length;
+  const incomeCount = results.filter(r => streamFilterKey(r.stream) === "income").length;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -147,7 +157,7 @@ export default function ScannerPage() {
               key={r.symbol}
               href={`/analysis/${r.symbol}`}
               className={`block bg-gray-900 rounded-xl p-4 transition cursor-pointer border ${
-                r.stream === "alpha"
+                streamFilterKey(r.stream) === "alpha"
                   ? "border-purple-900/60 hover:border-purple-700"
                   : "border-emerald-900/50 hover:border-emerald-700"
               }`}
@@ -156,7 +166,7 @@ export default function ScannerPage() {
                 <div className="w-6 text-gray-600 font-mono text-sm">#{i + 1}</div>
 
                 {/* Stream badge */}
-                <StreamBadge stream={r.stream} />
+                <StreamBadge stream={streamFilterKey(r.stream) === "alpha" ? "alpha" : "income"} />
 
                 {/* Symbol */}
                 <div className="w-24">

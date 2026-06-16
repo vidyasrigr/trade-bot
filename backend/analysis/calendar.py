@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+import re
+from datetime import date, datetime, timedelta
 from calendar import monthcalendar
 
+import feedparser
 import httpx
 import pandas as pd
 from loguru import logger
@@ -19,35 +21,87 @@ MONTHLY_BIAS = {
     11: 1.2, 12: 1.0,  # Santa rally
 }
 
-# Day of week return bias (0=Mon, 4=Fri)
-DOW_BIAS = {0: -0.1, 1: 0.2, 2: 0.1, 3: 0.1, 4: 0.0}
+# Per-name DoW seasonality is computed in scoring/cross_section.py (Phase C) with
+# significance gating; the global S&P 500 DoW averages used to live here as a
+# proxy for every stock, which Fable correctly called out as overfitting noise.
 
-# FOMC meeting dates 2026 (manually maintained; update annually)
-# Source: Federal Reserve (free, public)
-FOMC_DATES_2026 = [
-    date(2026, 1, 28), date(2026, 1, 29),
-    date(2026, 3, 18), date(2026, 3, 19),
-    date(2026, 5, 6),  date(2026, 5, 7),
-    date(2026, 6, 17), date(2026, 6, 18),
-    date(2026, 7, 28), date(2026, 7, 29),
-    date(2026, 9, 15), date(2026, 9, 16),
-    date(2026, 10, 27), date(2026, 10, 28),
-    date(2026, 12, 15), date(2026, 12, 16),
-]
+# FOMC + CPI dates are fetched DYNAMICALLY (2026-06-14, Phase A).
+# Previously hardcoded for 2026 only — would silently stop working on 2027-01-01.
+# Sources: federalreserve.gov FOMC RSS + manual seed for CPI (BLS calendar is JSON).
 
-# CPI release schedule 2026 (BLS.gov, free)
-CPI_DATES_2026 = [
+FOMC_RSS_URL = "https://www.federalreserve.gov/feeds/fomc.xml"
+_FOMC_CACHE_KEY = "calendar:fomc_dates_v2"
+_FOMC_CACHE_TTL = 86400 * 7  # 7 days — Fed announces a year in advance
+
+# CPI release schedule. BLS publishes one calendar per year and shifts only by
+# 1-2 days year-over-year; ship the current rolling window and update yearly.
+# This list is intentionally small + extends one year forward each January.
+_CPI_FALLBACK_DATES = [
     date(2026, 1, 14), date(2026, 2, 11), date(2026, 3, 11),
     date(2026, 4, 10), date(2026, 5, 13), date(2026, 6, 10),
     date(2026, 7, 15), date(2026, 8, 12), date(2026, 9, 11),
     date(2026, 10, 14), date(2026, 11, 12), date(2026, 12, 11),
+    date(2027, 1, 13), date(2027, 2, 11), date(2027, 3, 11),
 ]
 
-# Combine all macro event dates
-ALL_MACRO_EVENTS: list[tuple[date, str]] = (
-    [(d, "FOMC") for d in FOMC_DATES_2026] +
-    [(d, "CPI") for d in CPI_DATES_2026]
-)
+
+async def get_fomc_dates() -> list[date]:
+    """
+    Pull upcoming FOMC meeting dates from the Federal Reserve FOMC RSS feed.
+    Caches the parsed result in Redis for 7 days. Falls back to an empty list
+    on parse failure — calendar.py downgrades to month-bias only in that case.
+    """
+    cached = await cache_get(_FOMC_CACHE_KEY)
+    if cached:
+        import orjson
+        return [date.fromisoformat(s) for s in orjson.loads(cached)]
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                FOMC_RSS_URL,
+                headers={"User-Agent": "TradingResearch fomc-calendar (vidyasrigr@gmail.com)"},
+                follow_redirects=True,
+            )
+            resp.raise_for_status()
+            feed = feedparser.parse(resp.text)
+    except Exception as e:
+        logger.warning(f"FOMC RSS fetch failed, calendar overlays disabled until next attempt: {e}")
+        return []
+
+    # FOMC items have titles like "FOMC Statement" / "Minutes of the Federal
+    # Open Market Committee, March 19-20, 2026" or summaries with explicit dates.
+    # Parse any "Month DD, YYYY" or "Month DD-DD, YYYY" we can find.
+    pattern = re.compile(
+        r"(January|February|March|April|May|June|July|August|"
+        r"September|October|November|December)\s+"
+        r"(\d{1,2})(?:[-–]\d{1,2})?,\s+(\d{4})"
+    )
+    dates: set[date] = set()
+    for entry in feed.entries[:60]:
+        haystack = " ".join(filter(None, [entry.get("title", ""), entry.get("summary", "")]))
+        for m in pattern.finditer(haystack):
+            try:
+                month_name, day_str, year_str = m.groups()
+                parsed = datetime.strptime(f"{month_name} {day_str} {year_str}", "%B %d %Y").date()
+                # Only retain dates from this year forward — older entries are minutes
+                if parsed >= date.today().replace(month=1, day=1):
+                    dates.add(parsed)
+            except ValueError:
+                continue
+
+    result = sorted(dates)
+    if result:
+        import orjson
+        await cache_set(_FOMC_CACHE_KEY, orjson.dumps([d.isoformat() for d in result]).decode(),
+                         ttl=_FOMC_CACHE_TTL)
+    return result
+
+
+async def _all_macro_events() -> list[tuple[date, str]]:
+    """FOMC (dynamic) + CPI (fallback list) combined."""
+    fomc = await get_fomc_dates()
+    return [(d, "FOMC") for d in fomc] + [(d, "CPI") for d in _CPI_FALLBACK_DATES]
 
 
 # ---------------------------------------------------------------------------
@@ -61,11 +115,11 @@ def _days_to_next_event(event_dates: list[date], today: date) -> int | None:
     return None
 
 
-def _find_upcoming_events(today: date, lookahead_days: int = 21) -> list[dict]:
+async def _find_upcoming_events(today: date, lookahead_days: int = 21) -> list[dict]:
     """Find all macro events within the next `lookahead_days`."""
     window_end = today + timedelta(days=lookahead_days)
     events = []
-    for event_date, event_type in ALL_MACRO_EVENTS:
+    for event_date, event_type in await _all_macro_events():
         if today <= event_date <= window_end:
             events.append({
                 "type": event_type,
@@ -137,10 +191,9 @@ async def analyze(symbol: str, df: pd.DataFrame) -> CategoryScore:
     dow = today.weekday()
 
     month_bias = MONTHLY_BIAS.get(month, 0)
-    dow_bias = DOW_BIAS.get(dow, 0)
+    _ = dow  # reserved for per-name DoW signal in Phase C; no global bias applied
 
     signals.append({"name": "month_seasonality", "month": month, "bias": month_bias})
-    signals.append({"name": "day_of_week", "dow": dow, "bias": dow_bias})
 
     if month_bias > 0.5:
         score += 1
@@ -192,7 +245,7 @@ async def analyze(symbol: str, df: pd.DataFrame) -> CategoryScore:
             score += 0.5
 
     # ── FOMC and macro events ──────────────────────────────────────────────
-    upcoming_events = _find_upcoming_events(today, lookahead_days=21)
+    upcoming_events = await _find_upcoming_events(today, lookahead_days=21)
     for event in upcoming_events:
         days = event["days_away"]
         etype = event["type"]
@@ -223,7 +276,7 @@ async def analyze(symbol: str, df: pd.DataFrame) -> CategoryScore:
 
     score = max(0.0, min(10.0, score))
 
-    summary_parts = [f"Month bias={month_bias}, DOW bias={dow_bias}"]
+    summary_parts = [f"Month bias={month_bias}"]
     if earnings_date:
         days_to_e = (earnings_date - today).days
         summary_parts.append(f"Earnings in {days_to_e}d")

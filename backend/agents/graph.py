@@ -44,6 +44,7 @@ class AgentState(TypedDict):
     total_score: float
     direction: str
     vol_regime: str
+    underlying_price: float
 
 
 # ── JSON schemas for Anthropic tool_use structured output ───────────────────
@@ -69,16 +70,42 @@ async def run_analysis_graph(stage3_item: dict, cross_context: str) -> dict:
         logger.info(f"[{symbol}] Score {analysis.total_score:.0f} < {_MIN_SCORE_FOR_ANALYSIS} — skipping LLM agents")
         return _skip_result(symbol, analysis, stage3_item, reason="Score below minimum threshold")
 
-    # Step 2: Retrieve memory, DNA, LT context in parallel
-    memory_context, dna_context, lt_context = await asyncio.gather(
+    # Step 2: Retrieve memory, DNA, LT context, cross-section ranks in parallel
+    memory_context, dna_context, lt_result, ranks_context = await asyncio.gather(
         _retrieve_memory(symbol, analysis),
         _get_dna_context(symbol),
         _get_lt_context(symbol),
+        _get_cross_section_ranks(symbol),
         return_exceptions=True,
     )
     memory_context = "" if isinstance(memory_context, Exception) else memory_context
     dna_context = "" if isinstance(dna_context, Exception) else dna_context
-    lt_context = "" if isinstance(lt_context, Exception) else lt_context
+    ranks_context = "" if isinstance(ranks_context, Exception) else ranks_context
+    lt_context, lt_score, lt_tier = (
+        ("", None, None) if isinstance(lt_result, Exception) else lt_result
+    )
+
+    # Step 2.5: Quantitative final scoring — IC-adjusted weights, 3-independent-signal
+    # confirmation gate, anti-crowding, half-Kelly sizing (scoring/weighted.py).
+    scoring = None
+    try:
+        from scoring.weighted import compute_final_score
+        catalyst_flags = stage3_item.get("catalyst_flags", {}) or {}
+        scoring = await compute_final_score(
+            symbol=symbol,
+            category_scores=analysis.category_scores,
+            vol_regime=analysis.vol_regime,
+            influencer_mention_count=int(catalyst_flags.get("yt_mentions_this_week", 0) or 0),
+            lt_score=lt_score,
+            lt_tier=lt_tier,
+        )
+        for w in scoring.warnings:
+            logger.info(f"[{symbol}] scoring: {w}")
+    except Exception as e:
+        logger.warning(f"[{symbol}] compute_final_score failed — using raw engine score: {e}")
+
+    total_score = scoring.total_score if scoring else analysis.total_score
+    direction = scoring.direction if scoring else analysis.direction
 
     state: AgentState = {
         "symbol": symbol,
@@ -95,9 +122,10 @@ async def run_analysis_graph(stage3_item: dict, cross_context: str) -> dict:
         "trade_structure": {},
         "order_ticket": {},
         "conviction_score": 0.0,
-        "total_score": analysis.total_score,
-        "direction": analysis.direction,
+        "total_score": total_score,
+        "direction": direction,
         "vol_regime": analysis.vol_regime,
+        "underlying_price": analysis.underlying_price or 0.0,
     }
 
     # Step 3: Run 4 analysts in parallel
@@ -114,14 +142,19 @@ async def run_analysis_graph(stage3_item: dict, cross_context: str) -> dict:
     state["volatility_report"]  = reports[2] if not isinstance(reports[2], Exception) else "Unavailable"
     state["sentiment_report"]   = reports[3] if not isinstance(reports[3], Exception) else "Unavailable"
 
-    # Step 4: Trader synthesis (Opus) — structured output via tool_use
-    combined_context = "\n\n".join(filter(None, [str(memory_context), str(dna_context), str(lt_context)]))
+    # Step 4: Trader synthesis (Opus) — structured output via tool_use.
+    # Cross-section ranks are joined into the same context block so the LLM
+    # sees the symbol's universe percentile for every Tier-1 signal.
+    combined_context = "\n\n".join(filter(None, [
+        str(memory_context), str(dna_context), str(lt_context), str(ranks_context),
+    ]))
     await _run_trader(state, combined_context)
 
     # Step 4.5: Adversary challenge (deepseek-r1 via Ollama)
     adv_result = await _run_adversary(state, dna_context)
     state["adversary_report"] = adv_result.get("raw_response", "")
     discount = adv_result.get("risk_override", 0)
+    pre_discount_conviction = state["conviction_score"]
     if discount > 0:
         state["conviction_score"] = max(0.0, state["conviction_score"] - discount)
         logger.info(
@@ -129,9 +162,17 @@ async def run_analysis_graph(stage3_item: dict, cross_context: str) -> dict:
             f"Challenges: {adv_result.get('challenges', [])}"
         )
 
-    # Step 4.6: Eval-optimizer loop — trader rebuttal when adversary challenges hard
+    # Step 4.6: Eval-optimizer loop — trader rebuttal when adversary challenges hard.
+    # Pass the pre-discount conviction so MAINTAIN can actually recover ground.
     if discount > 15 and adv_result.get("challenges"):
-        await _run_trader_rebuttal(state, adv_result["challenges"])
+        await _run_trader_rebuttal(state, adv_result["challenges"],
+                                    pre_discount_conviction=pre_discount_conviction,
+                                    discount=discount)
+
+    # Step 4.7: Confirmation gate — LLM conviction cannot exceed what the
+    # quantitative layer supports when < MIN_SIGNALS_REQUIRED independent groups fired
+    if scoring and not scoring.confirmation_met:
+        state["conviction_score"] = min(state["conviction_score"], 55.0)
 
     # Step 5: Risk manager (Sonnet) — structured output
     await _run_risk_manager(state)
@@ -140,13 +181,13 @@ async def run_analysis_graph(stage3_item: dict, cross_context: str) -> dict:
     state["trade_structure"] = await options_selection_agent(state, analysis)
 
     # Step 7: Build order ticket
-    state["order_ticket"] = _build_order_ticket(state, analysis)
+    state["order_ticket"] = _build_order_ticket(state, analysis, scoring)
 
     return {
         "symbol": symbol,
-        "total_score": analysis.total_score,
+        "total_score": total_score,
         "conviction_score": state["conviction_score"],
-        "direction": analysis.direction,
+        "direction": direction,
         "vol_regime": analysis.vol_regime,
         "iv_percentile": analysis.iv_percentile,
         "trade_thesis": state["trader_thesis"],
@@ -156,6 +197,17 @@ async def run_analysis_graph(stage3_item: dict, cross_context: str) -> dict:
         "order_ticket": state["order_ticket"],
         "trade_structure": state["trade_structure"],
         "raw_signals": analysis.raw_signals,
+        "quant_scoring": {
+            "raw_engine_score": analysis.total_score,
+            "ic_adjusted_score": scoring.total_score if scoring else None,
+            "quant_conviction": scoring.conviction_score if scoring else None,
+            "independent_signals": scoring.independent_signals_count if scoring else None,
+            "confirmation_met": scoring.confirmation_met if scoring else None,
+            "crowding_applied": scoring.crowding_applied if scoring else False,
+            "position_size_pct": scoring.position_size_pct if scoring else None,
+            "warnings": scoring.warnings if scoring else [],
+            "weight_adjustments": scoring.weight_adjustments if scoring else {},
+        },
     }
 
 
@@ -340,13 +392,22 @@ Fill out the trade thesis tool with your analysis."""
     state["trader_thesis"] = fallback_response
 
 
-async def _run_trader_rebuttal(state: AgentState, challenges: list[str]) -> None:
+async def _run_trader_rebuttal(state: AgentState, challenges: list[str],
+                                 pre_discount_conviction: float,
+                                 discount: float) -> None:
     """
     Eval-optimizer loop: trader must respond to adversary challenges when risk_override > 15.
 
-    If trader MAINTAINS: recover up to half the discount (adversary raised valid concerns
-    but didn't invalidate the thesis). If trader REVISES: accept the revised conviction.
-    This is one extra Opus call, only on hard-challenged trades (~25% of analyses).
+    Rules:
+      MAINTAIN — trader stands by the thesis. Recover **half the adversary's discount**
+        but cap at pre_discount_conviction (we never go above where we started). The
+        previous formula required revised_conviction > current_conviction, which is the
+        exact condition MAINTAIN doesn't satisfy — so recovery was always zero.
+      REVISE — trader concedes. Take rebuttal.revised_conviction directly. Sanity-clamp
+        to [0, pre_discount_conviction] so a confused trader can't *raise* conviction
+        by claiming to revise it.
+
+    One extra Opus call, only on hard-challenged trades (~25% of analyses).
     """
     challenges_str = "\n".join(f"- {c}" for c in challenges)
     prompt = f"""You are the Senior Options Trader. The adversary has challenged your thesis on {state['symbol']}.
@@ -387,19 +448,23 @@ Use the rebuttal tool to submit your response."""
 
     # Update conviction based on stance
     if rebuttal.stance == "MAINTAIN":
-        # Trader maintained position: recover up to 50% of the adversary's discount
-        # but only if revised_conviction is at or above current (post-discount) conviction
-        recovered = min(
-            state["conviction_score"] * 0.5,  # cap recovery at 50% of what we discounted
-            max(0.0, rebuttal.revised_conviction - state["conviction_score"]),
+        # Recover half the adversary's discount, never exceeding the pre-discount level.
+        recovered = 0.5 * float(discount)
+        state["conviction_score"] = min(
+            float(pre_discount_conviction),
+            state["conviction_score"] + recovered,
         )
-        state["conviction_score"] = min(100.0, state["conviction_score"] + recovered)
     else:
-        # REVISE: take trader's own lower conviction
-        state["conviction_score"] = float(rebuttal.revised_conviction)
+        # REVISE: take trader's own revised conviction, clamped to [0, pre-discount].
+        # Prevents a confused trader from raising conviction via the rebuttal path.
+        state["conviction_score"] = max(
+            0.0,
+            min(float(pre_discount_conviction), float(rebuttal.revised_conviction)),
+        )
 
     logger.info(
-        f"[{state['symbol']}] Trader rebuttal: {rebuttal.stance} → conviction now {state['conviction_score']:.0f}"
+        f"[{state['symbol']}] Trader rebuttal: {rebuttal.stance} → conviction now {state['conviction_score']:.0f} "
+        f"(pre-discount was {pre_discount_conviction:.0f}, adversary discount {discount})"
     )
 
 
@@ -409,18 +474,30 @@ async def _run_risk_manager(state: AgentState) -> None:
     if state.get("adversary_report"):
         adversary_note = f"\nAdversary challenges: {state['adversary_report'][:300]}"
 
+    # Portfolio-level greeks + concentration vetoes (Phase H.9).
+    portfolio_note = ""
+    try:
+        from scoring.portfolio_greeks import portfolio_veto_context
+        ctx = await portfolio_veto_context()
+        if ctx:
+            portfolio_note = f"\n\n{ctx}"
+    except Exception:
+        pass
+
     prompt = f"""You are the Risk Manager. Review this proposed trade for {state['symbol']}.
 
 Trader thesis: {state['trader_thesis'][:600]}
 Total score: {state['total_score']}/100
 Conviction: {state['conviction_score']}
-Direction: {state['direction']}{adversary_note}
+Direction: {state['direction']}{adversary_note}{portfolio_note}
 
 Risk checklist:
 1. Is there a clear defined max-loss structure?
 2. Is the setup confirmed (not a false breakout candidate)?
 3. Is the trade sizing appropriate given conviction level?
-4. Are there any portfolio correlation concerns?
+4. Are there any portfolio correlation concerns? (See "Portfolio" block above —
+   if there is a "VETO:" warning, your verdict should be REJECT or CONDITIONAL_APPROVE
+   with conditions that address it.)
 5. Is there an earnings date risk within the trade window?
 
 Submit your risk assessment using the tool."""
@@ -526,7 +603,36 @@ async def options_selection_agent(state: AgentState, analysis: AnalysisResult) -
     }
 
 
-def _build_order_ticket(state: AgentState, analysis: AnalysisResult) -> dict:
+_LONG_PREMIUM_STRATEGIES_FOR_FILL = {
+    "long_call", "long_put", "bull_call_spread", "bear_put_spread",
+    "calendar_spread", "diagonal_spread", "debit_spread",
+    "long_strangle", "long_straddle", "pmcc",
+}
+
+
+def _execution_price(bid: float, ask: float, strategy: str | None) -> tuple[float, float, str]:
+    """
+    Realistic fill price + slippage cost.
+
+    Returns (fill_price, half_spread_cost_per_share, fill_basis_label).
+    - Buys premium → fill at the ASK (you pay the spread)
+    - Sells premium → fill at the BID (you receive less than mid)
+    - Unknown strategy → fall back to mid (least biased)
+    """
+    if bid is None or ask is None or bid <= 0 or ask <= 0:
+        return 0.0, 0.0, "no_quote"
+    mid = (bid + ask) / 2.0
+    half_spread = max(0.0, (ask - bid) / 2.0)
+    s = (strategy or "").lower()
+    if s in _LONG_PREMIUM_STRATEGIES_FOR_FILL:
+        return round(ask, 2), round(half_spread, 4), "ask"
+    if s and s not in _LONG_PREMIUM_STRATEGIES_FOR_FILL:
+        # Treat everything else as premium-selling (credit) → fill at bid.
+        return round(bid, 2), round(half_spread, 4), "bid"
+    return round(mid, 2), round(half_spread, 4), "mid"
+
+
+def _build_order_ticket(state: AgentState, analysis: AnalysisResult, scoring=None) -> dict:
     from scoring.return_projection import compute_return_projection
 
     ts = state.get("trade_structure", {})
@@ -534,38 +640,59 @@ def _build_order_ticket(state: AgentState, analysis: AnalysisResult) -> dict:
     ask  = ts.get("ask") or 0.0
     mid  = round((bid + ask) / 2, 2) if bid and ask else bid or ask or 0.0
 
-    iv_analysis_score = analysis.category_scores.get("iv_analysis", {})
-    iv_pct = next(
-        (float(s.get("iv_percentile") or s.get("value") or 50) for s in
-         (iv_analysis_score.signals if hasattr(iv_analysis_score, "signals") else [])
-         if s.get("name") == "iv_percentile"),
-        50.0,
-    )
+    # Realistic execution price + slippage (Phase H.11).
+    # Long premium fills at ASK, short premium fills at BID, mid is a fallback.
+    # Half-spread cost is surfaced so the trader can see what the spread is
+    # actually costing on entry (and again on exit, doubled).
+    fill_price, half_spread_cost, fill_basis = _execution_price(bid, ask, ts.get("strategy"))
+    spread_cost_per_contract = round(half_spread_cost * 100 * 2, 2)  # round-trip
+
+    iv_pct = float(analysis.iv_percentile) if analysis.iv_percentile is not None else 50.0
+    iv_signals = analysis.category_scores.get("iv_analysis")
     atm_iv = next(
-        (float(s.get("value") or 0.30) / 100 for s in
-         (iv_analysis_score.signals if hasattr(iv_analysis_score, "signals") else [])
+        (float(s.get("value") or 30.0) / 100 for s in (iv_signals.signals if iv_signals else [])
          if s.get("name") == "atm_iv"),
         0.30,
     )
 
-    strike_val = float(ts.get("strike") or ts.get("long_strike") or state.get("underlying_price") or 0)
-    underlying = float(state.get("underlying_price") or strike_val or 100.0)
+    underlying = float(state.get("underlying_price") or 0.0)
+    strike_val = float(ts.get("strike") or ts.get("long_strike") or underlying or 0)
+    if underlying <= 0:
+        underlying = strike_val  # last resort — flagged below so it is never silent
     dte = int(ts.get("dte_min") or ts.get("dte") or 21)
 
+    # Project returns from the REALISTIC fill price, not theoretical mid.
+    # Using mid systematically overstated EV by ~half the spread on entry.
     projection = compute_return_projection(
-        entry_option_price=mid or 1.0,
-        underlying_price=underlying,
-        strike=strike_val or underlying,
+        entry_option_price=fill_price or mid or 1.0,
+        underlying_price=underlying or 100.0,
+        strike=strike_val or underlying or 100.0,
         dte=dte,
         iv=atm_iv,
         direction=state.get("direction", "neutral"),
         conviction_score=float(state.get("conviction_score") or 65),
         iv_percentile=iv_pct,
+        strategy=ts.get("strategy"),  # H.7 — stream classified from actual strategy
     )
 
     is_spread = "spread" in ts.get("strategy", "") or ts.get("strategy") == "iron_condor"
     max_profit = ts.get("max_profit") or (mid * 100 if not is_spread else None)
     max_loss   = ts.get("max_loss") or (mid * 100 if not is_spread else None)
+
+    # Position sizing from the quantitative layer (half-Kelly, conviction-scaled),
+    # recomputed against the actual option mid instead of weighted.py's default price.
+    warnings = list(scoring.warnings) if scoring else []
+    if scoring is not None:
+        if scoring.position_size_pct > 0 and mid > 0:
+            account = settings.PAPER_PORTFOLIO_VALUE
+            contracts = int((account * scoring.position_size_pct) // (mid * 100))
+            contracts = max(1, min(contracts, 10))
+        else:
+            contracts = scoring.suggested_contracts  # 0 when the confirmation gate failed
+    else:
+        contracts = ts.get("suggested_contracts", 1)
+    if not state.get("underlying_price"):
+        warnings.append("underlying_price unavailable — return projection used strike as spot")
 
     return {
         "symbol": state["symbol"],
@@ -576,12 +703,20 @@ def _build_order_ticket(state: AgentState, analysis: AnalysisResult) -> dict:
         "second_strike": ts.get("second_strike"),
         "option_type": ts.get("option_type"),
         "target_delta": ts.get("target_delta"),
+        "underlying_price": underlying or None,
         "bid": bid or None,
         "ask": ask or None,
         "mid": mid or None,
+        "fill_price": fill_price or None,
+        "fill_basis": fill_basis,
+        "spread_cost_round_trip_usd": spread_cost_per_contract,
         "max_profit": max_profit,
         "max_loss": max_loss,
-        "suggested_contracts": ts.get("suggested_contracts", 1),
+        "suggested_contracts": contracts,
+        "position_size_pct": scoring.position_size_pct if scoring else None,
+        "confirmation_met": scoring.confirmation_met if scoring else None,
+        "independent_signals": scoring.independent_signals_count if scoring else None,
+        "warnings": warnings,
         "target_exit": "50% max profit",
         "stop_loss": "2× credit received" if is_spread else "50% of debit paid",
         "conviction": state["conviction_score"],
@@ -622,13 +757,48 @@ async def _get_dna_context(symbol: str) -> str:
         return ""
 
 
-async def _get_lt_context(symbol: str) -> str:
+async def _get_cross_section_ranks(symbol: str) -> str:
+    """
+    Pull the latest universe ranks (Phase C) + Markov regime forecasts (Phase G.2)
+    and format for the trader prompt. Both are point-in-time snapshots.
+    """
+    try:
+        from scoring.cross_section import load_latest_ranks, format_rank_context
+        from analysis.regime_markov import load_forecast, format_regime_context
+
+        ranks_task = load_latest_ranks(symbol)
+        market_task = load_forecast("market")
+        symbol_task = load_forecast(symbol)
+        ranks, market_fc, symbol_fc = await asyncio.gather(
+            ranks_task, market_task, symbol_task, return_exceptions=True,
+        )
+        if isinstance(ranks, Exception):
+            ranks = {}
+        if isinstance(market_fc, Exception):
+            market_fc = None
+        if isinstance(symbol_fc, Exception):
+            symbol_fc = None
+
+        parts = []
+        rank_text = format_rank_context(ranks)
+        if rank_text:
+            parts.append(rank_text)
+        regime_text = format_regime_context(market_fc, symbol_fc)
+        if regime_text:
+            parts.append(regime_text)
+        return "\n\n".join(parts)
+    except Exception:
+        return ""
+
+
+async def _get_lt_context(symbol: str) -> tuple[str, float | None, str | None]:
+    """Returns (formatted context, lt total_score, lt tier) — score/tier feed the LT gate in weighted.py."""
     try:
         from analysis.lt_scoring import score_stock, format_lt_context
         lt = await score_stock(symbol=symbol)
-        return format_lt_context(lt)
+        return format_lt_context(lt), float(lt.total_score), lt.tier
     except Exception:
-        return ""
+        return "", None, None
 
 
 async def _retrieve_memory(symbol: str, analysis: AnalysisResult) -> str:
@@ -653,8 +823,9 @@ async def _retrieve_memory(symbol: str, analysis: AnalysisResult) -> str:
 
         lines = []
         for lesson, r_mult, regime, worked, failed in rows:
+            r_str = f"R={r_mult:.1f}x" if r_mult is not None else "R=n/a"
             lines.append(
-                f"- [{regime}, R={r_mult:.1f}x] {lesson}"
+                f"- [{regime}, {r_str}] {lesson}"
                 f"{' | WORKED: ' + ','.join(worked) if worked else ''}"
                 f"{' | FAILED: ' + ','.join(failed) if failed else ''}"
             )

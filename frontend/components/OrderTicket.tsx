@@ -356,24 +356,36 @@ interface ScenarioData {
 }
 
 interface ReturnProjectionData {
-  stream: string;
+  stream: string;  // "premium_buying" | "premium_selling" | "neutral" | legacy "alpha"|"income"
   entry_price: number;
-  target_price_10x: number;
+  target_price_2x: number;      // +100% return target
   target_price_50pct: number;
   expected_value_pct: number;
+  prob_itm?: number;            // IV-implied P(finish ITM)
+  prob_profit?: number;         // IV-implied P(break-even at expiry)
   confidence_pct: number;
   stream_rationale: string;
   scenarios: ScenarioData[];
 }
 
+const STREAM_LABELS: Record<string, { label: string; color: string }> = {
+  premium_buying:  { label: "📈 Premium-Buying", color: "purple" },
+  premium_selling: { label: "📉 Premium-Selling", color: "blue" },
+  neutral:         { label: "⚖️ Neutral", color: "gray" },
+  // legacy values still served by older endpoints — fall through to similar styling
+  alpha:  { label: "📈 Premium-Buying", color: "purple" },
+  income: { label: "📉 Premium-Selling", color: "blue" },
+};
+
 function ReturnProjectionCard({ projection }: { projection: ReturnProjectionData }) {
-  const isAlpha = projection.stream === "alpha";
+  const meta = STREAM_LABELS[projection.stream] ?? STREAM_LABELS.neutral;
+  const isBuying = meta.color === "purple";
   const ev = projection.expected_value_pct;
   const evColor = ev >= 50 ? "text-green-400" : ev >= 0 ? "text-yellow-400" : "text-red-400";
 
   return (
     <div className={`rounded-lg border p-3 space-y-2.5 ${
-      isAlpha
+      isBuying
         ? "border-purple-700/50 bg-purple-900/10"
         : "border-blue-700/50 bg-blue-900/10"
     }`}>
@@ -381,11 +393,11 @@ function ReturnProjectionCard({ projection }: { projection: ReturnProjectionData
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-            isAlpha
+            isBuying
               ? "bg-purple-900/40 text-purple-300 border border-purple-700/50"
               : "bg-blue-900/40 text-blue-300 border border-blue-700/50"
           }`}>
-            {isAlpha ? "🎰 Alpha Stream" : "💰 Income Stream"}
+            {meta.label}
           </span>
         </div>
         <div className="text-right">
@@ -396,6 +408,23 @@ function ReturnProjectionCard({ projection }: { projection: ReturnProjectionData
           <span className="text-gray-600 text-xs ml-1">@ {projection.confidence_pct.toFixed(0)}% conf</span>
         </div>
       </div>
+
+      {/* Probabilities (new — IV-implied) */}
+      {(projection.prob_itm != null || projection.prob_profit != null) && (
+        <div className="flex items-center gap-4 text-xs">
+          {projection.prob_itm != null && (
+            <span className="text-gray-400">
+              P(ITM) <span className="text-gray-200 font-mono">{(projection.prob_itm * 100).toFixed(0)}%</span>
+            </span>
+          )}
+          {projection.prob_profit != null && (
+            <span className="text-gray-400">
+              P(profit) <span className="text-gray-200 font-mono">{(projection.prob_profit * 100).toFixed(0)}%</span>
+            </span>
+          )}
+          <span className="text-gray-600 ml-auto italic">IV-implied</span>
+        </div>
+      )}
 
       {/* Scenarios */}
       <div className="space-y-1">
@@ -429,12 +458,14 @@ function ReturnProjectionCard({ projection }: { projection: ReturnProjectionData
       {/* Target prices */}
       <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-800/50">
         <div>
-          <div className="text-gray-500 text-xs">10× target price</div>
-          <div className="text-purple-300 font-mono font-bold text-sm">${projection.target_price_10x.toFixed(2)}</div>
+          <div className="text-gray-500 text-xs">+50% target</div>
+          <div className="text-blue-300 font-mono font-bold text-sm">${projection.target_price_50pct.toFixed(2)}</div>
         </div>
         <div>
-          <div className="text-gray-500 text-xs">{isAlpha ? "50% gain" : "30-50%/wk target"}</div>
-          <div className="text-blue-300 font-mono font-bold text-sm">${projection.target_price_50pct.toFixed(2)}</div>
+          <div className="text-gray-500 text-xs">2× target</div>
+          <div className="text-purple-300 font-mono font-bold text-sm">
+            ${projection.target_price_2x.toFixed(2)}
+          </div>
         </div>
       </div>
     </div>

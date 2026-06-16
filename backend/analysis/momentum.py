@@ -1,8 +1,43 @@
-"""Category 8: Volume & Momentum (7%)"""
+"""Category 8: Volume & Momentum (7%) — with Daniel-Moskowitz crash filter."""
 
+import math
+import asyncio
+import numpy as np
 import pandas as pd
 import pandas_ta as ta
 from analysis.engine import CategoryScore
+
+
+# Daniel & Moskowitz (2016) — momentum crashes coincide with high realized vol
+# regimes. Gate any bullish momentum vote when SPX 6-month RV breaches the 80th
+# percentile of its trailing 5-year history. Cached for the duration of one scan.
+_CRASH_REGIME_CACHE: dict[str, bool] = {}
+
+
+async def _spx_crash_regime() -> bool:
+    if "value" in _CRASH_REGIME_CACHE:
+        return _CRASH_REGIME_CACHE["value"]
+    try:
+        from data.market import get_ohlcv_yfinance
+        spx = await asyncio.get_event_loop().run_in_executor(
+            None, lambda: get_ohlcv_yfinance("SPY", period="5y"),
+        )
+        if spx is None or spx.empty or len(spx) < 252 * 5:
+            _CRASH_REGIME_CACHE["value"] = False
+            return False
+        rets = np.log(spx["close"].values[1:] / spx["close"].values[:-1])
+        rolling = pd.Series(rets).rolling(126).std() * math.sqrt(252)
+        rolling = rolling.dropna()
+        if len(rolling) < 252:
+            _CRASH_REGIME_CACHE["value"] = False
+            return False
+        threshold = float(np.percentile(rolling.iloc[:-1], 80))
+        current = float(rolling.iloc[-1])
+        _CRASH_REGIME_CACHE["value"] = current > threshold
+        return _CRASH_REGIME_CACHE["value"]
+    except Exception:
+        _CRASH_REGIME_CACHE["value"] = False
+        return False
 
 
 async def analyze(symbol: str, df: pd.DataFrame) -> CategoryScore:
@@ -13,6 +48,14 @@ async def analyze(symbol: str, df: pd.DataFrame) -> CategoryScore:
 
     if df.empty or len(df) < 20:
         return CategoryScore("momentum", 7.0, 5.0, 3.5, "neutral", [], "Insufficient data")
+
+    crash_regime = await _spx_crash_regime()
+    if crash_regime:
+        signals.append({
+            "name": "momentum_crash_filter",
+            "direction": "neutral",
+            "note": "SPX 126d RV in top quintile — momentum crash risk (Daniel-Moskowitz 2016)",
+        })
 
     close = df["close"]
     volume = df["volume"]
@@ -220,6 +263,13 @@ async def analyze(symbol: str, df: pd.DataFrame) -> CategoryScore:
         direction = "bullish"
     elif bear_sigs > bull_sigs:
         direction = "bearish"
+
+    # Daniel-Moskowitz gate: when SPX is in a high-RV regime, BULLISH momentum
+    # is suppressed (the regime where momentum historically crashes); bearish
+    # momentum is left alone — that's the side the crash protects.
+    if crash_regime and direction == "bullish":
+        direction = "neutral"
+        score = min(score, 5.0)
 
     # Attach crossover events as a special signal for the watchlist agent
     if momentum_events:

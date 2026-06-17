@@ -759,18 +759,21 @@ async def _get_dna_context(symbol: str) -> str:
 
 async def _get_cross_section_ranks(symbol: str) -> str:
     """
-    Pull the latest universe ranks (Phase C) + Markov regime forecasts (Phase G.2)
-    and format for the trader prompt. Both are point-in-time snapshots.
+    Pull universe ranks (Phase C) + Markov forecasts (Phase G.2) + per-stock
+    climate (Phase L) and format for the trader prompt. All point-in-time.
     """
     try:
         from scoring.cross_section import load_latest_ranks, format_rank_context
         from analysis.regime_markov import load_forecast, format_regime_context
+        from analysis.stock_climate import get_climate, format_climate_context
 
         ranks_task = load_latest_ranks(symbol)
         market_task = load_forecast("market")
         symbol_task = load_forecast(symbol)
-        ranks, market_fc, symbol_fc = await asyncio.gather(
-            ranks_task, market_task, symbol_task, return_exceptions=True,
+        climate_task = get_climate(symbol)
+        ranks, market_fc, symbol_fc, climate = await asyncio.gather(
+            ranks_task, market_task, symbol_task, climate_task,
+            return_exceptions=True,
         )
         if isinstance(ranks, Exception):
             ranks = {}
@@ -778,8 +781,13 @@ async def _get_cross_section_ranks(symbol: str) -> str:
             market_fc = None
         if isinstance(symbol_fc, Exception):
             symbol_fc = None
+        if isinstance(climate, Exception):
+            climate = None
 
         parts = []
+        climate_text = format_climate_context(climate)
+        if climate_text:
+            parts.append(climate_text)
         rank_text = format_rank_context(ranks)
         if rank_text:
             parts.append(rank_text)

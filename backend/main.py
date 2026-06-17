@@ -18,6 +18,8 @@ from api.auth_routes import router as auth_router
 from api.lt_routes import router as lt_router
 from api.portfolio_import import router as portfolio_router
 from api.signals import get_router as get_signals_router
+from api.postmortem import get_router as get_postmortem_router
+from api.health import get_router as get_health_router
 from core.config import settings
 from core.database import init_db, close_db
 from core.redis_client import init_redis, close_redis
@@ -102,6 +104,31 @@ async def lifespan(app: FastAPI):
         run_reddit_sentiment,
         CronTrigger(hour="9,12,15,20", timezone="America/New_York"),
         id="reddit_sentiment",
+        replace_existing=True,
+    )
+
+    # Per-stock climate + market weather (Phase L): nightly 7:45 PM ET
+    scheduler.add_job(
+        run_nightly_climate,
+        CronTrigger(hour=19, minute=45, timezone="America/New_York"),
+        id="nightly_climate",
+        replace_existing=True,
+    )
+
+    # Evaluate predictions (Phase M): nightly 10:30 PM ET — walks every open
+    # recommendation, writes checkpoints, marks resolved when due
+    scheduler.add_job(
+        run_evaluate_predictions,
+        CronTrigger(hour=22, minute=30, timezone="America/New_York"),
+        id="evaluate_predictions",
+        replace_existing=True,
+    )
+
+    # Daily signal performance snapshot (Phase M): nightly 10:45 PM ET
+    scheduler.add_job(
+        run_signal_performance_snapshot,
+        CronTrigger(hour=22, minute=45, timezone="America/New_York"),
+        id="signal_performance_snapshot",
         replace_existing=True,
     )
 
@@ -259,6 +286,30 @@ async def run_reddit_sentiment():
         await run_reddit_sentiment_job()
     except Exception as e:
         logger.error(f"Reddit sentiment job failed: {e}")
+
+
+async def run_nightly_climate():
+    from analysis.stock_climate import run_climate_job
+    try:
+        await run_climate_job()
+    except Exception as e:
+        logger.error(f"Climate job failed: {e}")
+
+
+async def run_evaluate_predictions():
+    from analysis.evaluate_predictions import run_evaluation_job
+    try:
+        await run_evaluation_job()
+    except Exception as e:
+        logger.error(f"Evaluate predictions failed: {e}")
+
+
+async def run_signal_performance_snapshot():
+    from analysis.evaluate_predictions import run_signal_perf_snapshot
+    try:
+        await run_signal_perf_snapshot()
+    except Exception as e:
+        logger.error(f"Signal performance snapshot failed: {e}")
 
 
 async def run_nightly_signal_audit():
@@ -426,6 +477,8 @@ app.include_router(router, prefix="/api")
 app.include_router(lt_router)
 app.include_router(portfolio_router)
 app.include_router(get_signals_router(), prefix="/api")
+app.include_router(get_postmortem_router(), prefix="/api")
+app.include_router(get_health_router(), prefix="/api")
 
 
 @app.get("/health")

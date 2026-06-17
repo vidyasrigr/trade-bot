@@ -1,0 +1,74 @@
+# Trade Bot — backend Python dependencies
+# Pinned to versions known to work as of 2026-06.
+# Install:   pip install -r requirements.txt
+# GPU torch: see GPU section at the bottom (NOT pip-installable from this file).
+
+# ── Web + ASGI ──────────────────────────────────────────────────────────
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+sse-starlette>=2.1
+
+# ── Data validation / config ────────────────────────────────────────────
+pydantic>=2.7
+pydantic-settings>=2.4
+
+# ── HTTP / scraping ─────────────────────────────────────────────────────
+httpx>=0.27
+tenacity>=8.4
+feedparser>=6.0.11
+beautifulsoup4>=4.12
+
+# ── Database + cache ────────────────────────────────────────────────────
+sqlalchemy[asyncio]>=2.0
+asyncpg>=0.29
+psycopg2-binary>=2.9
+redis>=5.0
+pgvector>=0.3
+
+# ── Scheduling + logging ────────────────────────────────────────────────
+apscheduler>=3.10
+loguru>=0.7
+
+# ── Auth (JWT) ──────────────────────────────────────────────────────────
+python-jose[cryptography]>=3.3
+passlib[bcrypt]>=1.7
+bcrypt<4
+
+# ── Numerics + dataframes ───────────────────────────────────────────────
+numpy>=1.26,<2
+pandas>=2.2
+scipy>=1.13
+pandas-ta>=0.3.14b0
+pyarrow>=15.0
+
+# ── Quant / market data ─────────────────────────────────────────────────
+yfinance>=0.2.40
+duckdb>=1.0
+lightgbm>=4.3
+
+# ── LLM SDKs ────────────────────────────────────────────────────────────
+anthropic>=0.34
+ollama>=0.3
+
+# ── Serialization ───────────────────────────────────────────────────────
+orjson>=3.10
+
+# ── Testing ─────────────────────────────────────────────────────────────
+pytest>=8.0
+pytest-asyncio>=0.23
+
+# ────────────────────────────────────────────────────────────────────────
+# GPU TORCH — install SEPARATELY from this file.
+# CUDA 12.1 wheels (works on RTX 5080):
+#     pip install torch --index-url https://download.pytorch.org/whl/cu121
+#
+# Or for CUDA 12.4:
+#     pip install torch --index-url https://download.pytorch.org/whl/cu124
+#
+# Verify:
+#     python3 -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+#
+# CuPy (optional, used by backtest/sweeper for GPU metrics) — CUDA 12.x:
+#     pip install cupy-cuda12x
+# ────────────────────────────────────────────────────────────────────────

@@ -104,7 +104,50 @@ for f in backend/db/migrations/*.sql; do psql $DATABASE_URL -f "$f"; done
 
 ---
 
-## ⚪ Deferred (do NOT do until validation succeeds)
+## 🆕 Future TODOs (organized by phase — execute in order after validation succeeds)
+
+### Phase O — Real-time / Daily operations (5 items, ~250 LOC total)
+
+- [ ] **O.1 — Intraday Discord alert for tail-stack setups.** Why: daily briefing is morning-only; conviction-100 setup at 2pm waits until next morning. How: new `agents/intraday_alerter.py` polls scanner cache every 30 min; when ANY symbol shows conviction > 85 AND independent_signals ≥ 6 AND tail_signal_aligned, push to Discord with the rec id. ~100 LOC.
+- [ ] **O.2 — Slippage tracking on live fills.** Why: predicted entry vs actual fill divergence is the live-vs-backtest gap. Already have infra (recommendation_outcomes.expected_vs_actual). Just needs a UI input. How: extend `frontend/components/OrderTicket.tsx` with "Record actual fill" field; POST to new endpoint `/api/recommendations/{id}/fill`. ~30 LOC + 20 frontend.
+- [ ] **O.3 — End-of-day Discord recap.** Why: morning briefing only. Don't know what filled, closed, drifted. How: new `run_daily_eod_recap` in main.py, schedule at 16:30 ET; Discord embed with today's fired recommendations, today's closures, top 3 winners/losers of resolved trades. ~80 LOC.
+- [ ] **O.4 — Model quality monitoring.** Why: Claude/Qwen output quality drifts; you don't notice until trades go bad. How: extend `agents/agent_monitor.py` to track parse-failure rate, structured output validation rate, content length collapse per model_id over rolling 7d. Discord alert if >5% degradation. ~120 LOC.
+- [ ] **O.5 — Auto-dedup at recommendation persistence.** Why: ticket_guards module is built but not yet called. How: wire `scoring/ticket_guards.run_all_guards()` into wherever `log_recommendation()` is called (~10 LOC). Block critical, surface warnings.
+
+### Phase P — News + event-typed catalysts (3 items)
+
+- [ ] **P.1 — Event-typed news classifier (Qwen3-14B local).** Why: CRWV/NBIS Nasdaq-100 inclusion (June 11) was in our RSS but treated as generic score_delta. An `index_rebalance` detector would have flagged it. How: extend `data/news.py` ingest pipeline. New `analysis/news_classifier.py` runs Qwen3-14B over headline+summary, outputs `{event_type: 'index_rebalance' | 'fed_event' | 'm_and_a' | 'leadership_change' | 'regulation' | 'earnings' | 'guidance' | 'partnership' | 'litigation', severity: 0-100}`. Persist to new `news_events` table. ~200 LOC. Local-LLM, free.
+- [ ] **P.2 — Nasdaq quarterly rebalance calendar.** Why: deterministic event-window (T-5 to T+30 around effective date). How: new `data/nasdaq_rebalance.py` scrapes Nasdaq's quarterly announcement page; adds `nasdaq_rebalance_window` flag. ~60 LOC, free.
+- [ ] **P.3 — Fed chair speech tracker.** Why: Warsh-specific dovish/hawkish surprise scorer. How: extend `data/news.py` MACRO_RSS_FEEDS with federalreserve.gov speeches; new `analysis/fed_speech_scorer.py` runs Qwen sentiment per speech. ~100 LOC.
+
+### Phase Q — Gaps Fable's blueprint flagged that we still haven't built (11 items)
+
+Each item below has: **Why | How | LOC | Data source**.
+
+- [ ] **Q.1 — Implied vs realized earnings move signal.** Why: per-name straddles systematically overprice earnings moves; Tier 1 per Fable. How: extend `analysis/earnings_adj_iv.py` to compute `implied/realized` ratio; fire short straddle when ratio > 1.3, long when < 0.8. Persist as `signal_ranks(signal_type='earnings_iv_premium')`. ~120 LOC. Data: existing MarketData chains + FMP earnings dates.
+- [ ] **Q.2 — 0DTE / charm-vanna intraday flows.** Why: SPX 0DTE = 40%+ volume; predictable late-day drift in pinned regimes. How: new `analysis/charm_vanna.py`. Intraday hourly job pulls SPX 0DTE OI by strike, computes net gamma/vanna by strike, identifies pin candidates within ±0.5σ of spot. New `intraday_gamma_levels` table. ~200 LOC. Data: MarketData live SPX chain (extra credits).
+- [ ] **Q.3 — FDA / PDUFA calendar overlay.** Why: biotech pre-PDUFA volatility expansion is documented; binary outcomes = clean event-window plays. How: new `data/fda_calendar.py` scrapes `fda.gov/drugs`. ~80 LOC, free.
+- [ ] **Q.4 — Lockup expiration tracker.** Why: 6-month post-IPO lockup expiration historically causes 5-15% drop on insider selling. How: extend `analysis/ipo_halo.py`, parse S-1 filings for lockup date. ~60 LOC, free.
+- [ ] **Q.5 — Govt contract awards.** Why: +3-10% pop on multi-billion contract awards (PLTR, RKLB, LMT etc.). How: new `data/usaspending.py` polls `api.usaspending.gov/api/v2/search/spending_by_award/`. ~150 LOC, free.
+- [ ] **Q.6 — Deep Researcher agent (LT narrative thesis).** Why: `lt_scoring.py` returns a score but no thesis. Strategist would benefit from narrative context. How: new `agents/deep_researcher.py` runs Qwen3-14B over 10-K + earnings transcripts, outputs `{bull_thesis, bear_thesis, key_risks, moat_evidence}`. Cached 90d per symbol. ~200 LOC. Free (current quarter); $14/mo FMP upgrade for older transcripts.
+- [ ] **Q.7 — 8-K full-text classifier on 5080.** Why: a single 8-K can be partnership (bullish) or CEO resignation (bearish) or routine filing (noise). How: see P.1 above — same module covers 8-K + RSS. ~included in P.1.
+- [ ] **Q.8 — Google Trends.** Why: spike in retail search precedes price moves on small/mid caps (Lopez-Lira 2023). How: new `data/google_trends.py` using `pytrends`. Weekly velocity per top 200 small/mid caps. ~50 LOC, free.
+- [ ] **Q.9 — News-similarity dedup via embeddings.** Why: 1000 identical Reuters/Bloomberg/CNBC headlines on same Fed move shouldn't count as 1000 sentiment hits. How: embed each headline via nomic-embed-text on Ollama, cluster cosine > 0.92, keep one rep. ~100 LOC, free.
+- [ ] **Q.10 — StockTwits API.** Why: skews to active traders (vs Reddit retail); different signal. How: new `data/stocktwits.py`, same shape as `data/reddit.py`. ~80 LOC, free.
+- [ ] **Q.11 — Regime Sentinel consolidated agent.** Why: we have pieces (vol_regime + Markov + stock_climate + market_weather) but no single declarative state saying "regime is X; active playbooks: VRP harvest + momentum; dormant: long-vol". How: new `agents/regime_sentinel.py`. Pre-market job; reads all pieces; outputs `{regime, active_playbooks, dormant_playbooks, rationale}`. Strategist prompt injects verbatim. ~150 LOC.
+
+### Phase R — Gaps I see in current state (not flagged by Fable, 8 items)
+
+- [ ] **R.1 — Briefing-level backtest ⭐ HIGHEST IMPACT.** Why: we backtest individual signals. Production output is the daily briefing. Realized DSR of the briefing ≠ sum of individual signal DSRs (dedup, conviction stacking, ranker tilt all interact). **The single most important number we never measure.** How: new `backtest/strategies/briefing_replay.py` replays the pipeline against feature_store, tracks actual top-5 picks per day, computes forward returns + DSR. ~250 LOC.
+- [ ] **R.2 — Per-name execution cost calibration.** Why: flat half-spread is wrong by 10x. SPY: 0.5%. Illiquid biotech: 8%. Backtest cost is wrong. How: extend `backtest/marketdata_source.py` — average bid-ask % per (symbol, expiry-bucket) from cached chains; use this instead of flat 5%. ~80 LOC, uses existing cache.
+- [ ] **R.3 — Capacity modeling.** Why: at what size does our trade move the market? How: extend `analysis/liquidity_gate.py` — `max_contracts_safe = min(0.05 × OI, ADV-fraction-of-orderbook)`. ~30 LOC.
+- [ ] **R.4 — Correlation-aware portfolio Kelly.** Why: 5 NVDA-correlated longs sized like 5 independent bets is dangerous. How: extend `scoring/weighted.py::_kelly_size` — pairwise correlation with open positions, reduce kelly_fraction by `(1 - mean_correlation)`. ~80 LOC.
+- [ ] **R.5 — Regime-change detector for live positions.** Why: if market shifts chop → crisis at 11am, open VRP strangles run into the vol explosion. How: new `agents/regime_change_watcher.py` every 30 min, compares current `market_weather` to morning. Discord alert on transition + suggested defensive actions. ~100 LOC.
+- [ ] **R.6 — Model uncertainty / confidence intervals.** Why: LightGBM gives point estimates. p=0.55 trade ≠ p=0.95 trade but we size identically. How: switch `scoring/ranker.py` from `LGBMRegressor` to quantile regression at p=0.25/0.5/0.75, OR conformal prediction wrapper. CI width feeds confidence_multiplier on sizing. ~120 LOC.
+- [ ] **R.7 — Dividend handling for LT positions.** Why: ex-div affects total return + short-call early assignment risk. How: extend `analysis/calendar.py` to fetch dividend calendar from FMP; ticket builder checks for ex-div in window. ~50 LOC.
+- [ ] **R.8 — Survivorship bias permanent fix.** Why: backtests on full universe overstate edge 2-5%/yr. How: integrate Norgate ($30/mo) OR scrape Russell rebalance dropouts. ~150 LOC (Norgate) or 400 (scrape).
+
+### Phase S — Polish / lower-priority
 
 - [ ] LLM agent graph tests (fragile mocking — wait until prompts stabilize)
 - [ ] Full DB fixture infrastructure (half-day setup, low value pre-revenue)
@@ -113,3 +156,4 @@ for f in backend/db/migrations/*.sql; do psql $DATABASE_URL -f "$f"; done
 - [ ] Term-structure inversion harvest (~20 LOC once you want it)
 - [ ] CFTC COT → ticker mapping (CUSIP DB needed via OpenFIGI)
 - [ ] CBOE COR1M data feed for sector_dispersion compound signal
+- [ ] Tax-loss harvesting / wash-sale tracking (live trading only)

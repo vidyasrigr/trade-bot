@@ -1,154 +1,266 @@
 """
-MarketData historical options source — production backtest data.
+MarketData historical options source — production backtest data + PERSISTENT cache.
 
 Drop-in replacement for `BlackScholesOptionsSource`. Uses MarketData.app's
 historical chain endpoint (date= parameter on /v1/options/chain/) to pull
-real bid/ask/IV/greeks for past dates. Billing: 1 credit per 1000 option
-symbols (so a full 2018-2026 VRP harvest backtest = ~$3-8 in credits).
+real bid/ask/IV/greeks for past dates.
 
-Cache strategy:
-  Each unique (symbol, expiry, strike, right, date) is fetched once and
-  cached in-memory + Redis for the duration of the run. Adjacent backtests
-  on the same window re-use the cache for free.
+PERSISTENT DISK CACHE (added 2026-06-16):
+  Every chain pulled from MarketData is written to a partitioned Parquet store
+  at `data/marketdata_cache/{symbol}/{expiry}/{day}.parquet`. Subsequent reads
+  for the same (symbol, expiry, day) hit disk for free — no credits, no HTTP.
 
-Failure modes:
-  - Pre-2020 data on some illiquid strikes may return 204 (no data) — those
-    contracts get skipped; the trade-day series simply pauses on those legs.
-  - Rate limit (429) → tenacity backoff + retry.
-  - Network errors → log + return None; engine then closes at last known mark.
+  Why this matters:
+    - Re-running the same backtest = $0 (huge: parameter sweeps become free)
+    - Adding a new signal that needs the same chain window = $0
+    - The data is yours forever, independent of your MarketData subscription
+    - V can cancel Starter ($30/mo) after validation and still re-test signals
 
-Usage:
-    from backtest.marketdata_source import MarketDataHistoricalSource
-    source = MarketDataHistoricalSource()
-    report = await run_backtest(trades, source)
+  Layout:
+    data/marketdata_cache/
+        SPY/
+            2024-06-21/
+                2020-05-01.parquet   ← chain @ that expiry, as_of date
+                2020-05-02.parquet
+                ...
+        NVDA/
+            ...
+
+  Each parquet stores: strike, option_type, bid, ask, mid_iv, delta, gamma,
+  theta, vega, open_interest, volume — i.e. *everything* the chain returned,
+  not just what the current backtest needed. So a NEW signal that needs IV or
+  greeks gets them for free from cache.
+
+  Empty chains (204 responses) are recorded as zero-row parquets — preventing
+  re-fetches that we already know are empty.
+
+CHAIN-LEVEL CACHE (in-memory, in-process):
+  Same as before — keeps hot chains in RAM during a single backtest run.
+  This sits ABOVE the disk cache: check memory first, then disk, then API.
+
+Cost model:
+  1st run on a window:  pays MarketData credits + writes to disk
+  2nd run on same window: zero credits, reads from disk in <1ms per chain
+  New signal on same window: zero credits
+  New signal on new window: pays credits for new dates only
 """
 
 from __future__ import annotations
 
 import asyncio
+import os
 from collections import defaultdict
 from datetime import date
+from pathlib import Path
 from typing import Iterable
 
+import pandas as pd
 from loguru import logger
 
 from backtest.engine import Leg, OptionQuote
 
 
+DEFAULT_CACHE_ROOT = Path(os.environ.get("MARKETDATA_CACHE_ROOT",
+                                           "data/marketdata_cache"))
+
+
+def _safe(seg: str) -> str:
+    """Filesystem-safe path segment."""
+    return "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in seg)
+
+
 class MarketDataHistoricalSource:
     """
-    Async OptionsSource backed by data.marketdata.MarketDataClient with
-    per-(symbol, expiry, strike, right) caching of the whole historical series.
+    Async OptionsSource with THREE-LAYER caching:
+      1. In-memory (per-process, fastest)
+      2. On-disk Parquet (persistent across runs, free re-reads)
+      3. MarketData API (paid, last resort)
     """
 
-    def __init__(self, client=None, *, calendar_symbol: str = "SPY"):
+    def __init__(self, client=None, *, calendar_symbol: str = "SPY",
+                 cache_root: Path | str | None = None):
         if client is None:
             from data.marketdata import MarketDataClient
             client = MarketDataClient()
         self.client = client
         self.calendar_symbol = calendar_symbol
-        self._series_cache: dict[tuple, dict[date, OptionQuote]] = {}
-        self._series_locks: dict[tuple, asyncio.Lock] = defaultdict(asyncio.Lock)
+        self.cache_root = Path(cache_root) if cache_root else DEFAULT_CACHE_ROOT
+        self.cache_root.mkdir(parents=True, exist_ok=True)
+
+        # In-memory cache: (symbol, expiry, day) -> dict[(strike, right), OptionQuote] | None
+        self._chain_cache: dict[tuple, dict[tuple, OptionQuote] | None] = {}
+        self._chain_locks: dict[tuple, asyncio.Lock] = defaultdict(asyncio.Lock)
         self._calendar_cache: dict[str, list[date]] = {}
+
+        # Diagnostics — costs and hit-rate
+        self._api_fetches = 0
+        self._disk_hits = 0
+        self._memory_hits = 0
+
+    @property
+    def stats(self) -> dict:
+        total = self._api_fetches + self._disk_hits + self._memory_hits
+        return {
+            "api_fetches": self._api_fetches,
+            "disk_hits": self._disk_hits,
+            "memory_hits": self._memory_hits,
+            "total_lookups": total,
+            "disk_hit_rate": (self._disk_hits / total) if total else 0.0,
+        }
 
     # ---- OptionsSource protocol -----------------------------------------
 
     async def eod_quote(self, underlying: str, leg: Leg, day: date) -> OptionQuote | None:
-        key = (underlying, leg.expiry, float(leg.strike), leg.right.upper())
-        series = await self._load_series(underlying, leg, key)
-        return series.get(day)
+        chain_key = (underlying, leg.expiry, day)
+        contract_key = (float(leg.strike), leg.right.upper())
+
+        if chain_key in self._chain_cache:
+            self._memory_hits += 1
+            cached = self._chain_cache[chain_key]
+            return cached.get(contract_key) if cached else None
+
+        cached = await self._load_chain(underlying, leg.expiry, day)
+        return cached.get(contract_key) if cached else None
 
     async def trading_days(self, underlying: str, start: date, end: date) -> list[date]:
-        """
-        Use SPY's history as the trading-day calendar (cheap, universal).
-        If SPY history isn't available, fall back to the first cached contract's days.
-        """
+        """SPY history is the canonical trading calendar — cached on disk."""
+        cal_file = self.cache_root / "_calendar" / f"{_safe(self.calendar_symbol)}.parquet"
         if self.calendar_symbol not in self._calendar_cache:
-            try:
-                bars = await self.client.get_history(
-                    self.calendar_symbol, interval="daily",
-                    start=start.isoformat(), end=end.isoformat(),
+            if cal_file.exists():
+                df = pd.read_parquet(cal_file)
+                self._calendar_cache[self.calendar_symbol] = sorted(
+                    pd.to_datetime(df["date"]).dt.date.tolist()
                 )
-                self._calendar_cache[self.calendar_symbol] = sorted({
-                    date.fromisoformat(b["date"]) for b in bars
-                })
-            except Exception as e:
-                logger.debug(f"trading_days SPY fetch failed: {e}")
-                self._calendar_cache[self.calendar_symbol] = []
+            else:
+                try:
+                    bars = await self.client.get_history(
+                        self.calendar_symbol, interval="daily",
+                        start="2017-01-01", end=date.today().isoformat(),
+                    )
+                    days = sorted({date.fromisoformat(b["date"]) for b in bars})
+                    self._calendar_cache[self.calendar_symbol] = days
+                    cal_file.parent.mkdir(parents=True, exist_ok=True)
+                    pd.DataFrame({"date": days}).to_parquet(cal_file, index=False)
+                except Exception as e:
+                    logger.debug(f"trading_days SPY fetch failed: {e}")
+                    self._calendar_cache[self.calendar_symbol] = []
         cal = self._calendar_cache.get(self.calendar_symbol, [])
-        if cal:
-            return [d for d in cal if start <= d <= end]
-        # Fallback: union of cached contract days
-        all_days: set[date] = set()
-        for series in self._series_cache.values():
-            for d in series:
-                if start <= d <= end:
-                    all_days.add(d)
-        return sorted(all_days)
+        return [d for d in cal if start <= d <= end]
 
     # ---- internals ------------------------------------------------------
 
-    async def _load_series(self, underlying: str, leg: Leg,
-                            key: tuple) -> dict[date, OptionQuote]:
-        if key in self._series_cache:
-            return self._series_cache[key]
+    def _chain_path(self, underlying: str, expiry: date, day: date) -> Path:
+        return (self.cache_root / _safe(underlying) / expiry.isoformat()
+                / f"{day.isoformat()}.parquet")
 
-        async with self._series_locks[key]:
-            if key in self._series_cache:
-                return self._series_cache[key]
+    async def _load_chain(self, underlying: str, expiry: date,
+                            day: date) -> dict[tuple, OptionQuote] | None:
+        """
+        Three-tier load: memory → disk → API. Locks per (underlying, expiry, day)
+        so concurrent backtests don't duplicate fetches.
+        """
+        chain_key = (underlying, expiry, day)
+        async with self._chain_locks[chain_key]:
+            if chain_key in self._chain_cache:
+                self._memory_hits += 1
+                return self._chain_cache[chain_key]
 
-            series: dict[date, OptionQuote] = {}
+            # Tier 2 — disk
+            disk_path = self._chain_path(underlying, expiry, day)
+            if disk_path.exists():
+                try:
+                    df = pd.read_parquet(disk_path)
+                    parsed = self._parse_dataframe(df)
+                    self._chain_cache[chain_key] = parsed or None
+                    self._disk_hits += 1
+                    return parsed or None
+                except Exception as e:
+                    logger.debug(f"disk read failed {disk_path}: {e}")
+
+            # Tier 3 — API
             try:
-                # MarketData allows requesting the whole chain at a specific
-                # expiration, then filtering to our strike+right. We pull on
-                # every trading day to build the full series — but in practice,
-                # we instead pull a few "anchor dates" and let the engine ask
-                # for individual days; this implementation pulls per-day so the
-                # cache structure stays {date: OptionQuote}.
-                #
-                # For now: lazy per-day fetch via get_options_chain(..., as_of=).
-                # Each eod_quote() call will populate one date at a time.
-                pass
+                chain = await self.client.get_options_chain(
+                    underlying, expiry=expiry.isoformat(), as_of=day.isoformat(),
+                )
+                self._api_fetches += 1
             except Exception as e:
-                logger.debug(f"_load_series init failed for {key}: {e}")
+                logger.debug(f"MarketData historical chain fetch failed "
+                             f"{underlying}/{expiry}/{day}: {e}")
+                self._chain_cache[chain_key] = None
+                self._write_empty(disk_path)
+                return None
 
-            self._series_cache[key] = series
-            return series
+            parsed, df_to_write = self._parse_api_response(chain)
+            self._write_chain(disk_path, df_to_write)
+            self._chain_cache[chain_key] = parsed if parsed else None
+            return parsed or None
 
-    async def _fetch_quote(self, underlying: str, leg: Leg, day: date) -> OptionQuote | None:
-        """Fetch a single day's quote and cache it in the per-contract series."""
-        key = (underlying, leg.expiry, float(leg.strike), leg.right.upper())
-        series = await self._load_series(underlying, leg, key)
-        if day in series:
-            return series[day]
-        try:
-            chain = await self.client.get_options_chain(
-                underlying, expiry=leg.expiry.isoformat(),
-                as_of=day.isoformat(),
-            )
-        except Exception as e:
-            logger.debug(f"MarketData historical fetch failed {key} on {day}: {e}")
-            return None
-
-        for c in chain:
+    def _parse_api_response(self, chain: list[dict]) -> tuple[dict[tuple, OptionQuote], pd.DataFrame]:
+        """
+        Return both the engine's OptionQuote dict AND a full DataFrame for
+        disk persistence. The DataFrame keeps every field MarketData returned —
+        so future signals that need IV, greeks, OI, volume can read them for free.
+        """
+        rows: list[dict] = []
+        quotes: dict[tuple, OptionQuote] = {}
+        for c in chain or []:
             try:
-                strike_match = abs(float(c.get("strike") or 0) - float(leg.strike)) < 0.01
-                right_match = (c.get("option_type") or "").upper().startswith(leg.right.upper())
-            except (TypeError, ValueError):
-                continue
-            if strike_match and right_match:
+                strike = float(c.get("strike") or 0)
+                right = (c.get("option_type") or "").upper()[:1] or None
                 bid = float(c.get("bid") or 0)
                 ask = float(c.get("ask") or 0)
-                if ask <= 0:
-                    return None
-                quote = OptionQuote(bid=max(0.0, bid), ask=ask)
-                series[day] = quote
-                return quote
-        return None
+                if not strike or right not in {"C", "P"} or ask <= 0:
+                    continue
+                greeks = c.get("greeks") or {}
+                rows.append({
+                    "strike": strike, "option_type": right,
+                    "bid": max(0.0, bid), "ask": ask,
+                    "mid_iv": float(greeks.get("mid_iv") or 0),
+                    "delta": float(greeks.get("delta") or 0),
+                    "gamma": float(greeks.get("gamma") or 0),
+                    "theta": float(greeks.get("theta") or 0),
+                    "vega": float(greeks.get("vega") or 0),
+                    "rho": float(greeks.get("rho") or 0),
+                    "open_interest": int(c.get("open_interest") or 0),
+                    "volume": int(c.get("volume") or 0),
+                    "underlying_price": float(c.get("underlying_price") or 0),
+                })
+                quotes[(strike, right)] = OptionQuote(bid=max(0.0, bid), ask=ask)
+            except (TypeError, ValueError):
+                continue
+        return quotes, pd.DataFrame(rows)
 
-    # Override eod_quote to use the per-day fetch path
-    async def eod_quote(self, underlying: str, leg: Leg, day: date) -> OptionQuote | None:
-        key = (underlying, leg.expiry, float(leg.strike), leg.right.upper())
-        if key in self._series_cache and day in self._series_cache[key]:
-            return self._series_cache[key][day]
-        return await self._fetch_quote(underlying, leg, day)
+    def _parse_dataframe(self, df: pd.DataFrame) -> dict[tuple, OptionQuote]:
+        """Reverse: build OptionQuotes from a cached parquet."""
+        out: dict[tuple, OptionQuote] = {}
+        if df.empty:
+            return out
+        for r in df.itertuples(index=False):
+            try:
+                strike = float(r.strike)
+                right = str(r.option_type).upper()[:1]
+                bid = float(r.bid)
+                ask = float(r.ask)
+                if not strike or right not in {"C", "P"} or ask <= 0:
+                    continue
+                out[(strike, right)] = OptionQuote(bid=max(0.0, bid), ask=ask)
+            except (AttributeError, TypeError, ValueError):
+                continue
+        return out
+
+    def _write_chain(self, path: Path, df: pd.DataFrame) -> None:
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            df.to_parquet(path, index=False)
+        except Exception as e:
+            logger.debug(f"chain disk write failed {path}: {e}")
+
+    def _write_empty(self, path: Path) -> None:
+        """Persist a 'we tried, it was empty' marker so we don't re-fetch."""
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            pd.DataFrame(columns=["strike", "option_type", "bid", "ask"]).to_parquet(
+                path, index=False,
+            )
+        except Exception as e:
+            logger.debug(f"empty chain marker write failed {path}: {e}")

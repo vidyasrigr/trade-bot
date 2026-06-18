@@ -24,6 +24,60 @@ from loguru import logger
 
 STATES = ("proposed", "paper", "live_small", "live_full", "demoted")
 
+# ---------------------------------------------------------------------------
+# P0 Stage 3.1/3.2 — hard promotion gates (DSR alone is not enough)
+# ---------------------------------------------------------------------------
+
+# WF max drawdown < 25% deliberately KILLS the current VRP promotion (51% DD).
+HARD_GATES = {
+    "max_wf_drawdown": 0.25,
+    "min_wf_trades": 100,
+    "min_profit_factor": 1.3,
+    "max_ticker_pnl_share": 0.25,
+    "max_sector_exposure": 0.35,
+}
+
+# Minimum paper-trade evidence per stream before live promotion is even considered.
+PAPER_DURATION_GATES = {
+    "options":   {"min_days": 56,  "min_closed_trades": 100},
+    "short_vol": {"min_days": 182, "min_closed_trades": 100, "requires_vol_spike": True},
+    "swing":     {"min_days": 90,  "min_closed_trades": 75},
+    "long_term": {"min_days": 90,  "min_closed_trades": 0,   "must_beat_spy": True},
+}
+
+
+def passes_promotion_gates(
+    wf_metrics: dict,
+    *,
+    ticker_pnl_shares: dict | None = None,
+    sector_exposures: dict | None = None,
+) -> tuple[bool, list[str]]:
+    """
+    Hard, deterministic gates a signal must clear ON TOP of the DSR thresholds
+    before it may be promoted. Returns (passed, list_of_failure_reasons). Checks
+    only what the metrics provide — profit_factor / concentration are enforced
+    when supplied (None = not yet computed, skipped rather than silently passed).
+    """
+    fails: list[str] = []
+    dd = wf_metrics.get("max_drawdown")
+    if dd is not None and dd >= HARD_GATES["max_wf_drawdown"]:
+        fails.append(f"WF max_drawdown {dd:.0%} >= {HARD_GATES['max_wf_drawdown']:.0%}")
+    n = int(wf_metrics.get("num_trades") or 0)
+    if n < HARD_GATES["min_wf_trades"]:
+        fails.append(f"WF trades {n} < {HARD_GATES['min_wf_trades']}")
+    pf = wf_metrics.get("profit_factor")
+    if pf is not None and pf < HARD_GATES["min_profit_factor"]:
+        fails.append(f"profit_factor {pf:.2f} < {HARD_GATES['min_profit_factor']}")
+    if ticker_pnl_shares:
+        top = max(ticker_pnl_shares.values())
+        if top > HARD_GATES["max_ticker_pnl_share"]:
+            fails.append(f"top-ticker PnL share {top:.0%} > {HARD_GATES['max_ticker_pnl_share']:.0%}")
+    if sector_exposures:
+        top_sec = max(sector_exposures.values())
+        if top_sec > HARD_GATES["max_sector_exposure"]:
+            fails.append(f"top-sector exposure {top_sec:.0%} > {HARD_GATES['max_sector_exposure']:.0%}")
+    return (len(fails) == 0, fails)
+
 PAPER_DURATION = timedelta(days=28)
 LIVE_SMALL_DURATION = timedelta(days=56)
 DEMOTION_WINDOW = timedelta(days=30)

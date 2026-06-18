@@ -404,7 +404,15 @@ def classify_result(result: dict) -> str:
     if train_n == 0 and wf_n == 0:
         return "blocked"  # 0 trades = data/harness issue, not a verdict
     if train_dsr >= DSR_PROMOTE_TRAIN and wf_dsr >= DSR_PROMOTE_WF:
-        return "promote"
+        # DSR is necessary but NOT sufficient (P0 Stage 3.1). Hard gates —
+        # WF drawdown < 25%, >=100 trades, PF, concentration — must also pass.
+        # This deliberately keeps the 51%-drawdown VRP out of "promote".
+        from scoring.promotion import passes_promotion_gates
+        passed, reasons = passes_promotion_gates(wf)
+        if passed:
+            return "promote"
+        result["gate_failures"] = reasons
+        return "sandbox"
     if train_dsr >= DSR_SANDBOX_FLOOR or wf_dsr >= DSR_SANDBOX_FLOOR:
         return "sandbox"
     return "no_edge"

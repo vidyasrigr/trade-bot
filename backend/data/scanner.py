@@ -406,6 +406,26 @@ async def stage3_catalyst_filter(stage2_results: list[dict]) -> list[dict]:
     return survivors
 
 
+async def _ranker_has_enough_labels(min_labels: int = 500) -> bool:
+    """
+    P0 Stage 2.2 — keep the LightGBM ranker in SHADOW MODE (no score tilt) until
+    there are >= min_labels closed real outcomes. With a thin/biased label set the
+    ranker would learn scanner bias instead of edge. Auto-enables once crossed.
+    """
+    try:
+        from core.database import AsyncSessionLocal
+        from sqlalchemy import text
+        async with AsyncSessionLocal() as s:
+            n = (await s.execute(text("SELECT count(*) FROM recommendation_outcomes"))).scalar() or 0
+        if n < min_labels:
+            logger.warning(f"ML ranker SHADOW MODE: {n}/{min_labels} closed labels — tilt disabled")
+            return False
+        return True
+    except Exception as e:
+        logger.debug(f"ranker label check failed ({e}); disabling tilt to be safe")
+        return False
+
+
 async def _apply_ml_ranker(augmented: list[dict]) -> list[dict]:
     """
     Multiply each stage-3 score by (1 + ranker_z) where ranker_z is the
@@ -413,6 +433,8 @@ async def _apply_ml_ranker(augmented: list[dict]) -> list[dict]:
     Tilt magnitude is capped at ±25% to keep the hand-tuned baseline
     influential until the ML model is calibrated.
     """
+    if not await _ranker_has_enough_labels():
+        return augmented  # shadow mode — no tilt
     try:
         from scoring.ranker import score_symbols, latest_artifact
         from store.feature_store import get_feature_store

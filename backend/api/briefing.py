@@ -143,6 +143,60 @@ async def _long_term_stream() -> list[dict]:
     return out
 
 
+CONVICTION_FLOOR = 60.0
+
+
+def _classify_briefing(items: list[dict]) -> tuple[list, list, list]:
+    """P0 Stage 6.2 — split items into tradeable / watch / blocked.
+
+    blocked  = a CRITICAL guard fired (ticket.blocked)
+    tradeable = passed guards AND conviction >= floor
+    watch     = passed guards, conviction below floor
+    """
+    tradeable, watch, blocked = [], [], []
+    for it in items:
+        ticket = it.get("order_ticket") or {}
+        if ticket.get("blocked"):
+            blocked.append({**it, "block_reasons": ticket.get("block_reasons", [])})
+            continue
+        conv = (it.get("conviction") or it.get("conviction_score")
+                or ticket.get("conviction") or 0) or 0
+        (tradeable if float(conv) >= CONVICTION_FLOOR else watch).append(it)
+    return tradeable, watch, blocked
+
+
+def _why_not_trade(watch: list, blocked: list) -> str:
+    if not watch and not blocked:
+        return "No candidates surfaced today."
+    parts = []
+    if watch:
+        parts.append(f"{len(watch)} setup(s) on watch (below the conviction floor of "
+                     f"{CONVICTION_FLOOR:.0f})")
+    if blocked:
+        reasons = sorted({r for it in blocked for r in it.get("block_reasons", [])})
+        parts.append(f"{len(blocked)} blocked by guards"
+                     + (f" ({'; '.join(reasons[:3])})" if reasons else ""))
+    return "No tradeable setups today: " + "; ".join(parts) + "."
+
+
+async def _current_regime() -> dict:
+    """Best-effort market regime context; empty dict if unavailable (never faked)."""
+    try:
+        from analysis.market_weather import get_market_weather
+        return await get_market_weather()
+    except Exception:
+        try:
+            from core.database import AsyncSessionLocal
+            from sqlalchemy import text
+            async with AsyncSessionLocal() as s:
+                row = (await s.execute(text(
+                    "SELECT regime FROM regime_forecasts ORDER BY as_of_date DESC LIMIT 1"
+                ))).first()
+                return {"regime": row[0]} if row else {}
+        except Exception:
+            return {}
+
+
 async def build_briefing() -> dict:
     options, swing, long_term = await asyncio.gather(
         _options_stream(), _swing_stream(), _long_term_stream(),
@@ -154,12 +208,22 @@ async def build_briefing() -> dict:
         swing = []
     if isinstance(long_term, Exception):
         long_term = []
+
+    all_items = [*options, *swing, *long_term]
+    tradeable, watch, blocked = _classify_briefing(all_items)
     return {
         "date": date.today().isoformat(),
         "generated_at": datetime.utcnow().isoformat(),
+        # Streams kept for back-compat.
         "options": options,
         "swing": swing,
         "long_term": long_term,
+        # P0 Stage 6.2 — decision-oriented view.
+        "tradeable": tradeable,
+        "watch": watch,
+        "blocked": blocked,
+        "why_not_trade_today": _why_not_trade(watch, blocked) if not tradeable else "",
+        "regime": await _current_regime(),
     }
 
 

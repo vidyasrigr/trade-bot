@@ -128,7 +128,8 @@ async def _walk_forward_dsr(session, category: str, regime: str, window_days: in
     return float(deflated_sharpe(daily, num_trials=40))
 
 
-async def _transition(session, category: str, regime: str, new_state: str, reason: str) -> None:
+async def _transition(session, category: str, regime: str, new_state: str, reason: str,
+                       from_state: str | None = None) -> None:
     from sqlalchemy import text
     multiplier = 0.25 if new_state == "demoted" else None
     if multiplier is not None:
@@ -144,7 +145,50 @@ async def _transition(session, category: str, regime: str, new_state: str, reaso
             SET signal_status = :s, status_changed_at = NOW(), updated_at = NOW()
             WHERE category = :c AND regime = :r
         """), {"s": new_state, "c": category, "r": regime})
-    logger.info(f"promotion[{category}/{regime}]: → {new_state} ({reason})")
+    # P0 Stage 3.3 — audit every transition.
+    await session.execute(text("""
+        INSERT INTO signal_registry_changes (category, regime, from_state, to_state, reason)
+        VALUES (:c, :r, :fs, :ts, :reason)
+    """), {"c": category, "r": regime, "fs": from_state, "ts": new_state, "reason": reason})
+    logger.info(f"promotion[{category}/{regime}]: {from_state or '?'} -> {new_state} ({reason})")
+    if new_state == "demoted":
+        await _notify_demotion(category, regime, reason)
+
+
+async def _notify_demotion(category: str, regime: str, reason: str) -> None:
+    """Best-effort Discord alert on demotion (no-op if no webhook configured)."""
+    try:
+        from core.config import settings
+        url = getattr(settings, "DISCORD_WEBHOOK_URL", None)
+        if not url:
+            return
+        import httpx
+        async with httpx.AsyncClient(timeout=8.0) as c:
+            await c.post(url, json={"content": f"[DEMOTED] {category}/{regime}: {reason}"})
+    except Exception as e:
+        logger.debug(f"demotion notify failed: {e}")
+
+
+async def run_demotion_sweep() -> int:
+    """
+    P0 Stage 3.3 — daily sweep: demote any live signal whose recent (30d) deflated
+    Sharpe has gone negative (proxy for negative expectancy). Reuses
+    evaluate_transitions' demotion branch. Returns the number demoted.
+    """
+    from core.database import AsyncSessionLocal
+    from sqlalchemy import text
+    async with AsyncSessionLocal() as session:
+        rows = (await session.execute(text(
+            "SELECT category, regime FROM factor_ic_scores "
+            "WHERE signal_status IN ('live_small', 'live_full')"
+        ))).fetchall()
+    demoted = 0
+    for cat, reg in rows:
+        if await evaluate_transitions(cat, reg) == "demoted":
+            demoted += 1
+    if demoted:
+        logger.info(f"demotion sweep: demoted {demoted} signal(s)")
+    return demoted
 
 
 async def evaluate_transitions(category: str, regime: str) -> str | None:
@@ -165,7 +209,7 @@ async def evaluate_transitions(category: str, regime: str) -> str | None:
         age = now - since
 
         if state == "proposed":
-            await _transition(session, category, regime, "paper", "initial promotion")
+            await _transition(session, category, regime, "paper", "initial promotion", from_state="proposed")
             await session.commit()
             return "paper"
 
@@ -173,7 +217,7 @@ async def evaluate_transitions(category: str, regime: str) -> str | None:
             dsr = await _walk_forward_dsr(session, category, regime, window_days=28)
             if dsr > DSR_PROMOTE:
                 await _transition(session, category, regime, "live_small",
-                                   f"paper {age.days}d DSR={dsr:.2f}>{DSR_PROMOTE}")
+                                   f"paper {age.days}d DSR={dsr:.2f}>{DSR_PROMOTE}", from_state="paper")
                 await session.commit()
                 return "live_small"
 
@@ -181,7 +225,7 @@ async def evaluate_transitions(category: str, regime: str) -> str | None:
             dsr = await _walk_forward_dsr(session, category, regime, window_days=56)
             if dsr > DSR_PROMOTE:
                 await _transition(session, category, regime, "live_full",
-                                   f"live_small {age.days}d DSR={dsr:.2f}>{DSR_PROMOTE}")
+                                   f"live_small {age.days}d DSR={dsr:.2f}>{DSR_PROMOTE}", from_state="live_small")
                 await session.commit()
                 return "live_full"
 
@@ -189,7 +233,7 @@ async def evaluate_transitions(category: str, regime: str) -> str | None:
             dsr = await _walk_forward_dsr(session, category, regime, window_days=DEMOTION_WINDOW.days)
             if dsr < DSR_DEMOTE:
                 await _transition(session, category, regime, "demoted",
-                                   f"sustained DSR={dsr:.2f}<{DSR_DEMOTE}")
+                                   f"sustained DSR={dsr:.2f}<{DSR_DEMOTE}", from_state=state)
                 await session.commit()
                 return "demoted"
 

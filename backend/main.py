@@ -83,6 +83,28 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
     )
 
+    # Daily signal demotion sweep (P0 Stage 3.3): 8:00 PM ET
+    async def _run_demotion_sweep():
+        from scoring.promotion import run_demotion_sweep
+        await run_demotion_sweep()
+    scheduler.add_job(
+        _run_demotion_sweep,
+        CronTrigger(hour=20, minute=0, timezone="America/New_York"),
+        id="daily_demotion_sweep",
+        replace_existing=True,
+    )
+
+    # Monthly calibration report (P0 Stage 3.5): 1st of month, 9:00 AM ET
+    async def _run_calibration_report():
+        from scoring.calibration_report import generate_calibration_report
+        await generate_calibration_report()
+    scheduler.add_job(
+        _run_calibration_report,
+        CronTrigger(day=1, hour=9, minute=0, timezone="America/New_York"),
+        id="monthly_calibration_report",
+        replace_existing=True,
+    )
+
     # Nightly whale flow (Phase I.2): 6:50 PM ET (after scan completes; uses chains)
     scheduler.add_job(
         run_nightly_whale_flow,

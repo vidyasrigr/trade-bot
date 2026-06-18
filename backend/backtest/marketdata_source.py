@@ -164,15 +164,18 @@ class MarketDataHistoricalSource:
             self._expirations_api += 1
         except Exception as e:
             logger.debug(f"get_expirations failed {underlying}/{as_of}: {e}")
-            self._expirations_mem[key] = []
-            return []
-        try:
-            import json
-            disk.parent.mkdir(parents=True, exist_ok=True)
-            disk.write_text(json.dumps(exps))
-        except Exception as e:
-            logger.debug(f"expirations disk write failed {disk}: {e}")
-        self._expirations_mem[key] = exps
+            return []  # do NOT cache a failure — let it retry next run
+        # Only persist NON-empty results. An empty list usually means a rate-limit
+        # (429) truncation, not "no expiries"; caching it would block a faithful
+        # re-fetch once the daily limit resets.
+        if exps:
+            try:
+                import json
+                disk.parent.mkdir(parents=True, exist_ok=True)
+                disk.write_text(json.dumps(exps))
+            except Exception as e:
+                logger.debug(f"expirations disk write failed {disk}: {e}")
+            self._expirations_mem[key] = exps
         return exps
 
     # ---- OptionsSource protocol -----------------------------------------

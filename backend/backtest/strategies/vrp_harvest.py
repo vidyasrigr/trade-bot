@@ -230,26 +230,25 @@ async def _resolve_candidate(
     sym, d, spot = candidate.symbol, candidate.entry_date, candidate.spot
     target = d + timedelta(days=config.target_dte_entry)
 
-    # 1. Resolve expiry. Prefer the on-disk chain cache (ZERO API calls — this is
-    #    the credit-leak fix: re-running a backtest on cached data must NOT re-hit
-    #    get_expirations). Only call the (now disk-cached, counted) expirations API
-    #    when no chain for this date is banked yet.
-    cached_exp = source.cached_expiries(sym, d) if hasattr(source, "cached_expiries") else []
-    if cached_exp:
-        candidate_expiries = cached_exp
-    elif hasattr(source, "expirations"):
+    # 1. Resolve expiry. Use the disk-cached FULL expirations list (faithful: same
+    #    nearest-target selection as a live API call, but free after the first
+    #    populate — this is the credit-leak fix). Fall back to the chain-cache dir
+    #    (banked expiries only) when the expirations API is unavailable, e.g. the
+    #    daily limit is hit. Both paths cost ZERO credits on a re-run.
+    candidate_expiries: list = []
+    if hasattr(source, "expirations"):
         exps = await source.expirations(sym, d)
-        if not exps:
-            return None
         candidate_expiries = [date.fromisoformat(e[:10]) for e in exps]
-    else:
+    if not candidate_expiries and hasattr(source, "cached_expiries"):
+        candidate_expiries = source.cached_expiries(sym, d)
+    if not candidate_expiries:
         try:
             exps = await client.get_expirations(sym, as_of=d.isoformat())
         except Exception:
             return None
-        if not exps:
-            return None
         candidate_expiries = [date.fromisoformat(e[:10]) for e in exps]
+    if not candidate_expiries:
+        return None
     expiry = min(candidate_expiries, key=lambda e: abs((e - target).days))
     # Guard against a degenerate nearest-expiry (already expired / 0 DTE).
     if (expiry - d).days < config.target_dte_exit:

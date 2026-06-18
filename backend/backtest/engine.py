@@ -68,6 +68,7 @@ class TradeResult:
     exit_value: float
     pnl: float              # dollars, after slippage + commissions
     days_held: int
+    marks: dict = field(default_factory=dict)  # day -> unrealized $ while open (MTM)
 
 
 @dataclass
@@ -247,6 +248,10 @@ async def simulate_trade(trade: Trade, source: OptionsSource,
     last_mark_day = days[0]
     exit_reason = "forced_exit"
     exit_day = days[-1]
+    # Daily unrealized PnL ($) while the trade is open (P0 Stage 3.0). Entry day
+    # is flat. run_backtest aggregates these across trades into a mark-to-market
+    # equity curve so intratrade drawdown is no longer invisible.
+    marks: dict[date, float] = {days[0]: 0.0}
 
     for day in days[1:]:
         mark = await _structure_mark(source, trade, day)
@@ -254,6 +259,7 @@ async def simulate_trade(trade: Trade, source: OptionsSource,
             continue
         last_mark, last_mark_day = mark, day
         unrealized = mark - entry_value
+        marks[day] = round(unrealized * CONTRACT_MULTIPLIER, 2)
         if trade.profit_target is not None and unrealized >= trade.profit_target * basis:
             exit_reason, exit_day = "profit_target", day
             break
@@ -267,6 +273,8 @@ async def simulate_trade(trade: Trade, source: OptionsSource,
         exit_value, exit_day, exit_reason = last_mark, last_mark_day, "data_end"
 
     pnl = (exit_value - entry_value) * CONTRACT_MULTIPLIER - commissions
+    # Drop marks at/after the exit day — those days carry realized PnL instead.
+    marks = {d: v for d, v in marks.items() if d < exit_day}
     return TradeResult(
         trade=trade,
         entry_date=days[0],
@@ -276,6 +284,7 @@ async def simulate_trade(trade: Trade, source: OptionsSource,
         exit_value=round(exit_value, 4),
         pnl=round(pnl, 2),
         days_held=(exit_day - days[0]).days,
+        marks=marks,
     )
 
 
@@ -329,7 +338,31 @@ async def run_backtest(trades: list[Trade], source: OptionsSource,
         daily_returns=daily_returns,
         num_trials=num_trials,
     )
-    return BacktestReport(results=results, equity_curve=equity, metrics=metrics)
+
+    # Daily mark-to-market equity curve (P0 Stage 3.0). Portfolio value on each
+    # day = starting + sum over trades of (realized pnl if closed, else current
+    # unrealized mark). This exposes intratrade drawdown the realized-exit curve
+    # hides — e.g. a short strangle deeply underwater before it recovers. DSR /
+    # Sharpe stay on the realized curve (comparable to prior reports); only the
+    # drawdown is replaced with the honest MTM figure.
+    from backtest.metrics import max_drawdown as _max_dd
+    mark_days = sorted({d for r in results for d in r.marks} | {r.exit_date for r in results})
+    mtm_vals = []
+    for d in mark_days:
+        total = 0.0
+        for r in results:
+            if d >= r.exit_date:
+                total += r.pnl
+            elif d in r.marks:
+                total += r.marks[d]
+        mtm_vals.append(config.starting_equity + total)
+    mtm_equity = pd.Series(mtm_vals, index=pd.to_datetime(mark_days))
+    if len(mtm_equity) > 1:
+        metrics["max_drawdown_realized"] = metrics.get("max_drawdown")
+        metrics["max_drawdown"] = float(_max_dd(mtm_equity.to_numpy()))
+        metrics["equity_curve_method"] = "daily_mtm"
+
+    return BacktestReport(results=results, equity_curve=mtm_equity, metrics=metrics)
 
 
 # ---------------------------------------------------------------------------

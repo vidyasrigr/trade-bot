@@ -150,6 +150,19 @@ async def run_analysis_graph(stage3_item: dict, cross_context: str) -> dict:
     ]))
     await _run_trader(state, combined_context)
 
+    # Step 4.4: Quant conviction is a HARD CEILING (P0 Stage 2.1). The LLM may
+    # LOWER conviction (adversary / confirmation gate below) but may NEVER raise
+    # it above what the quantitative layer supports. A beautiful thesis cannot
+    # out-vote the evidence. Raw values are persisted for calibration audit.
+    state["llm_conviction_raw"] = state["conviction_score"]
+    state["quant_conviction_raw"] = scoring.conviction_score if scoring else None
+    if scoring is not None and state["conviction_score"] > scoring.conviction_score:
+        logger.info(
+            f"[{symbol}] LLM conviction {state['conviction_score']:.0f} capped at "
+            f"quant ceiling {scoring.conviction_score:.0f}"
+        )
+        state["conviction_score"] = scoring.conviction_score
+
     # Step 4.5: Adversary challenge (deepseek-r1 via Ollama)
     adv_result = await _run_adversary(state, dna_context)
     state["adversary_report"] = adv_result.get("raw_response", "")
@@ -182,6 +195,10 @@ async def run_analysis_graph(stage3_item: dict, cross_context: str) -> dict:
 
     # Step 7: Build order ticket
     state["order_ticket"] = _build_order_ticket(state, analysis, scoring)
+
+    # Step 7.5: Ticket guards (P0 Stage 1.2) — CRITICAL flags block the ticket
+    # (contracts -> 0), WARNING/INFO flags are surfaced. Never crashes the flow.
+    await _apply_ticket_guards(state)
 
     return {
         "symbol": symbol,
@@ -630,6 +647,41 @@ def _execution_price(bid: float, ask: float, strategy: str | None) -> tuple[floa
         # Treat everything else as premium-selling (credit) → fill at bid.
         return round(bid, 2), round(half_spread, 4), "bid"
     return round(mid, 2), round(half_spread, 4), "mid"
+
+
+async def _apply_ticket_guards(state: AgentState) -> None:
+    """
+    P0 Stage 1.2 — run the last-mile guards on a built ticket. CRITICAL flags
+    (e.g. earnings inside DTE) block the ticket: contracts -> 0, blocked=True,
+    reasons surfaced. WARNING/INFO flags are attached for display. Guard failures
+    must NEVER crash the agent flow, so everything is wrapped defensively.
+    """
+    ticket = state.get("order_ticket") or {}
+    if not ticket:
+        return
+    ts = state.get("trade_structure", {}) or {}
+    try:
+        from scoring.ticket_guards import run_all_guards, block_on_critical
+        flags = await run_all_guards(
+            symbol=state.get("symbol", ""),
+            direction=state.get("direction", "neutral"),
+            stream=ticket.get("stream", "options"),
+            dte=int(ts.get("dte_min") or ts.get("dte") or 21),
+        )
+    except Exception as e:
+        logger.warning(f"[{state.get('symbol')}] ticket guards errored (non-fatal): {e}")
+        return
+    ticket["guard_flags"] = [f.to_dict() for f in flags]
+    ticket["guard_warnings"] = [
+        f"{f.name}: {f.message}" for f in flags if f.severity in ("warning", "info")
+    ]
+    should_block, criticals = block_on_critical(flags)
+    if should_block:
+        ticket["blocked"] = True
+        ticket["block_reasons"] = [f"{f.name}: {f.message}" for f in criticals]
+        ticket["suggested_contracts"] = 0
+        logger.info(f"[{state.get('symbol')}] ticket BLOCKED by guards: {ticket['block_reasons']}")
+    state["order_ticket"] = ticket
 
 
 def _build_order_ticket(state: AgentState, analysis: AnalysisResult, scoring=None) -> dict:

@@ -12,7 +12,9 @@
     "sharpe": 1.1540268359533485,
     "probabilistic_sharpe": 0.919440604003178,
     "deflated_sharpe": 0.30875259463650845,
-    "max_drawdown": 0.7357044952705039
+    "max_drawdown": 0.8242568976847392,
+    "max_drawdown_realized": 0.7357044952705039,
+    "equity_curve_method": "daily_mtm"
   },
   "num_trades": 430
 }

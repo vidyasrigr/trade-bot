@@ -95,3 +95,27 @@ data/backtest_reports/MASTER_REPORT_v1.md (v1) and master_progress.json.
 - FMP free tier: daily quota exhausted (PEAD wf deferred to tomorrow).
 - No signal_registry promotion_status changed (V's call).
 - pytest: 94/94.
+
+---
+
+## CORRECTED DRAWDOWNS (MTM, 2026-06-18) — supersedes the realized-exit figures above
+
+After the Stage 3.0 mark-to-market fix + the leak-fixed faithful re-run on the full 40-name
+universe (train chains banked, ~5,200 credits), VRP's TRUE drawdowns are far worse than the
+realized-exit equity showed:
+
+| Window | Trades | DSR | Realized maxDD (old) | **MTM maxDD (true)** | PnL |
+|---|---|---|---|---|---|
+| Train 2021-07→2024-12 (40-name) | 1052 | 0.843 | 28% | **51%** | +$228,915 |
+| Walk-fwd 2025-01→2026-06 (40-name) | 430 | 0.309 | 74% | **82%** | +$115,062 |
+
+The realized-exit curve hid ~1/3 of the drawdown. VRP's real out-of-sample risk is an **~82%
+mark-to-market drawdown** — a practical blow-up. The edge (DSR 0.84 train / 0.31 wf) is real
+and robust to breadth, but the risk is disqualifying.
+
+**Definitive verdict:** VRP is NOT promotable. It fails the DD<25% hard gate (Stage 3.1) and the
+synthetic-2020 stress test (Stage 3.4, 40x-credit loss + margin call). Both new P0 gates correctly
+reject it. Do not paper-trade naked VRP. Any future attempt needs genuine tail defense proven to
+hold an 82%-class drawdown down to <25% — which the iron-condor sweep already showed wings can't
+do without killing the edge. Park VRP; the next real signal work is PEAD (FMP quota permitting)
+and the briefing-replay (Stage 5).

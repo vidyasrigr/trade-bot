@@ -4,15 +4,17 @@
   "window": "2021-07-01 to 2024-12-31",
   "universe_size": 40,
   "metrics": {
-    "num_trades": 28,
-    "win_rate": 0.6785714285714286,
-    "total_pnl": 24.20000000000004,
-    "avg_pnl": 0.8642857142857157,
-    "expectancy": 0.8642857142857157,
-    "sharpe": -0.502229258883525,
-    "probabilistic_sharpe": 0.4345360322249477,
-    "deflated_sharpe": 0.019435720482513203,
-    "max_drawdown": 0.004679524671680939
+    "num_trades": 1052,
+    "win_rate": 0.6815589353612167,
+    "total_pnl": 228914.5500000001,
+    "avg_pnl": 217.59938212927767,
+    "expectancy": 217.59938212927767,
+    "sharpe": 1.8089437400670334,
+    "probabilistic_sharpe": 0.9981879039875727,
+    "deflated_sharpe": 0.8433775541727366,
+    "max_drawdown": 0.5088079212723702,
+    "max_drawdown_realized": 0.2821244022372801,
+    "equity_curve_method": "daily_mtm"
   },
-  "num_trades": 28
+  "num_trades": 1052
 }

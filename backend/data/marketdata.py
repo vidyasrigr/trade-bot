@@ -377,5 +377,5 @@ class NullMarketDataClient:
 def get_tradier():
     """Returns MarketDataClient when MARKETDATA_API_KEY is set, else NullClient."""
     if settings.MARKETDATA_API_KEY:
-        return MarketDataClient(settings.MARKETDATA_API_KEY)
+        return MarketDataClient()  # reads MARKETDATA_API_KEY from settings itself
     return NullMarketDataClient()

@@ -96,6 +96,11 @@ class MarketDataHistoricalSource:
         self._api_fetches = 0
         self._disk_hits = 0
         self._memory_hits = 0
+        # Expirations leak fix (2026-06-18): get_expirations was a billed call
+        # made per candidate, invisible to api_fetches. Cache + count it.
+        self._expirations_mem: dict[tuple, list[str]] = {}
+        self._expirations_api = 0
+        self._expirations_disk = 0
 
     @property
     def stats(self) -> dict:
@@ -104,9 +109,71 @@ class MarketDataHistoricalSource:
             "api_fetches": self._api_fetches,
             "disk_hits": self._disk_hits,
             "memory_hits": self._memory_hits,
+            "expirations_api": self._expirations_api,
+            "expirations_disk": self._expirations_disk,
             "total_lookups": total,
             "disk_hit_rate": (self._disk_hits / total) if total else 0.0,
         }
+
+    # ---- expirations: cache-dir resolution + disk-cached API (leak fix) -----
+
+    def cached_expiries(self, underlying: str, day: date) -> list[date]:
+        """
+        Expiries whose chain for `day` is ALREADY on disk — read from the cache
+        layout {underlying}/{expiry}/{day}.parquet. Resolving expiry from here
+        costs ZERO API calls, which is the whole point: re-running a backtest on
+        cached data must not re-hit get_expirations (that was the credit leak).
+        """
+        base = self.cache_root / _safe(underlying)
+        if not base.exists():
+            return []
+        out: list[date] = []
+        target = f"{day.isoformat()}.parquet"
+        for expdir in base.iterdir():
+            if expdir.is_dir() and (expdir / target).exists():
+                try:
+                    out.append(date.fromisoformat(expdir.name))
+                except ValueError:
+                    continue
+        return sorted(out)
+
+    async def expirations(self, underlying: str, as_of: date) -> list[str]:
+        """
+        Listed expiries as-of a date, with memory -> disk -> API caching and an
+        honest credit counter. Use this instead of client.get_expirations so the
+        call is cached (re-runs are free) and visible in stats.
+        """
+        key = (underlying, as_of)
+        if key in self._expirations_mem:
+            return self._expirations_mem[key]
+
+        disk = (self.cache_root / "_expirations" / _safe(underlying)
+                / f"{as_of.isoformat()}.json")
+        if disk.exists():
+            try:
+                import json
+                exps = json.loads(disk.read_text())
+                self._expirations_disk += 1
+                self._expirations_mem[key] = exps
+                return exps
+            except Exception as e:
+                logger.debug(f"expirations disk read failed {disk}: {e}")
+
+        try:
+            exps = await self.client.get_expirations(underlying, as_of=as_of.isoformat())
+            self._expirations_api += 1
+        except Exception as e:
+            logger.debug(f"get_expirations failed {underlying}/{as_of}: {e}")
+            self._expirations_mem[key] = []
+            return []
+        try:
+            import json
+            disk.parent.mkdir(parents=True, exist_ok=True)
+            disk.write_text(json.dumps(exps))
+        except Exception as e:
+            logger.debug(f"expirations disk write failed {disk}: {e}")
+        self._expirations_mem[key] = exps
+        return exps
 
     # ---- OptionsSource protocol -----------------------------------------
 

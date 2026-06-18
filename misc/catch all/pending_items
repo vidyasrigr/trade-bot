@@ -1,0 +1,18 @@
+1. LLM agent graph (Claude mocking) — Your code asks Claude "is this trade good?" To test it, we'd make a fake Claude
+  that returns a canned reply like "yes, conviction 80." Problem: if we tweak the prompt later, the real Claude might
+  reply differently, but our fake doesn't change — so the test still passes while production breaks. The test gives
+  false confidence.
+
+  2. Full DB integration / fixture infrastructure — Most code talks to your Postgres database. To test it without
+  polluting your real data, we'd need to spin up a temporary throwaway database for every test, load the schema, run the
+   test, delete it. A "fixture" is just code that sets up that throwaway state. Building this is fiddly (Docker,
+  pg_dump, pytest plugins) — half a day of work that doesn't actually catch bugs you'd ship to production.
+
+  3. HTTP clients / recorded responses — When data/marketdata.py calls MarketData's API, the API returns JSON. To test
+  "does our code parse that JSON right?" without hitting their server every test run (slow + rate-limited + costs
+  credits), we record one real response to a file, then "replay" that file in tests as if it came from the network.
+  Tools called vcrpy or respx do this. Useful but not critical.
+
+  4. Sweeper end-to-end with real options source — You're right, once MarketData is wired the sweeper will just work
+  with real chains. This isn't really a test gap, it's an operational milestone: subscribe → wire → run → see results. I
+   overstated it as a "gap."

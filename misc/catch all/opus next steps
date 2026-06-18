@@ -1,0 +1,106 @@
+Brutally honest, ranked by leverage per hour of work:
+
+  What to do RIGHT NOW (no new code)
+
+  1. Subscribe to MarketData Trader ($79/mo) + add the key
+  2. Run migrations 007–016, install duckdb lightgbm feedparser
+  3. Backfill 365 days to seed the feature store
+  4. Run VRP, PEAD, momentum_12_1, skew backtests for 2018-2024 — if 3 of 4 don't clear DSR > 0.5, stop and find the bug
+   before paper trading
+  5. Paper trade the survivors for 8 weeks — track Brier on conviction
+  6. Only then go live
+
+  Until step 5 produces calibrated win rates, every additional feature is theatre.
+
+  Real data gaps worth wiring (free, high signal)
+
+  - FINRA daily short volume — leading indicator of squeeze setup (free at
+  finra.org/finra-data/browse-catalog/short-sale-volume-data)
+  - HY credit spreads + yield curve slope — recession canary (FRED, already have key)
+  - Treasury TGA balance + reverse repo — liquidity tide (FRED)
+  - VIX term structure (VIX9D/VIX/VIX3M/VIX6M) — vol risk premium across horizons (CBOE delayed feed, free)
+  - CFTC Commitments of Traders — speculator vs commercial positioning, weekly free
+  - Citi Economic Surprise Index proxy — derive from FRED macro releases
+  - DXY + 10y yield + Bitcoin — three-line risk-on/off regime overlay
+  - SEC 13F quarterly (free EDGAR) — hedge fund positioning lagged but real
+  - EarningsWhispers — pre-announce consensus drift ($30/mo or screen-scrape)
+
+  Worth paying for if first quarter is profitable
+
+  - Unusual Whales $48/mo — institutional sweep tape (Pan-Poteshman ↑)
+  - ORATS or LiveVol ($100+/mo) — clean historical vol surfaces
+
+  Strategies with peer-reviewed backing not yet wired
+
+  ┌──────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────┐
+  │             Strategy             │                                 Edge source                                  │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+  │ Gamma squeeze detector           │ High call OI + low float + retail concentration at OTM (documented post-GME) │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+  │ Term structure inversion harvest │ Front-month IV > back-month → calendar spreads                               │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+  │ Risk-reversal flip               │ 25Δ skew sign change predicts directional move (Bali 2023)                   │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+  │ Earnings IV-crush short straddle │ Documented +expectancy on high-IVR mid-caps                                  │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+  │ Insider + analyst combo          │ Executive open-buy + 3+ upgrades in 30d = strong signal (replicates          │
+  │                                  │ Cohen-Malloy)                                                                │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+  │ Pairs trading on cointegrated    │ Stat-arb reversion; Gatev-Goetzmann-Rouwenhorst 2006                         │
+  │ names                            │                                                                              │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+  │ Pre-FOMC long straddle on SPX    │ IV expansion into release (Lucca-Moench complement)                          │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+  │ Russell rebalance front-running  │ Predictable June flows                                                       │
+  └──────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────┘
+
+  Pick 3 to wire after the first round of backtests survives. Not all of them. Adding before validation = noise.
+
+  Your real edge: RTX 5080 underused
+
+  Where the GPU should be working but isn't:
+  1. Per-stock vol forecast with a small LSTM/transformer instead of HV20 — vol is the input to every options decision
+  2. Earnings call transcript embeddings (nomic-embed-text) for sentiment regime per CEO
+  3. News-similarity dedup at universe scale — embed all stories, cluster, only score unique
+  4. 8-K full-text classifier — material vs filler, Qwen3-14B can do this in <1s per filing
+  5. Backtest parameter sweeps in parallel — try 20 VRP variants simultaneously
+
+  That's the difference between "have an RTX 5080" and "use an RTX 5080."
+
+  The one thing that prevents profitability today
+
+  Zero closed trades. Zero backtest evidence. Zero calibration. The whole tower of signals rests on hand-tuned weights.
+  Validate 3 signals against real history, paper trade them, calibrate conviction → outcome. Then you'll know whether
+  any of this works. My honest read: 2 of 8 signals will clear DSR > 0.5 out-of-sample. That's enough to make money if
+  you size right.
+
+  Next single action: subscribe to MarketData, run VRP harvest on 2018-2024, see if it reproduces Carr-Wu. If yes —
+  momentum. If no — engine bug, fix before anything else.
+
+
+
+  ************
+
+  3. Why 1-1.5 years? It doesn't have to be. The 8-week paper trade can be compressed to 8 hours if we backtest
+  properly: walk-forward 2018-2024 with MarketData chains IS the paper-trade equivalent — same evidence quality. The
+  only thing live paper adds: live-vs-backtest reality gap (slippage, fills, missing tickers) which typically costs
+  10-20% of stated edge. Plan: backtest hard, validate 3-5 signals, paper-trade 4 weeks (not 8) only to measure that
+  gap, then go live small. Total: 2-3 months not 18 months.
+
+  4. Parallel GPU backtesting — YES, this is exactly what the 5080 is for. Building a ParallelSweeper that runs 20-50
+  strategy variants concurrently (asyncio-bound but CUDA-accelerated for vectorized signal computation). Noisy variants
+  get isolated, not deleted — observed in a "sandbox" mode that surfaces metrics but doesn't influence trades. Building
+  now.
+
+  5. Chinese trading models — Real. Alibaba's QwQ-32B (Apache 2.0, reasoning specialist) outperforms most open models on
+   financial reasoning benchmarks. Q4-quantized fits on your 5080 (~18GB tight; use Q3_K_M at ~15GB instead). Also
+  DeepSeek V4 (MIT, 1M context, April 2026). And TauricResearch/TradingAgents — multi-agent trading framework with
+  QwQ/DeepSeek/GLM support. Worth swapping in as your adversary model (replacing deepseek-r1:7b with QwQ-14B for better
+  reasoning, or going full QwQ-32B Q3 for the strategist when you don't want to spend Claude tokens).
+
+  6. Is this overkill? Honest: the architecture isn't, the unvalidated signal count is. Simple "RSI + MACD" gives you
+  the same edge as 95% of retail traders, which is roughly zero. The real edge from your stack: (a) cross-sectional
+  ranks (not absolute thresholds), (b) regime conditioning (Markov), (c) per-stock DNA, (d) tail-signal stacking for
+  conviction multiplier, (e) LLM reasoning at top-of-funnel only. Wrong question: "is this too much?" Right question:
+  "which 5 of the 18 signals actually have positive deflated Sharpe?" Answer that and the rest is window dressing — keep
+   it for context but don't trade on it.

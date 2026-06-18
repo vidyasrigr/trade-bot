@@ -100,7 +100,19 @@ async def compute_final_score(
     weight_adjustments = {}
     direction_votes: dict[str, float] = {"bullish": 0.0, "bearish": 0.0, "neutral": 0.0}
 
+    # P0 Stage 1.5 — runtime kill-switch. Read the operating mode once; any signal
+    # below the mode's promotion threshold contributes 0 (not just downweighted),
+    # so sandboxed/proposed experimental signals cannot leak into conviction.
+    from scoring.signal_registry import contributes_in_mode
+    _mode = getattr(settings, "OPERATING_MODE", "paper")
+    _blocked_signals: list[str] = []
+
     for key, cat in category_scores.items():
+        if not contributes_in_mode(key, _mode):
+            adjusted_scores[key] = 0.0
+            weight_adjustments[key] = 0.0
+            _blocked_signals.append(key)
+            continue
         base_weight = BASE_WEIGHTS.get(key, 5.0)
         ic_mult = multipliers.get(key, 1.0)
 
@@ -117,6 +129,12 @@ async def compute_final_score(
             direction_votes[cat.direction] = direction_votes.get(cat.direction, 0) + effective_score
 
     raw_total = sum(adjusted_scores.values())
+
+    if _blocked_signals:
+        warnings.append(
+            f"Mode '{_mode}': {len(_blocked_signals)} signal(s) below promotion threshold "
+            f"contributed 0 — {', '.join(sorted(_blocked_signals))}"
+        )
 
     # 3. Apply anti-crowding discount
     crowding_applied = False

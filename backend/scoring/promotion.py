@@ -51,6 +51,8 @@ def passes_promotion_gates(
     *,
     ticker_pnl_shares: dict | None = None,
     sector_exposures: dict | None = None,
+    is_short_vol: bool = False,
+    stress_test_passed: bool | None = None,
 ) -> tuple[bool, list[str]]:
     """
     Hard, deterministic gates a signal must clear ON TOP of the DSR thresholds
@@ -76,6 +78,9 @@ def passes_promotion_gates(
         top_sec = max(sector_exposures.values())
         if top_sec > HARD_GATES["max_sector_exposure"]:
             fails.append(f"top-sector exposure {top_sec:.0%} > {HARD_GATES['max_sector_exposure']:.0%}")
+    # P0 Stage 3.4 — short-vol signals must survive the synthetic-2020 stress test.
+    if is_short_vol and not stress_test_passed:
+        fails.append("short-vol signal has not passed the synthetic-2020 stress test")
     return (len(fails) == 0, fails)
 
 PAPER_DURATION = timedelta(days=28)

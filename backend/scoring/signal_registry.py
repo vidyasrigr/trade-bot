@@ -217,6 +217,37 @@ def by_name() -> dict[str, SignalSpec]:
     return {s.name: s for s in REGISTRY}
 
 
+# P0 Stage 1.5 — promotion statuses allowed to feed conviction, per operating mode.
+MODE_ALLOWED = {
+    "backtest":   {"sandbox", "feature_only", "proposed", "paper", "live_small", "live_full"},
+    "paper":      {"paper", "live_small", "live_full"},
+    "live_small": {"live_small", "live_full"},
+    "live_full":  {"live_full"},
+}
+
+
+def contributes_in_mode(signal_name: str, mode: str = "paper") -> bool:
+    """
+    May this signal feed compute_final_score in the given operating mode?
+
+    - backtest mode evaluates everything raw (returns True).
+    - An ungoverned name (not in the registry) defaults to True — it's a core
+      component, not an experimental signal under promotion governance.
+    - A registry signal contributes iff influences_conviction is True AND its
+      promotion_status is permitted for the mode. So in 'paper' mode the 20
+      live_full core-engine signals pass while the 18 'proposed' experimental
+      signals contribute 0 — the runtime kill-switch GPT/ogo asked for.
+    """
+    if mode == "backtest":
+        return True
+    spec = by_name().get(signal_name)
+    if spec is None:
+        return True
+    if not spec.influences_conviction:
+        return False
+    return spec.promotion_status in MODE_ALLOWED.get(mode, MODE_ALLOWED["paper"])
+
+
 def by_category(cat: str) -> list[SignalSpec]:
     return [s for s in REGISTRY if s.category == cat]
 

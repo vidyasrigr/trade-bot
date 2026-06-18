@@ -81,6 +81,13 @@ class Settings(BaseSettings):
     MAX_OPEN_POSITIONS: int = 10          # max concurrent open positions
     PAPER_PORTFOLIO_VALUE: float = 150_000.0  # starting paper portfolio value ($)
 
+    # P0 Stage 1.5 — operating mode gates which signals may feed compute_final_score.
+    # backtest: all signals (raw evaluation). paper: only paper/live_small/live_full.
+    # live_small: only live_small/live_full. live_full: only live_full. Default paper:
+    # the 20 live_full core-engine signals contribute; the 18 'proposed' experimental
+    # signals (vrp_z, skew_25d, momentum_12_1, ...) cannot leak into conviction.
+    OPERATING_MODE: str = "paper"
+
     # Position sizing — half-Kelly (professional standard)
     # Full Kelly = max growth but massive drawdown. Half-Kelly = ~75% optimal growth, ~50% less drawdown.
     # Reference: NBER 2025 options sizing research, tastytrade capital allocation research

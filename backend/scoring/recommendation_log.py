@@ -98,7 +98,7 @@ async def log_recommendation(rec: RecommendationInput, session=None) -> int:
              :ev, :pp,
              :target_res, :thesis,
              :sigs, :mc, :sc,
-             :mv, :pv, :raw::jsonb)
+             :mv, :pv, CAST(:raw AS jsonb))
         RETURNING id
     """), {
         "stream": rec.stream, "symbol": rec.symbol,

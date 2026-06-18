@@ -300,6 +300,19 @@ class OpenTradeRequest(BaseModel):
     max_profit: float
     analysis_id: int | None = None
     conviction: float | None = None   # system conviction at entry — feeds calibration
+    recommendation_id: int            # P0 Stage 1.4 — REQUIRED: paper trades must
+                                      # originate from a logged recommendation
+    legs: list | None = None          # per-leg structure (P0 Stage 4.2)
+    strategy_type: str | None = None
+
+
+def _expiry_to_dte(expiry: str) -> int:
+    """Best-effort DTE from an expiry string; default 21 when not a clean date."""
+    from datetime import date as _date
+    try:
+        return max(0, (_date.fromisoformat(str(expiry)[:10]) - _date.today()).days)
+    except ValueError:
+        return 21
 
 
 @router.post("/trades/paper/open")
@@ -325,15 +338,51 @@ async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTa
 
     from core.database import AsyncSessionLocal
     from sqlalchemy import text
+    import orjson
 
     async with AsyncSessionLocal() as session:
+        # P0 Stage 1.4 — the paper trade MUST link to a logged recommendation.
+        rec = (await session.execute(
+            text("SELECT id FROM recommendations WHERE id = :rid"),
+            {"rid": req.recommendation_id},
+        )).first()
+        if rec is None:
+            raise HTTPException(
+                status_code=404,
+                detail={"status": "no_recommendation",
+                        "message": f"recommendation_id {req.recommendation_id} not found — "
+                                   "paper trades must originate from a logged recommendation"},
+            )
+
+        # Re-run ticket guards at OPEN time — state may have changed since the rec
+        # (earnings moved into the window, a position appeared, etc.).
+        try:
+            from scoring.ticket_guards import run_all_guards, block_on_critical
+            flags = await run_all_guards(
+                req.symbol, req.direction, "options", _expiry_to_dte(req.expiry))
+            should_block, criticals = block_on_critical(flags)
+        except Exception:
+            should_block, criticals = False, []
+        if should_block:
+            await session.execute(
+                text("UPDATE recommendations SET status = 'stale' WHERE id = :rid"),
+                {"rid": req.recommendation_id})
+            await session.commit()
+            raise HTTPException(
+                status_code=409,
+                detail={"status": "guard_blocked",
+                        "reasons": [f"{f.name}: {f.message}" for f in criticals]},
+            )
+
         result = await session.execute(text("""
             INSERT INTO paper_trades
                 (symbol, analysis_id, direction, strategy, expiry, long_strike,
-                 contracts, entry_price, max_loss, max_profit, conviction, status)
+                 contracts, entry_price, max_loss, max_profit, conviction, status,
+                 legs, strategy_type, recommendation_id)
             VALUES
                 (:sym, :aid, :dir, :strat, :exp, :strike,
-                 :contracts, :entry, :max_loss, :max_profit, :conviction, 'open')
+                 :contracts, :entry, :max_loss, :max_profit, :conviction, 'open',
+                 :legs::jsonb, :stype, :rid)
             RETURNING id
         """), {
             "sym": req.symbol, "aid": req.analysis_id, "dir": req.direction,
@@ -341,11 +390,18 @@ async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTa
             "contracts": req.contracts, "entry": req.entry_price,
             "max_loss": req.max_loss, "max_profit": req.max_profit,
             "conviction": req.conviction,
+            "legs": orjson.dumps(req.legs or []).decode(),
+            "stype": req.strategy_type, "rid": req.recommendation_id,
         })
         trade_id = result.fetchone()[0]
+        # Link the recommendation to its paper fill.
+        await session.execute(
+            text("UPDATE recommendations SET status = 'paper_opened' WHERE id = :rid"),
+            {"rid": req.recommendation_id})
         await session.commit()
 
-    return {"status": "opened", "trade_id": trade_id}
+    return {"status": "opened", "trade_id": trade_id,
+            "recommendation_id": req.recommendation_id}
 
 
 @router.get("/trades/paper")

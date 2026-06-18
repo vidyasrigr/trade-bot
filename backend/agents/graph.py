@@ -200,10 +200,16 @@ async def run_analysis_graph(stage3_item: dict, cross_context: str) -> dict:
     # (contracts -> 0), WARNING/INFO flags are surfaced. Never crashes the flow.
     await _apply_ticket_guards(state)
 
+    # Step 7.6: Log the recommendation (P0 Stage 1.3) — EVERY emitted ticket is
+    # recorded (recommended-but-not-taken is as valuable as taken). The returned
+    # id is what /trades/paper/open requires.
+    state["recommendation_id"] = await _log_recommendation_for(state)
+
     return {
         "symbol": symbol,
         "total_score": total_score,
         "conviction_score": state["conviction_score"],
+        "recommendation_id": state.get("recommendation_id"),
         "direction": direction,
         "vol_regime": analysis.vol_regime,
         "iv_percentile": analysis.iv_percentile,
@@ -647,6 +653,41 @@ def _execution_price(bid: float, ask: float, strategy: str | None) -> tuple[floa
         # Treat everything else as premium-selling (credit) → fill at bid.
         return round(bid, 2), round(half_spread, 4), "bid"
     return round(mid, 2), round(half_spread, 4), "mid"
+
+
+async def _log_recommendation_for(state: AgentState) -> int | None:
+    """
+    P0 Stage 1.3 — persist the emitted ticket to `recommendations` and stamp the
+    returned id onto the ticket. Non-fatal: a logging failure must not kill the
+    agent flow (or a DB-less test run).
+    """
+    t = state.get("order_ticket") or {}
+    if not t:
+        return None
+    try:
+        from scoring.recommendation_log import RecommendationInput, log_recommendation
+        proj = t.get("return_projection") or {}
+        rec = RecommendationInput(
+            stream=t.get("stream", "options"),
+            symbol=state.get("symbol", ""),
+            strategy=t.get("strategy"),
+            direction=state.get("direction"),
+            conviction=state.get("conviction_score"),
+            entry_price=t.get("fill_price") or t.get("mid"),
+            prob_profit=proj.get("prob_profit"),
+            expected_value_pct=proj.get("expected_value_pct"),
+            thesis=(state.get("trader_thesis") or "")[:1000],
+            signals_fired=list((state.get("category_scores") or {}).keys()) or None,
+            market_climate=state.get("market_climate"),
+            stock_climate=state.get("stock_climate"),
+            raw_ticket=t,
+        )
+        rid = await log_recommendation(rec)
+        t["recommendation_id"] = rid
+        return rid
+    except Exception as e:
+        logger.warning(f"[{state.get('symbol')}] log_recommendation failed (non-fatal): {e}")
+        return None
 
 
 async def _apply_ticket_guards(state: AgentState) -> None:

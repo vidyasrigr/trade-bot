@@ -658,7 +658,19 @@ def format_dna_context(dna: StockBehavioralDNA) -> str:
     Format DNA as a compact string for injection into Claude's Stage 4 context.
     Keeps it concise — Claude should use this as behavioral priors, not exhaustive data.
     """
-    lines = [f"[{dna.symbol} Behavioral DNA — quality {dna.data_quality_score:.0f}/100]"]
+    # P0 Stage 6.1 — DNA is a MODIFIER, not a core signal. Make that explicit to
+    # the LLM so it cannot be used as a standalone green-light, and warn when the
+    # per-ticker sample is too small to be anything but a weak prior.
+    lines = [
+        "[CONTEXT ONLY — behavioral tendencies, NOT a standalone trade trigger. "
+        "Global validated edge first; DNA second; portfolio/regime risk above both.]",
+        f"[{dna.symbol} Behavioral DNA — quality {dna.data_quality_score:.0f}/100]",
+    ]
+    if dna.earnings_events_count < 20:
+        lines.append(
+            f"[OVERFIT CAUTION: built on only {dna.earnings_events_count} earnings events "
+            "— weak prior, may be noise, do not treat as a behavioral law]"
+        )
 
     if dna.earnings_events_count >= 4:
         line = (

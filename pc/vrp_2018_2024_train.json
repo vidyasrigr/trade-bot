@@ -1,0 +1,9 @@
+{
+  "leg": "train",
+  "window": "2018-01-01 to 2024-12-31",
+  "universe_size": 40,
+  "metrics": {
+    "num_trades": 0
+  },
+  "num_trades": 0
+}

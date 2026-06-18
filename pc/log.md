@@ -299,3 +299,13 @@ FMP API BREAKAGE (app-wide, important):
 DATA RECAP (from yesterday, still true): cached MarketData historical chains carry
 mid_iv==0 AND delta==0 (no historical greeks on Starter). skew/term/IV-spread family
 blocked unless IV is recovered by BS-inversion from option mid prices (building now).
+
+---
+## 2026-06-17 (PC Opus) — master validation v1/v2/v3 + clean isolated reruns
+NEW: backtest/strategies/{skew_xs,vrp_regime}.py; backtest/iv_inversion.py.
+FIXES in run_full_validation.py: regime variant dispatch, skew dispatch, momentum 6-1/3-1
++ skew variants in grid, blocked-vs-error classification, panel cache (momentum_xs_v2).
+pead.py: stable/earnings endpoint, process cache, 429 backoff-retry, FMP concurrency 3.
+FINDINGS: FMP legacy API dead app-wide; FMP free tier 250/day exhausted (PEAD wf deferred);
+all-concurrent master run rate-limits free APIs (use isolated/sequential or pre-fetch).
+VERDICTS: see data/backtest_reports/MASTER_REPORT.md. pytest 94/94.

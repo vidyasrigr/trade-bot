@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-18T02:04:43.762472",
+  "updated_at": "2026-06-18T02:49:11.478424",
   "variants": [
     {
       "signal": "momentum_12_1",
@@ -713,11 +713,38 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 24,
+          "win_rate": 0.625,
+          "total_pnl": -224.39999999999998,
+          "avg_pnl": -9.35,
+          "expectancy": -9.35,
+          "sharpe": -1.9457827967310453,
+          "probabilistic_sharpe": 0.26711313235918877,
+          "deflated_sharpe": 0.005829917481083318,
+          "max_drawdown": 0.005134152695131844
+        },
+        "walk_forward": {
+          "num_trades": 11,
+          "win_rate": 0.5454545454545454,
+          "total_pnl": -1151.35,
+          "avg_pnl": -104.66818181818181,
+          "expectancy": -104.66818181818181,
+          "sharpe": -5.209819203467394,
+          "probabilistic_sharpe": 0.15762402833328637,
+          "deflated_sharpe": 0.001836389588242765,
+          "max_drawdown": 0.018367246002195324
+        },
+        "train_trades": 24,
+        "wf_trades": 11,
+        "credits_burned": 0,
+        "universe_size": 20
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-18T02:04:43.763241",
+      "finished_at": "2026-06-18T02:14:34.759486"
     },
     {
       "signal": "vrp_harvest",
@@ -734,11 +761,38 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 27,
+          "win_rate": 0.6666666666666666,
+          "total_pnl": 3.0500000000000043,
+          "avg_pnl": 0.11296296296296313,
+          "expectancy": 0.11296296296296313,
+          "sharpe": -0.6171554530334686,
+          "probabilistic_sharpe": 0.4209647177131892,
+          "deflated_sharpe": 0.017858524764289722,
+          "max_drawdown": 0.004890619791241563
+        },
+        "walk_forward": {
+          "num_trades": 12,
+          "win_rate": 0.5833333333333334,
+          "total_pnl": -1057.1999999999998,
+          "avg_pnl": -88.09999999999998,
+          "expectancy": -88.09999999999998,
+          "sharpe": -4.481774754600558,
+          "probabilistic_sharpe": 0.17583862306193215,
+          "deflated_sharpe": 0.002312539023337552,
+          "max_drawdown": 0.017426527269103216
+        },
+        "train_trades": 27,
+        "wf_trades": 12,
+        "credits_burned": 0,
+        "universe_size": 20
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-18T02:14:34.760309",
+      "finished_at": "2026-06-18T02:25:29.462196"
     },
     {
       "signal": "vrp_harvest",
@@ -754,11 +808,38 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 28,
+          "win_rate": 0.6071428571428571,
+          "total_pnl": -257.54999999999995,
+          "avg_pnl": -9.198214285714284,
+          "expectancy": -9.198214285714284,
+          "sharpe": -1.9098915933486258,
+          "probabilistic_sharpe": 0.2635399908054945,
+          "deflated_sharpe": 0.005651682018751998,
+          "max_drawdown": 0.0058025205510110565
+        },
+        "walk_forward": {
+          "num_trades": 13,
+          "win_rate": 0.6153846153846154,
+          "total_pnl": -863.3,
+          "avg_pnl": -66.4076923076923,
+          "expectancy": -66.4076923076923,
+          "sharpe": -3.418258676914064,
+          "probabilistic_sharpe": 0.22977506888875487,
+          "deflated_sharpe": 0.004141685106984052,
+          "max_drawdown": 0.017426527269103216
+        },
+        "train_trades": 28,
+        "wf_trades": 13,
+        "credits_burned": 0,
+        "universe_size": 20
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-18T02:25:29.462964",
+      "finished_at": "2026-06-18T02:37:20.246846"
     },
     {
       "signal": "vrp_harvest",
@@ -774,19 +855,46 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 28,
+          "win_rate": 0.6428571428571429,
+          "total_pnl": -536.0500000000002,
+          "avg_pnl": -19.144642857142863,
+          "expectancy": -19.144642857142863,
+          "sharpe": -2.549572542395168,
+          "probabilistic_sharpe": 0.17477661051831173,
+          "deflated_sharpe": 0.0022829482498168646,
+          "max_drawdown": 0.00858393530739023
+        },
+        "walk_forward": {
+          "num_trades": 13,
+          "win_rate": 0.6153846153846154,
+          "total_pnl": -863.3,
+          "avg_pnl": -66.4076923076923,
+          "expectancy": -66.4076923076923,
+          "sharpe": -3.418258676914064,
+          "probabilistic_sharpe": 0.22977506888875487,
+          "deflated_sharpe": 0.004141685106984052,
+          "max_drawdown": 0.017426527269103216
+        },
+        "train_trades": 28,
+        "wf_trades": 13,
+        "credits_burned": 0,
+        "universe_size": 20
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-18T02:37:20.247628",
+      "finished_at": "2026-06-18T02:49:11.478405"
     }
   ],
   "summary": {
     "total": 20,
-    "pending": 4,
+    "pending": 0,
     "running": 0,
     "done": 0,
-    "sandboxed": 11,
+    "sandboxed": 15,
     "blocked": 5,
     "error": 0
   }

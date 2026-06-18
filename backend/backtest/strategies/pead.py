@@ -54,17 +54,27 @@ async def _fetch_surprises(symbol: str, sem: asyncio.Semaphore) -> list[dict]:
     async with sem:
         if symbol in _SURPRISE_CACHE:
             return _SURPRISE_CACHE[symbol]
-        try:
-            async with httpx.AsyncClient(timeout=15.0) as client:
-                resp = await client.get(
-                    FMP_EARNINGS,
-                    params={"symbol": symbol.upper(), "apikey": settings.FMP_API_KEY},
-                )
-                if resp.status_code != 200:
-                    return []
-                data = resp.json()
-        except Exception as e:
-            logger.debug(f"pead: FMP surprises failed {symbol}: {e}")
+        data = None
+        # FMP rate-limits bursts (429). Back off and retry instead of silently
+        # treating a throttle as "no earnings" (which fabricated 0-trade verdicts).
+        for attempt in range(4):
+            try:
+                async with httpx.AsyncClient(timeout=20.0) as client:
+                    resp = await client.get(
+                        FMP_EARNINGS,
+                        params={"symbol": symbol.upper(), "apikey": settings.FMP_API_KEY},
+                    )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    break
+                if resp.status_code == 429:
+                    await asyncio.sleep(2.0 * (attempt + 1))
+                    continue
+                return []  # 402/403/404 etc — a real "not available", don't retry
+            except Exception as e:
+                logger.debug(f"pead: FMP surprises failed {symbol} (try {attempt}): {e}")
+                await asyncio.sleep(1.5)
+        if data is None:
             return []
     out = data if isinstance(data, list) else []
     if out:  # only cache real responses, so a rate-limited empty can be retried
@@ -91,7 +101,7 @@ async def generate_pead_trades(
     pos_of = {ts.date(): i for i, ts in enumerate(idx)}
     trading_days = [ts.date() for ts in idx]
 
-    sem = asyncio.Semaphore(8)
+    sem = asyncio.Semaphore(3)  # FMP rate-limits bursts; keep concurrency low
     syms = [s for s in panel.columns]
     surprises = await asyncio.gather(*[_fetch_surprises(s, sem) for s in syms])
 

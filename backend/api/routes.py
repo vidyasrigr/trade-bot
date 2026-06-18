@@ -597,6 +597,20 @@ async def get_agent_performance():
     return {"stats": stats, "recommendations": recs}
 
 
+@router.get("/admin/ai-costs")
+async def get_ai_costs(period: str = "daily"):
+    """
+    Token usage and cost breakdown.
+    ?period=hourly  → last 24h grouped by hour
+    ?period=daily   → last 7 days grouped by day
+    ?period=weekly  → last 4 weeks grouped by week
+    """
+    if period not in ("hourly", "daily", "weekly"):
+        raise HTTPException(400, "period must be hourly, daily, or weekly")
+    from agents.agent_monitor import get_cost_stats
+    return await get_cost_stats(period)
+
+
 @router.post("/admin/meta-research")
 async def trigger_meta_research(background_tasks: BackgroundTasks):
     """Trigger meta-research proposal generation on demand."""

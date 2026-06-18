@@ -185,9 +185,16 @@ class MarketDataClient:
     # OPTIONS CHAINS
     # ----------------------------------------------------------------------
 
-    async def get_expirations(self, symbol: str) -> list[str]:
-        """Returns YYYY-MM-DD expiry strings sorted ascending."""
-        data = await self._get(f"/v1/options/expirations/{symbol}/")
+    async def get_expirations(self, symbol: str, *, as_of: str | None = None) -> list[str]:
+        """
+        Returns YYYY-MM-DD expiry strings sorted ascending.
+
+        as_of: optional YYYY-MM-DD to list the expirations that were actually
+        listed on that historical date (used by the backtest to snap to a real
+        expiry instead of guessing a Friday that may not have existed).
+        """
+        params = {"date": as_of} if as_of else None
+        data = await self._get(f"/v1/options/expirations/{symbol}/", params)
         expirations = data.get("expirations") or []
         # MarketData returns strings already in YYYY-MM-DD; defensively normalize
         out = []
@@ -333,3 +340,42 @@ class MarketDataClient:
     async def cancel_order(self, order_id: str) -> dict:
         logger.warning("MarketDataClient cannot cancel orders — Tradier sandbox handles execution")
         return {}
+
+
+class NullMarketDataClient:
+    """No-op client when neither MARKETDATA_API_KEY nor TRADIER_API_KEY set."""
+
+    async def get_best_chain(self, symbol: str, **kwargs) -> list[dict]:
+        logger.warning(f"No market data source configured — {symbol} returns empty chains")
+        return []
+
+    async def get_quote(self, symbol: str) -> dict:
+        return {}
+
+    async def get_account(self) -> dict:
+        return {}
+
+    async def get_balances(self) -> dict:
+        return {}
+
+    async def get_positions(self) -> list[dict]:
+        return []
+
+    async def get_orders(self) -> list[dict]:
+        return []
+
+    async def place_option_order(self, *args, **kwargs) -> dict:
+        return {}
+
+    async def cancel_order(self, order_id: str) -> dict:
+        return {}
+
+    async def get_candles(self, symbol: str, **kwargs) -> list[dict]:
+        return []
+
+
+def get_tradier():
+    """Returns MarketDataClient when MARKETDATA_API_KEY is set, else NullClient."""
+    if settings.MARKETDATA_API_KEY:
+        return MarketDataClient(settings.MARKETDATA_API_KEY)
+    return NullMarketDataClient()

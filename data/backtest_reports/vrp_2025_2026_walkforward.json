@@ -1,0 +1,17 @@
+{
+  "leg": "walk_forward",
+  "window": "2025-01-01 to 2026-06-15",
+  "universe_size": 20,
+  "metrics": {
+    "num_trades": 215,
+    "win_rate": 0.6697674418604651,
+    "total_pnl": 151697.5,
+    "avg_pnl": 705.5697674418604,
+    "expectancy": 705.5697674418604,
+    "sharpe": 1.394897868353436,
+    "probabilistic_sharpe": 0.9227714219712335,
+    "deflated_sharpe": 0.31677190789734155,
+    "max_drawdown": 0.5108130181247784
+  },
+  "num_trades": 215
+}

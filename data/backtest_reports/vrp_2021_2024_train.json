@@ -1,0 +1,17 @@
+{
+  "leg": "train",
+  "window": "2021-07-01 to 2024-12-31",
+  "universe_size": 20,
+  "metrics": {
+    "num_trades": 526,
+    "win_rate": 0.6844106463878327,
+    "total_pnl": 245302.90000000008,
+    "avg_pnl": 466.3553231939165,
+    "expectancy": 466.3553231939165,
+    "sharpe": 2.5234120212263655,
+    "probabilistic_sharpe": 0.9993206754418411,
+    "deflated_sharpe": 0.9036420434670536,
+    "max_drawdown": 0.27165717232274417
+  },
+  "num_trades": 526
+}

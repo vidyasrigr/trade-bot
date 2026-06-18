@@ -19,7 +19,7 @@ from loguru import logger
 from core.config import settings
 from core.redis_client import cache_get, cache_set
 from data.market import get_ohlcv_yfinance, get_multi_ohlcv_yfinance, get_av
-from data.tradier import get_tradier
+from data.marketdata import get_tradier
 from data.validators import validate_ohlcv
 
 

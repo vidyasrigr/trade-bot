@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
   BarChart2, TrendingUp, BookOpen, Users, Globe, Beaker,
   Home, Star, ShieldCheck, FileText, LineChart, LogOut,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Cpu,
 } from "lucide-react";
 import { getUser, logout } from "@/lib/auth";
 import type { AuthUser } from "@/lib/auth";
@@ -25,6 +25,7 @@ const NAV = [
   { href: "/politics",               label: "Politics",         icon: Globe },
   { href: "/backtest",               label: "Backtest",         icon: Beaker },
   { href: "/admin/circuit-breakers", label: "Circuit Breakers", icon: ShieldCheck },
+  { href: "/admin/ai-costs",         label: "AI Costs",         icon: Cpu },
 ];
 
 export function Sidebar() {

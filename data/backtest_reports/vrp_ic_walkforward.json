@@ -1,0 +1,25 @@
+{
+  "leg": "walkforward",
+  "variant": "iron_condor",
+  "window": "2025-01-01 to 2026-06-17",
+  "universe_size": 20,
+  "metrics": {
+    "num_trades": 153,
+    "win_rate": 0.477124183006536,
+    "total_pnl": -13412.1,
+    "avg_pnl": -87.66078431372549,
+    "expectancy": -87.66078431372549,
+    "sharpe": -4.213956770397046,
+    "probabilistic_sharpe": 0.0007074599889500784,
+    "deflated_sharpe": 1.7687475815525245e-07,
+    "max_drawdown": 0.14658656608298065,
+    "source_stats": {
+      "api_fetches": 234,
+      "disk_hits": 5834,
+      "memory_hits": 20211,
+      "total_lookups": 26279,
+      "disk_hit_rate": 0.22200235929829903
+    }
+  },
+  "num_trades": 153
+}

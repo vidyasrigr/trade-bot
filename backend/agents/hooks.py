@@ -50,10 +50,11 @@ async def llm_call(
     start = time.monotonic()
     used_model = primary
     response = ""
+    input_tokens = output_tokens = 0
 
     for attempt_model in filter(None, [primary, fallback]):
         try:
-            response = await _do_call(prompt, attempt_model, max_tokens, system)
+            response, input_tokens, output_tokens = await _do_call(prompt, attempt_model, max_tokens, system)
             used_model = attempt_model
             break
         except (RateLimitError, APIStatusError) as e:
@@ -74,7 +75,8 @@ async def llm_call(
             break
 
     elapsed = (time.monotonic() - start) * 1000
-    asyncio.create_task(_post_hook(agent_name, used_model, symbol, elapsed, response))
+    asyncio.create_task(_post_hook(agent_name, used_model, symbol, elapsed, response,
+                                   input_tokens, output_tokens))
     return response
 
 
@@ -101,6 +103,7 @@ async def llm_call_structured(
     start = time.monotonic()
     result: dict = {}
     used_model = primary
+    input_tokens = output_tokens = 0
 
     for attempt_model in filter(None, [primary, fallback]):
         try:
@@ -115,6 +118,8 @@ async def llm_call_structured(
                 tool_choice={"type": "tool", "name": tool_name},
                 messages=[{"role": "user", "content": prompt}],
             )
+            input_tokens = msg.usage.input_tokens
+            output_tokens = msg.usage.output_tokens
             for block in msg.content:
                 if block.type == "tool_use" and block.name == tool_name:
                     result = dict(block.input)
@@ -136,7 +141,8 @@ async def llm_call_structured(
             break
 
     elapsed = (time.monotonic() - start) * 1000
-    asyncio.create_task(_post_hook(agent_name, used_model, symbol, elapsed, str(result)))
+    asyncio.create_task(_post_hook(agent_name, used_model, symbol, elapsed, str(result),
+                                   input_tokens, output_tokens))
     return result
 
 
@@ -145,7 +151,8 @@ async def _do_call(
     model: str,
     max_tokens: int,
     system: str | None,
-) -> str:
+) -> tuple[str, int, int]:
+    """Returns (text, input_tokens, output_tokens)."""
     kwargs: dict[str, Any] = {
         "model": model,
         "max_tokens": max_tokens,
@@ -154,7 +161,7 @@ async def _do_call(
     if system:
         kwargs["system"] = [{"type": "text", "text": system}]
     msg = await _client.messages.create(**kwargs)
-    return msg.content[0].text
+    return msg.content[0].text, msg.usage.input_tokens, msg.usage.output_tokens
 
 
 async def _post_hook(
@@ -163,9 +170,12 @@ async def _post_hook(
     symbol: str,
     elapsed_ms: float,
     response: str,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
 ) -> None:
     try:
         from agents.agent_monitor import record
-        await record(agent_name, model, symbol, elapsed_ms, response)
+        await record(agent_name, model, symbol, elapsed_ms, response,
+                     input_tokens=input_tokens, output_tokens=output_tokens)
     except Exception:
         pass

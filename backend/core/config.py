@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # LLMs
     ANTHROPIC_API_KEY: str = ""
     ANTHROPIC_MODEL: str = "claude-sonnet-4-6"          # analysts + risk manager (checklist tasks)
-    ANTHROPIC_TRADER_MODEL: str = "claude-opus-4-7"     # trader synthesis only (weighs all factors)
+    ANTHROPIC_TRADER_MODEL: str = "claude-sonnet-4-6"   # trader synthesis only (weighs all factors)
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_CHAT_MODEL: str = "llama3.1:8b"
     # Adversary / devil's-advocate model. Recommended (in order):
@@ -32,12 +32,7 @@ class Settings(BaseSettings):
     OLLAMA_NLP_MODEL: str = "qwen3:14b-instruct"
 
     # Market data APIs
-    TRADIER_API_KEY: str = ""
-    TRADIER_BASE_URL: str = "https://sandbox.tradier.com/v1"
-    # MarketData.app — preferred for options data (historical chains supported)
-    # When MARKETDATA_API_KEY is set, get_tradier() returns a MarketDataClient
-    # in Tradier-compatible shape; Tradier sandbox is then used only for paper
-    # order execution. See data/marketdata.py for the migration rationale.
+    # MarketData.app — options data (historical chains supported)
     MARKETDATA_API_KEY: str = ""
     ALPHA_VANTAGE_API_KEY: str = ""
     FRED_API_KEY: str = ""

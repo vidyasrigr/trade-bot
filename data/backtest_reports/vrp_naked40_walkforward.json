@@ -1,0 +1,18 @@
+{
+  "leg": "walkforward_40name",
+  "variant": "naked_strangle",
+  "window": "2025-01-01 to 2026-06-17",
+  "universe_size": 40,
+  "metrics": {
+    "num_trades": 430,
+    "win_rate": 0.5930232558139535,
+    "total_pnl": 115062.2499999999,
+    "avg_pnl": 267.5866279069765,
+    "expectancy": 267.5866279069765,
+    "sharpe": 1.1540268359533485,
+    "probabilistic_sharpe": 0.919440604003178,
+    "deflated_sharpe": 0.30875259463650845,
+    "max_drawdown": 0.7357044952705039
+  },
+  "num_trades": 430
+}

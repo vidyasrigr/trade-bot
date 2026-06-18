@@ -1,0 +1,793 @@
+{
+  "updated_at": "2026-06-18T02:04:43.762472",
+  "variants": [
+    {
+      "signal": "momentum_12_1",
+      "name": "momentum_12_1_lookback=252",
+      "config": {
+        "lookback_days": 252,
+        "rebalance_days": 21,
+        "universe": "liquid_1000"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 1000,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 830,
+          "win_rate": 0.5421686746987951,
+          "total_pnl": -23787.12504530263,
+          "avg_pnl": -28.659186801569433,
+          "expectancy": -0.00286591868015694,
+          "sharpe": -0.1233439425480779,
+          "deflated_sharpe": 0.022744056264350835,
+          "max_drawdown": 0.6776625267603285,
+          "num_cohorts": 42,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 320,
+          "win_rate": 0.546875,
+          "total_pnl": 145333.1001702445,
+          "avg_pnl": 454.165938032014,
+          "expectancy": 0.0454165938032014,
+          "sharpe": 1.5770214505647773,
+          "deflated_sharpe": 0.5269415018267054,
+          "max_drawdown": 0.29117552074313463,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        },
+        "train_trades": 830,
+        "wf_trades": 320
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:50:31.330586",
+      "finished_at": "2026-06-18T01:50:42.289616"
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "momentum_12_1_lookback=189",
+      "config": {
+        "lookback_days": 189,
+        "rebalance_days": 21,
+        "universe": "liquid_1000"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 1000,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 836,
+          "win_rate": 0.507177033492823,
+          "total_pnl": -88662.2437942965,
+          "avg_pnl": -106.05531554341685,
+          "expectancy": -0.01060553155434169,
+          "sharpe": -0.43803730402220475,
+          "deflated_sharpe": 0.003415141322754331,
+          "max_drawdown": 0.8869890985385803,
+          "num_cohorts": 42,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 320,
+          "win_rate": 0.553125,
+          "total_pnl": 145485.29341767525,
+          "avg_pnl": 454.6415419302351,
+          "expectancy": 0.04546415419302351,
+          "sharpe": 1.4601395843809535,
+          "deflated_sharpe": 0.5996915482933014,
+          "max_drawdown": 0.17782794427891022,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        },
+        "train_trades": 836,
+        "wf_trades": 320
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:50:42.290076",
+      "finished_at": "2026-06-18T01:50:42.318885"
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "momentum_12_1_lookback=126",
+      "config": {
+        "lookback_days": 126,
+        "rebalance_days": 21,
+        "universe": "liquid_1000"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 1000,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 840,
+          "win_rate": 0.5214285714285715,
+          "total_pnl": 118108.78574026759,
+          "avg_pnl": 140.60569730984238,
+          "expectancy": 0.014060569730984237,
+          "sharpe": 0.7454637574942309,
+          "deflated_sharpe": 0.3537873715720451,
+          "max_drawdown": 0.3013951082400191,
+          "num_cohorts": 42,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 320,
+          "win_rate": 0.53125,
+          "total_pnl": 75023.87353961701,
+          "avg_pnl": 234.4496048113032,
+          "expectancy": 0.023444960481130317,
+          "sharpe": 1.1338771052011467,
+          "deflated_sharpe": 0.30693154326722316,
+          "max_drawdown": 0.1436598332791973,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        },
+        "train_trades": 840,
+        "wf_trades": 320
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:50:42.319438",
+      "finished_at": "2026-06-18T01:50:42.352348"
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "momentum_12_1_lookback=63",
+      "config": {
+        "lookback_days": 63,
+        "rebalance_days": 21,
+        "universe": "liquid_1000"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 1000,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 840,
+          "win_rate": 0.5011904761904762,
+          "total_pnl": 83328.17610119199,
+          "avg_pnl": 99.2002096442762,
+          "expectancy": 0.00992002096442762,
+          "sharpe": 0.5813433117944707,
+          "deflated_sharpe": 0.23631777820979022,
+          "max_drawdown": 0.3928942661470535,
+          "num_cohorts": 42,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 320,
+          "win_rate": 0.515625,
+          "total_pnl": 8434.268769628547,
+          "avg_pnl": 26.357089905089232,
+          "expectancy": 0.0026357089905089197,
+          "sharpe": 0.08262474713667406,
+          "deflated_sharpe": 0.04657967679377201,
+          "max_drawdown": 0.5191419484633114,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        },
+        "train_trades": 840,
+        "wf_trades": 320
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:50:42.352827",
+      "finished_at": "2026-06-18T01:50:42.381437"
+    },
+    {
+      "signal": "skew_25d",
+      "name": "skew_25d_hold=21d",
+      "config": {
+        "hold_days": 21,
+        "rebalance_days": 21,
+        "quantile": 0.3,
+        "universe": "liquid_1000"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 1000,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 136,
+          "win_rate": 0.47058823529411764,
+          "total_pnl": -6914.781596213777,
+          "avg_pnl": -50.84398232510131,
+          "expectancy": -0.0050843982325101305,
+          "sharpe": -0.7705220054146279,
+          "deflated_sharpe": 0.005867768855209792,
+          "max_drawdown": 0.22668408104840557,
+          "num_cohorts": 18,
+          "periods_per_year": 11
+        },
+        "walk_forward": {
+          "num_trades": 70,
+          "win_rate": 0.5857142857142857,
+          "total_pnl": 18585.897218715963,
+          "avg_pnl": 265.512817410228,
+          "expectancy": 0.02655128174102281,
+          "sharpe": 1.8772602386004302,
+          "deflated_sharpe": 0.7517047856477734,
+          "max_drawdown": 0.051821600433623265,
+          "num_cohorts": 7,
+          "periods_per_year": 12
+        },
+        "train_trades": 136,
+        "wf_trades": 70
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:50:42.381866",
+      "finished_at": "2026-06-18T01:51:11.724608"
+    },
+    {
+      "signal": "skew_25d",
+      "name": "skew_25d_hold=42d",
+      "config": {
+        "hold_days": 42,
+        "rebalance_days": 21,
+        "quantile": 0.3,
+        "universe": "liquid_1000"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 1000,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 136,
+          "win_rate": 0.45588235294117646,
+          "total_pnl": -18818.358293254398,
+          "avg_pnl": -138.37028156804703,
+          "expectancy": -0.013837028156804702,
+          "sharpe": -1.4648500006978955,
+          "deflated_sharpe": 0.00020804088441092115,
+          "max_drawdown": 0.445068023654359,
+          "num_cohorts": 18,
+          "periods_per_year": 11
+        },
+        "walk_forward": {
+          "num_trades": 66,
+          "win_rate": 0.5151515151515151,
+          "total_pnl": 17898.02591714489,
+          "avg_pnl": 271.1822108658316,
+          "expectancy": 0.027118221086583166,
+          "sharpe": 1.8616590813383078,
+          "deflated_sharpe": 0.5808381858182043,
+          "max_drawdown": 0.03792201434625679,
+          "num_cohorts": 6,
+          "periods_per_year": 12
+        },
+        "train_trades": 136,
+        "wf_trades": 66
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:51:11.725162",
+      "finished_at": "2026-06-18T01:51:38.883632"
+    },
+    {
+      "signal": "pead",
+      "name": "pead_hold=5d",
+      "config": {
+        "hold_days": 5,
+        "min_eps_surprise_pct": 5.0,
+        "max_mkt_cap_b": 50,
+        "universe": "liquid_1000"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 1000,
+      "status": "blocked",
+      "result": {
+        "train": {
+          "num_trades": 0
+        },
+        "walk_forward": {
+          "num_trades": 0
+        },
+        "train_trades": 0,
+        "wf_trades": 0
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:51:38.884182",
+      "finished_at": "2026-06-18T01:52:18.314457"
+    },
+    {
+      "signal": "pead",
+      "name": "pead_hold=10d",
+      "config": {
+        "hold_days": 10,
+        "min_eps_surprise_pct": 5.0,
+        "max_mkt_cap_b": 50,
+        "universe": "liquid_1000"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 1000,
+      "status": "blocked",
+      "result": {
+        "train": {
+          "num_trades": 0
+        },
+        "walk_forward": {
+          "num_trades": 0
+        },
+        "train_trades": 0,
+        "wf_trades": 0
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:51:38.887301",
+      "finished_at": "2026-06-18T01:52:18.065540"
+    },
+    {
+      "signal": "insider_opportunistic",
+      "name": "insider_cluster_30d",
+      "config": {
+        "cluster_window_days": 30,
+        "min_opportunistic": 3,
+        "min_distinct_insiders": 2,
+        "hold_days": 60,
+        "universe": "liquid_1000"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 1000,
+      "status": "blocked",
+      "result": {
+        "train": {
+          "num_trades": 0
+        },
+        "walk_forward": {
+          "num_trades": 0
+        },
+        "train_trades": 0,
+        "wf_trades": 0
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:51:38.890306",
+      "finished_at": "2026-06-18T01:52:18.315302"
+    },
+    {
+      "signal": "lead_lag",
+      "name": "lead_lag_60d_window",
+      "config": {
+        "correlation_window_days": 60,
+        "max_lag_days": 15,
+        "min_abs_corr": 0.25,
+        "universe": "liquid_500"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 500,
+      "status": "blocked",
+      "result": {
+        "train": {
+          "num_trades": 0
+        },
+        "walk_forward": {
+          "num_trades": 0
+        },
+        "train_trades": 0,
+        "wf_trades": 0
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:52:18.066182",
+      "finished_at": "2026-06-18T01:52:18.301344"
+    },
+    {
+      "signal": "short_squeeze",
+      "name": "squeeze_drechsler",
+      "config": {
+        "si_pct_float_min": 0.15,
+        "days_to_cover_min": 5.0,
+        "hold_days": 30,
+        "universe": "liquid_1000"
+      },
+      "needs_marketdata": false,
+      "estimated_credits": 0,
+      "universe_size": 1000,
+      "status": "blocked",
+      "result": {
+        "train": {
+          "num_trades": 0
+        },
+        "walk_forward": {
+          "num_trades": 0
+        },
+        "train_trades": 0,
+        "wf_trades": 0
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:52:18.302100",
+      "finished_at": "2026-06-18T01:52:18.302475"
+    },
+    {
+      "signal": "vrp_harvest",
+      "name": "vrp_naked_strangle_baseline",
+      "config": {
+        "variant": "naked",
+        "iv_rank_min": 50,
+        "vrp_z_min": 1.0,
+        "profit_target": 0.5,
+        "stop_loss": 2.0,
+        "short_delta": 0.16
+      },
+      "needs_marketdata": true,
+      "estimated_credits": 0,
+      "universe_size": 40,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 28,
+          "win_rate": 0.6785714285714286,
+          "total_pnl": 24.20000000000004,
+          "avg_pnl": 0.8642857142857157,
+          "expectancy": 0.8642857142857157,
+          "sharpe": -0.502229258883525,
+          "probabilistic_sharpe": 0.4345360322249477,
+          "deflated_sharpe": 0.019435720482513203,
+          "max_drawdown": 0.004679524671680939
+        },
+        "walk_forward": {
+          "num_trades": 13,
+          "win_rate": 0.6153846153846154,
+          "total_pnl": -863.3,
+          "avg_pnl": -66.4076923076923,
+          "expectancy": -66.4076923076923,
+          "sharpe": -3.418258676914064,
+          "probabilistic_sharpe": 0.22977506888875487,
+          "deflated_sharpe": 0.004141685106984052,
+          "max_drawdown": 0.017426527269103216
+        },
+        "train_trades": 28,
+        "wf_trades": 13,
+        "credits_burned": 0,
+        "universe_size": 20
+      },
+      "error": null,
+      "started_at": "2026-06-18T01:50:25.940726",
+      "finished_at": "2026-06-18T02:03:51.469220"
+    },
+    {
+      "signal": "vrp_harvest",
+      "name": "vrp_iron_condor_wings=1.5sigma",
+      "config": {
+        "variant": "iron_condor",
+        "wings_sigma": 1.5,
+        "iv_rank_min": 50,
+        "vrp_z_min": 1.0,
+        "profit_target": 0.5,
+        "stop_loss": 2.0,
+        "short_delta": 0.16
+      },
+      "needs_marketdata": true,
+      "estimated_credits": 0,
+      "universe_size": 40,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 331,
+          "win_rate": 0.27492447129909364,
+          "total_pnl": -32869.2,
+          "avg_pnl": -99.30271903323262,
+          "expectancy": -99.30271903323262,
+          "sharpe": -9.8842943014322,
+          "probabilistic_sharpe": 1.8557012650223885e-49,
+          "deflated_sharpe": 1.8474692639207535e-62,
+          "max_drawdown": 0.3287846277213698,
+          "source_stats": {
+            "api_fetches": 0,
+            "disk_hits": 4347,
+            "memory_hits": 14213,
+            "total_lookups": 18560,
+            "disk_hit_rate": 0.2342133620689655
+          }
+        },
+        "walk_forward": {
+          "num_trades": 153,
+          "win_rate": 0.24836601307189543,
+          "total_pnl": -12848.6,
+          "avg_pnl": -83.97777777777777,
+          "expectancy": -83.97777777777777,
+          "sharpe": -8.08276684177605,
+          "probabilistic_sharpe": 2.0640766955574342e-05,
+          "deflated_sharpe": 9.811609127851203e-10,
+          "max_drawdown": 0.128458110659539,
+          "source_stats": {
+            "api_fetches": 0,
+            "disk_hits": 5851,
+            "memory_hits": 19785,
+            "total_lookups": 25636,
+            "disk_hit_rate": 0.22823373381182713
+          }
+        },
+        "train_trades": 331,
+        "wf_trades": 153,
+        "credits_burned": 0,
+        "universe_size": 20
+      },
+      "error": null,
+      "started_at": "2026-06-18T02:03:51.469838",
+      "finished_at": "2026-06-18T02:04:09.139700"
+    },
+    {
+      "signal": "vrp_harvest",
+      "name": "vrp_iron_condor_wings=2.0sigma",
+      "config": {
+        "variant": "iron_condor",
+        "wings_sigma": 2.0,
+        "iv_rank_min": 50,
+        "vrp_z_min": 1.0,
+        "profit_target": 0.5,
+        "stop_loss": 2.0,
+        "short_delta": 0.16
+      },
+      "needs_marketdata": true,
+      "estimated_credits": 0,
+      "universe_size": 40,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 332,
+          "win_rate": 0.4066265060240964,
+          "total_pnl": -29870.650000000005,
+          "avg_pnl": -89.9718373493976,
+          "expectancy": -89.9718373493976,
+          "sharpe": -8.818629225568484,
+          "probabilistic_sharpe": 8.13508542119343e-37,
+          "deflated_sharpe": 4.4438634511050225e-48,
+          "max_drawdown": 0.29894871321957733,
+          "source_stats": {
+            "api_fetches": 0,
+            "disk_hits": 6332,
+            "memory_hits": 37473,
+            "total_lookups": 43805,
+            "disk_hit_rate": 0.14454970893733593
+          }
+        },
+        "walk_forward": {
+          "num_trades": 153,
+          "win_rate": 0.42483660130718953,
+          "total_pnl": -12120.1,
+          "avg_pnl": -79.21633986928104,
+          "expectancy": -79.21633986928104,
+          "sharpe": -6.476346406235995,
+          "probabilistic_sharpe": 6.682804282538521e-05,
+          "deflated_sharpe": 5.315854643825453e-09,
+          "max_drawdown": 0.12144919060365247,
+          "source_stats": {
+            "api_fetches": 0,
+            "disk_hits": 6582,
+            "memory_hits": 44635,
+            "total_lookups": 51217,
+            "disk_hit_rate": 0.1285120174941914
+          }
+        },
+        "train_trades": 332,
+        "wf_trades": 153,
+        "credits_burned": 0,
+        "universe_size": 20
+      },
+      "error": null,
+      "started_at": "2026-06-18T02:04:09.140315",
+      "finished_at": "2026-06-18T02:04:20.526334"
+    },
+    {
+      "signal": "vrp_harvest",
+      "name": "vrp_iron_condor_wings=2.5sigma",
+      "config": {
+        "variant": "iron_condor",
+        "wings_sigma": 2.5,
+        "iv_rank_min": 50,
+        "vrp_z_min": 1.0,
+        "profit_target": 0.5,
+        "stop_loss": 2.0,
+        "short_delta": 0.16
+      },
+      "needs_marketdata": true,
+      "estimated_credits": 0,
+      "universe_size": 40,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 332,
+          "win_rate": 0.4759036144578313,
+          "total_pnl": -32713.9,
+          "avg_pnl": -98.53584337349398,
+          "expectancy": -98.53584337349398,
+          "sharpe": -7.843315919085745,
+          "probabilistic_sharpe": 3.221530223830601e-21,
+          "deflated_sharpe": 7.942872020708724e-30,
+          "max_drawdown": 0.32779989067357207,
+          "source_stats": {
+            "api_fetches": 0,
+            "disk_hits": 6819,
+            "memory_hits": 62831,
+            "total_lookups": 69650,
+            "disk_hit_rate": 0.0979038047379756
+          }
+        },
+        "walk_forward": {
+          "num_trades": 153,
+          "win_rate": 0.48366013071895425,
+          "total_pnl": -13989.6,
+          "avg_pnl": -91.43529411764706,
+          "expectancy": -91.43529411764706,
+          "sharpe": -4.567776550385985,
+          "probabilistic_sharpe": 0.0003283593146457564,
+          "deflated_sharpe": 5.5494441681855314e-08,
+          "max_drawdown": 0.1472366978228278,
+          "source_stats": {
+            "api_fetches": 0,
+            "disk_hits": 6982,
+            "memory_hits": 70536,
+            "total_lookups": 77518,
+            "disk_hit_rate": 0.09006940323537758
+          }
+        },
+        "train_trades": 332,
+        "wf_trades": 153,
+        "credits_burned": 0,
+        "universe_size": 20
+      },
+      "error": null,
+      "started_at": "2026-06-18T02:04:20.526995",
+      "finished_at": "2026-06-18T02:04:32.177952"
+    },
+    {
+      "signal": "vrp_harvest",
+      "name": "vrp_iron_condor_wings=3.0sigma",
+      "config": {
+        "variant": "iron_condor",
+        "wings_sigma": 3.0,
+        "iv_rank_min": 50,
+        "vrp_z_min": 1.0,
+        "profit_target": 0.5,
+        "stop_loss": 2.0,
+        "short_delta": 0.16
+      },
+      "needs_marketdata": true,
+      "estimated_credits": 0,
+      "universe_size": 40,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 332,
+          "win_rate": 0.5090361445783133,
+          "total_pnl": -31586.15,
+          "avg_pnl": -95.13900602409639,
+          "expectancy": -95.13900602409639,
+          "sharpe": -6.202825147138276,
+          "probabilistic_sharpe": 5.295301730567405e-15,
+          "deflated_sharpe": 2.9100173035819844e-22,
+          "max_drawdown": 0.3164957919051075,
+          "source_stats": {
+            "api_fetches": 0,
+            "disk_hits": 7064,
+            "memory_hits": 88835,
+            "total_lookups": 95899,
+            "disk_hit_rate": 0.0736608306655961
+          }
+        },
+        "walk_forward": {
+          "num_trades": 153,
+          "win_rate": 0.5032679738562091,
+          "total_pnl": -13018.850000000002,
+          "avg_pnl": -85.090522875817,
+          "expectancy": -85.090522875817,
+          "sharpe": -3.54805091797703,
+          "probabilistic_sharpe": 0.004748004909590807,
+          "deflated_sharpe": 3.48882977632059e-06,
+          "max_drawdown": 0.15960298594353647,
+          "source_stats": {
+            "api_fetches": 0,
+            "disk_hits": 7083,
+            "memory_hits": 96356,
+            "total_lookups": 103439,
+            "disk_hit_rate": 0.06847513993754774
+          }
+        },
+        "train_trades": 332,
+        "wf_trades": 153,
+        "credits_burned": 0,
+        "universe_size": 20
+      },
+      "error": null,
+      "started_at": "2026-06-18T02:04:32.178647",
+      "finished_at": "2026-06-18T02:04:43.762462"
+    },
+    {
+      "signal": "vrp_harvest",
+      "name": "vrp_regime_gate_ratio=1.3",
+      "config": {
+        "variant": "regime",
+        "stress_ratio": 1.3,
+        "iv_rank_min": 50,
+        "vrp_z_min": 1.0,
+        "profit_target": 0.5,
+        "stop_loss": 2.0,
+        "short_delta": 0.16
+      },
+      "needs_marketdata": true,
+      "estimated_credits": 0,
+      "universe_size": 40,
+      "status": "pending",
+      "result": null,
+      "error": null,
+      "started_at": null,
+      "finished_at": null
+    },
+    {
+      "signal": "vrp_harvest",
+      "name": "vrp_regime_gate_ratio=1.5",
+      "config": {
+        "variant": "regime",
+        "stress_ratio": 1.5,
+        "iv_rank_min": 50,
+        "vrp_z_min": 1.0,
+        "profit_target": 0.5,
+        "stop_loss": 2.0,
+        "short_delta": 0.16
+      },
+      "needs_marketdata": true,
+      "estimated_credits": 0,
+      "universe_size": 40,
+      "status": "pending",
+      "result": null,
+      "error": null,
+      "started_at": null,
+      "finished_at": null
+    },
+    {
+      "signal": "vrp_harvest",
+      "name": "vrp_naked_stop=1.0x",
+      "config": {
+        "variant": "naked",
+        "iv_rank_min": 50,
+        "vrp_z_min": 1.0,
+        "profit_target": 0.5,
+        "stop_loss": 1.0,
+        "short_delta": 0.16
+      },
+      "needs_marketdata": true,
+      "estimated_credits": 0,
+      "universe_size": 40,
+      "status": "pending",
+      "result": null,
+      "error": null,
+      "started_at": null,
+      "finished_at": null
+    },
+    {
+      "signal": "vrp_harvest",
+      "name": "vrp_naked_stop=1.5x",
+      "config": {
+        "variant": "naked",
+        "iv_rank_min": 50,
+        "vrp_z_min": 1.0,
+        "profit_target": 0.5,
+        "stop_loss": 1.5,
+        "short_delta": 0.16
+      },
+      "needs_marketdata": true,
+      "estimated_credits": 0,
+      "universe_size": 40,
+      "status": "pending",
+      "result": null,
+      "error": null,
+      "started_at": null,
+      "finished_at": null
+    }
+  ],
+  "summary": {
+    "total": 20,
+    "pending": 4,
+    "running": 0,
+    "done": 0,
+    "sandboxed": 11,
+    "blocked": 5,
+    "error": 0
+  }
+}

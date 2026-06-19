@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-19T05:21:24.870999",
+  "updated_at": "2026-06-19T05:26:41.033176",
   "variants": [
     {
       "signal": "momentum_12_1",
@@ -279,11 +279,38 @@
       "needs_marketdata": false,
       "estimated_credits": 0,
       "universe_size": 1000,
-      "status": "running",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 333,
+          "win_rate": 0.4984984984984985,
+          "total_pnl": 4791.630034369096,
+          "avg_pnl": 14.389279382489784,
+          "expectancy": 0.0014389279382489776,
+          "sharpe": 0.11184462020391563,
+          "deflated_sharpe": 0.07310383941153563,
+          "max_drawdown": 0.7810236087218634,
+          "num_cohorts": 216,
+          "periods_per_year": 182
+        },
+        "walk_forward": {
+          "num_trades": 135,
+          "win_rate": 0.5481481481481482,
+          "total_pnl": 6831.664507978756,
+          "avg_pnl": 50.604922281324114,
+          "expectancy": 0.005060492228132411,
+          "sharpe": 1.5561801503821404,
+          "deflated_sharpe": 0.2043082285359598,
+          "max_drawdown": 0.3473027592097723,
+          "num_cohorts": 86,
+          "periods_per_year": 365
+        },
+        "train_trades": 333,
+        "wf_trades": 135
+      },
       "error": null,
       "started_at": "2026-06-19T05:16:23.665136",
-      "finished_at": null
+      "finished_at": "2026-06-19T05:26:41.033166"
     },
     {
       "signal": "pead",
@@ -297,11 +324,38 @@
       "needs_marketdata": false,
       "estimated_credits": 0,
       "universe_size": 1000,
-      "status": "running",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 333,
+          "win_rate": 0.5285285285285285,
+          "total_pnl": 27135.571729271338,
+          "avg_pnl": 81.48820339120522,
+          "expectancy": 0.008148820339120521,
+          "sharpe": 1.5363080895920187,
+          "deflated_sharpe": 0.5535377548777599,
+          "max_drawdown": 0.7933257611752683,
+          "num_cohorts": 216,
+          "periods_per_year": 182
+        },
+        "walk_forward": {
+          "num_trades": 135,
+          "win_rate": 0.5555555555555556,
+          "total_pnl": 13219.955742872626,
+          "avg_pnl": 97.92559809535278,
+          "expectancy": 0.009792559809535277,
+          "sharpe": 1.741151204180159,
+          "deflated_sharpe": 0.2515136569335903,
+          "max_drawdown": 0.5595183705011939,
+          "num_cohorts": 86,
+          "periods_per_year": 365
+        },
+        "train_trades": 333,
+        "wf_trades": 135
+      },
       "error": null,
       "started_at": "2026-06-19T05:16:23.669097",
-      "finished_at": null
+      "finished_at": "2026-06-19T05:26:29.965371"
     },
     {
       "signal": "insider_opportunistic",
@@ -594,11 +648,60 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 696,
+          "win_rate": 0.41810344827586204,
+          "total_pnl": -56372.450000000004,
+          "avg_pnl": -80.99489942528736,
+          "expectancy": -80.99489942528736,
+          "sharpe": -7.619724777758798,
+          "probabilistic_sharpe": 2.8336701711794835e-38,
+          "deflated_sharpe": 9.437376609905131e-50,
+          "max_drawdown": 0.565770999999993,
+          "max_drawdown_realized": 0.5635595255006334,
+          "equity_curve_method": "daily_mtm",
+          "source_stats": {
+            "api_fetches": 717,
+            "disk_hits": 18921,
+            "memory_hits": 163560,
+            "expirations_api": 0,
+            "expirations_disk": 2247,
+            "total_lookups": 183198,
+            "disk_hit_rate": 0.10328169521501326
+          }
+        },
+        "walk_forward": {
+          "num_trades": 301,
+          "win_rate": 0.36212624584717606,
+          "total_pnl": -40237.7,
+          "avg_pnl": -133.68006644518272,
+          "expectancy": -133.68006644518272,
+          "sharpe": -6.660399264926786,
+          "probabilistic_sharpe": 2.542935764415655e-12,
+          "deflated_sharpe": 6.609064681105666e-19,
+          "max_drawdown": 0.4024352625619003,
+          "max_drawdown_realized": 0.40203795552077803,
+          "equity_curve_method": "daily_mtm",
+          "source_stats": {
+            "api_fetches": 784,
+            "disk_hits": 18957,
+            "memory_hits": 178872,
+            "expirations_api": 0,
+            "expirations_disk": 2247,
+            "total_lookups": 198613,
+            "disk_hit_rate": 0.09544692442085866
+          }
+        },
+        "train_trades": 696,
+        "wf_trades": 301,
+        "credits_burned": 126,
+        "universe_size": 40
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-19T05:21:24.871650",
+      "finished_at": "2026-06-19T05:22:40.485849"
     },
     {
       "signal": "vrp_harvest",
@@ -615,11 +718,60 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 696,
+          "win_rate": 0.45689655172413796,
+          "total_pnl": -53188.2,
+          "avg_pnl": -76.41982758620689,
+          "expectancy": -76.41982758620689,
+          "sharpe": -6.555154326748437,
+          "probabilistic_sharpe": 4.81773269066801e-28,
+          "deflated_sharpe": 6.585329108303455e-38,
+          "max_drawdown": 0.5387769999999934,
+          "max_drawdown_realized": 0.5320768899753197,
+          "equity_curve_method": "daily_mtm",
+          "source_stats": {
+            "api_fetches": 810,
+            "disk_hits": 18968,
+            "memory_hits": 216701,
+            "expirations_api": 0,
+            "expirations_disk": 2247,
+            "total_lookups": 236479,
+            "disk_hit_rate": 0.08021008207916983
+          }
+        },
+        "walk_forward": {
+          "num_trades": 301,
+          "win_rate": 0.38205980066445183,
+          "total_pnl": -42436.7,
+          "avg_pnl": -140.98571428571427,
+          "expectancy": -140.98571428571427,
+          "sharpe": -5.375442912611569,
+          "probabilistic_sharpe": 2.440453952940903e-09,
+          "deflated_sharpe": 4.526730062261239e-15,
+          "max_drawdown": 0.42447059529284653,
+          "max_drawdown_realized": 0.4239107373039427,
+          "equity_curve_method": "daily_mtm",
+          "source_stats": {
+            "api_fetches": 819,
+            "disk_hits": 18972,
+            "memory_hits": 231481,
+            "expirations_api": 0,
+            "expirations_disk": 2247,
+            "total_lookups": 251272,
+            "disk_hit_rate": 0.07550383647998982
+          }
+        },
+        "train_trades": 696,
+        "wf_trades": 301,
+        "credits_burned": 35,
+        "universe_size": 40
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-19T05:22:40.486577",
+      "finished_at": "2026-06-19T05:23:42.412591"
     },
     {
       "signal": "vrp_harvest",
@@ -636,11 +788,45 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 877,
+          "win_rate": 0.661345496009122,
+          "total_pnl": 150818.55000000005,
+          "avg_pnl": 171.97098061573553,
+          "expectancy": 171.97098061573553,
+          "sharpe": 1.4127808052644486,
+          "probabilistic_sharpe": 0.9822693319332604,
+          "deflated_sharpe": 0.580175616361593,
+          "max_drawdown": 0.5731034011767542,
+          "max_drawdown_realized": 0.33180901640419413,
+          "equity_curve_method": "daily_mtm"
+        },
+        "walk_forward": {
+          "num_trades": 330,
+          "win_rate": 0.5515151515151515,
+          "total_pnl": 116652.24999999991,
+          "avg_pnl": 353.4916666666664,
+          "expectancy": 353.4916666666664,
+          "sharpe": 1.2110251797560725,
+          "probabilistic_sharpe": 0.9161529597145501,
+          "deflated_sharpe": 0.3011636013049387,
+          "max_drawdown": 0.7816187564715743,
+          "max_drawdown_realized": 0.7064873954538087,
+          "equity_curve_method": "daily_mtm"
+        },
+        "train_trades": 877,
+        "wf_trades": 330,
+        "credits_burned": 0,
+        "universe_size": 40,
+        "gate_failures": [
+          "WF max_drawdown 78% >= 25%"
+        ]
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-19T05:23:42.413335",
+      "finished_at": "2026-06-19T05:24:07.647308"
     },
     {
       "signal": "vrp_harvest",
@@ -657,11 +843,45 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 978,
+          "win_rate": 0.6717791411042945,
+          "total_pnl": 190316.45,
+          "avg_pnl": 194.59759713701433,
+          "expectancy": 194.59759713701433,
+          "sharpe": 1.632000629203586,
+          "probabilistic_sharpe": 0.9944647177251288,
+          "deflated_sharpe": 0.7388342350656772,
+          "max_drawdown": 0.5357255309151159,
+          "max_drawdown_realized": 0.2999755827309717,
+          "equity_curve_method": "daily_mtm"
+        },
+        "walk_forward": {
+          "num_trades": 364,
+          "win_rate": 0.5714285714285714,
+          "total_pnl": 117383.09999999989,
+          "avg_pnl": 322.48104395604366,
+          "expectancy": 322.48104395604366,
+          "sharpe": 1.1708062753991417,
+          "probabilistic_sharpe": 0.9174588392671068,
+          "deflated_sharpe": 0.3041406889800128,
+          "max_drawdown": 0.7910418618411319,
+          "max_drawdown_realized": 0.7180597652872636,
+          "equity_curve_method": "daily_mtm"
+        },
+        "train_trades": 978,
+        "wf_trades": 364,
+        "credits_burned": 0,
+        "universe_size": 40,
+        "gate_failures": [
+          "WF max_drawdown 79% >= 25%"
+        ]
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-19T05:24:07.648272",
+      "finished_at": "2026-06-19T05:24:32.446512"
     },
     {
       "signal": "vrp_harvest",
@@ -677,11 +897,45 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 1052,
+          "win_rate": 0.6178707224334601,
+          "total_pnl": 216062.5500000001,
+          "avg_pnl": 205.38265209125484,
+          "expectancy": 205.38265209125484,
+          "sharpe": 1.6906279255316012,
+          "probabilistic_sharpe": 0.9970020135814935,
+          "deflated_sharpe": 0.8015842489819929,
+          "max_drawdown": 0.5162367385574189,
+          "max_drawdown_realized": 0.2888460468735867,
+          "equity_curve_method": "daily_mtm"
+        },
+        "walk_forward": {
+          "num_trades": 430,
+          "win_rate": 0.5372093023255814,
+          "total_pnl": 116815.9999999999,
+          "avg_pnl": 271.66511627906954,
+          "expectancy": 271.66511627906954,
+          "sharpe": 1.1215731784539906,
+          "probabilistic_sharpe": 0.9159877548738007,
+          "deflated_sharpe": 0.30079039325532386,
+          "max_drawdown": 0.7893939770222095,
+          "max_drawdown_realized": 0.7135322950300288,
+          "equity_curve_method": "daily_mtm"
+        },
+        "train_trades": 1052,
+        "wf_trades": 430,
+        "credits_burned": 0,
+        "universe_size": 40,
+        "gate_failures": [
+          "WF max_drawdown 79% >= 25%"
+        ]
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-19T05:24:32.447487",
+      "finished_at": "2026-06-19T05:24:53.803961"
     },
     {
       "signal": "vrp_harvest",
@@ -697,19 +951,53 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 1052,
+          "win_rate": 0.6606463878326996,
+          "total_pnl": 221728.8000000001,
+          "avg_pnl": 210.76882129277575,
+          "expectancy": 210.76882129277575,
+          "sharpe": 1.760511887685486,
+          "probabilistic_sharpe": 0.9975612011036192,
+          "deflated_sharpe": 0.8197204697452797,
+          "max_drawdown": 0.5142680534186593,
+          "max_drawdown_realized": 0.28742280332708986,
+          "equity_curve_method": "daily_mtm"
+        },
+        "walk_forward": {
+          "num_trades": 430,
+          "win_rate": 0.5790697674418605,
+          "total_pnl": 112688.4999999999,
+          "avg_pnl": 262.0662790697672,
+          "expectancy": 262.0662790697672,
+          "sharpe": 1.1437156337193335,
+          "probabilistic_sharpe": 0.9222526840544201,
+          "deflated_sharpe": 0.315500101873862,
+          "max_drawdown": 0.8668121420128234,
+          "max_drawdown_realized": 0.7666420262996726,
+          "equity_curve_method": "daily_mtm"
+        },
+        "train_trades": 1052,
+        "wf_trades": 430,
+        "credits_burned": 0,
+        "universe_size": 40,
+        "gate_failures": [
+          "WF max_drawdown 87% >= 25%"
+        ]
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-19T05:24:53.804982",
+      "finished_at": "2026-06-19T05:25:15.819447"
     }
   ],
   "summary": {
     "total": 20,
-    "pending": 6,
-    "running": 2,
+    "pending": 0,
+    "running": 0,
     "done": 0,
-    "sandboxed": 9,
+    "sandboxed": 17,
     "blocked": 3,
     "error": 0
   }

@@ -30,3 +30,26 @@ MASTER_REPORT with MTM drawdowns for all variants. Running.
   stamps regime_tag() on every emit. VERIFIED: a rec carries market_regime='normal_vol|range'.
 - Smoke "macro failed" was just Redis-not-init in the standalone script; FRED itself works.
 - Follow-up (optional): stock_climate.py could read UNRATE/CPIAUCSL from the banked store. pytest 94/94.
+
+## [22:40] Smoke-finding fixes + Phase 3 status
+- Migration 023: paper_trades.stream + unrealized_pnl columns (portfolio_greeks veto + circuit_breaker
+  were querying missing cols); expiry made nullable (placeholder expiries don't parse). paper-open now
+  populates stream from the rec. pytest 94/94. Committed.
+- Phase 3 (FMP burn): FMP STILL 429 ("Limit Reach") -> DEFERRED per runbook. PEAD walk-forward stays
+  blocked until FMP rolls over. Will retry tomorrow.
+
+## [23:00] Phase 1 DONE — MTM re-validation sweep
+20 variants, 40-name VRP universe (cached). Wrote MASTER_REPORT_MTM_2026-06-18.md.
+HEADLINE: under MTM DD + hard gates, ZERO signals promote. Classification change:
+vrp_naked + both stop variants PROMOTE->SANDBOX (true MTM wf-DD 79-87% vs old realized 27%;
+DD<25% gate disqualifies). Equity signals unchanged (equity_engine already cohort-DD).
+Interesting: skew_25d wf DSR 0.58-0.75 with wf-DD 4-5% but dead train (regime-dependent ->
+candidate for regime-gating w/ new classifier). PEAD hold=10d clears train (0.554), misses wf (0.252).
+No promotion (matches gates) - V's call. pytest 94/94.
+
+## [23:05] Phase 3 confirmed deferred (FMP 429). Phase 4 starting.
+Nothing cleared MTM gates -> runbook fallback (2015-17 extension) INFEASIBLE on Starter 5y cap.
+SME decision: spend remaining ~2,471 MarketData credits banking ~9 new sector/skew-diverse
+optionable names (C,SCHW,GILD,AMGN,REGN,PLTR,COIN,SMCI,MRVL) train+wf -> permanent reusable data
+asset for the regime-conditioned skew direction (the most promising OOS signal). Banks forever,
+not data-snooping. Target: leave <150 credits.

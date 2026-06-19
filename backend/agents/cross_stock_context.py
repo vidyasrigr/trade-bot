@@ -42,15 +42,14 @@ async def build_cross_stock_context(stage3_results: list[dict]) -> str:
     # Flag any massive YTD gainers (mean-reversion risk)
     context_str = "\n".join(lines)
 
-    # Ask Claude to synthesize cross-stock patterns (one quick call, small prompt)
+    # Synthesize cross-stock patterns via the shared LLM hook (Anthropic if keyed,
+    # else the Ollama fallback — one quick call, small prompt).
     try:
-        client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
-        response = await client.messages.create(
-            model=settings.ANTHROPIC_MODEL,
-            max_tokens=300,
-            messages=[{
-                "role": "user",
-                "content": f"""You are reviewing {len(stage3_results)} stocks that passed the signal funnel.
+        from agents import hooks
+        synthesis = await hooks.llm_call(
+            agent_name="cross_stock_context",
+            symbol="MULTI",
+            prompt=f"""You are reviewing {len(stage3_results)} stocks that passed the signal funnel.
 In 3-4 sentences, identify:
 1. Any sector rotation patterns
 2. Contradictory signals (e.g., 3 semis bullish but macro bearish)
@@ -58,10 +57,9 @@ In 3-4 sentences, identify:
 4. The single highest-conviction theme across these stocks
 
 Context:
-{context_str[:1000]}"""
-            }]
+{context_str[:1000]}""",
+            max_tokens=300,
         )
-        synthesis = response.content[0].text
     except Exception:
         synthesis = "Cross-stock synthesis unavailable"
 

@@ -93,8 +93,7 @@ async def run_postmortem(trade_id: int):
 
 
 async def _generate_lesson(trade: dict, r_multiple: float, factors: dict) -> str:
-    from anthropic import AsyncAnthropic
-    client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+    from agents import hooks
 
     outcome = "WIN" if r_multiple > 0 else "LOSS"
     worked = [k for k, v in factors.items() if v > 5] if factors else []
@@ -113,13 +112,9 @@ Factors that failed to predict: {failed}
 Lesson should be specific and actionable for future similar setups."""
 
     try:
-        response = await client.messages.create(
-            model=settings.ANTHROPIC_MODEL,
-            max_tokens=150,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return response.content[0].text
-    except Exception as e:
+        text = await hooks.llm_call("postmortem", trade["symbol"], prompt, max_tokens=150)
+        return text or f"Trade {'won' if r_multiple > 0 else 'lost'} {abs(r_multiple):.2f}R in {trade.get('strategy')} setup."
+    except Exception:
         return f"Trade {'won' if r_multiple > 0 else 'lost'} {abs(r_multiple):.2f}R in {trade.get('strategy')} setup."
 
 
@@ -193,30 +188,25 @@ async def compact_memory():
     if len(rows) < 5:
         return  # Not enough data yet
 
-    from anthropic import AsyncAnthropic
-    client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+    from agents import hooks
 
     lessons_str = "\n".join(f"- [R={r:.2f}x, {regime}] {lesson}" for lesson, r, regime in rows)
     win_count = sum(1 for _, r, _ in rows if r > 0)
     avg_r = sum(r for _, r, _ in rows) / len(rows)
 
     try:
-        response = await client.messages.create(
-            model=settings.ANTHROPIC_MODEL,
-            max_tokens=400,
-            messages=[{
-                "role": "user",
-                "content": f"""Distill these {len(rows)} trade lessons into 3-5 durable strategy principles.
+        principles = await hooks.llm_call(
+            "postmortem_compaction", "MULTI",
+            f"""Distill these {len(rows)} trade lessons into 3-5 durable strategy principles.
 Focus on patterns that repeat across multiple trades.
 Win rate: {win_count}/{len(rows)} ({round(win_count/len(rows)*100)}%). Avg R: {avg_r:.2f}x.
 
 {lessons_str}
 
 Format each principle as: "In [regime/condition]: [actionable rule]"
-Also end with one line: "PROPOSED_CHANGE: [one specific parameter or rule to adjust, if any]" """
-            }]
+Also end with one line: "PROPOSED_CHANGE: [one specific parameter or rule to adjust, if any]" """,
+            max_tokens=400,
         )
-        principles = response.content[0].text
 
         # Extract proposed change if present
         lines = principles.split("\n")

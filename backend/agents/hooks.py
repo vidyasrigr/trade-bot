@@ -13,21 +13,101 @@ instead of calling the Anthropic client directly. This gives us:
 from __future__ import annotations
 
 import asyncio
+import json
 import time
 from typing import Any
 
-from anthropic import AsyncAnthropic, RateLimitError, APIStatusError
+import httpx
+from anthropic import (
+    AsyncAnthropic, RateLimitError, APIStatusError, AuthenticationError,
+)
 from loguru import logger
 
 from core.config import settings
 
-_client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+# Anthropic is intentionally optional (expensive). EVERY agent LLM call falls back
+# to a local Ollama model (settings.OLLAMA_FALLBACK_MODEL) when Anthropic is
+# unusable — either no API key OR an invalid/expired key (401). The first auth
+# failure flips _anthropic_disabled so we stop retrying a known-bad key (no
+# latency, no log spam) and route everything to Ollama. Keeps the whole pipeline
+# — trader, analysts, risk manager — working at $0.
+_USE_ANTHROPIC = bool(settings.ANTHROPIC_API_KEY)
+_anthropic_disabled = not _USE_ANTHROPIC
+_client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY) if _USE_ANTHROPIC else None
+if _anthropic_disabled:
+    logger.warning(
+        f"ANTHROPIC_API_KEY not set — agent LLM calls use Ollama "
+        f"'{settings.OLLAMA_FALLBACK_MODEL}'"
+    )
+
+
+def _disable_anthropic(reason: str) -> None:
+    """Flip to Ollama-only after an auth failure — logged once."""
+    global _anthropic_disabled
+    if not _anthropic_disabled:
+        _anthropic_disabled = True
+        logger.warning(
+            f"Anthropic disabled ({reason}) — all further LLM calls use Ollama "
+            f"'{settings.OLLAMA_FALLBACK_MODEL}'"
+        )
 
 # Fallback chain: if a model fails, try the next one down
 _FALLBACK: dict[str, str] = {
     settings.ANTHROPIC_TRADER_MODEL: settings.ANTHROPIC_MODEL,    # opus → sonnet
     settings.ANTHROPIC_MODEL: "claude-haiku-4-5-20251001",         # sonnet → haiku
 }
+
+
+async def _ollama_generate(prompt: str, max_tokens: int = 500,
+                           system: str | None = None, json_mode: bool = False) -> str:
+    """Local-model completion via Ollama (the Anthropic-off fallback)."""
+    payload: dict[str, Any] = {
+        "model": settings.OLLAMA_FALLBACK_MODEL,
+        "prompt": prompt,
+        "stream": False,
+        # Suppress chain-of-thought (reasoning models otherwise leak <think> text
+        # and can burn the whole token budget before answering) and give a sane
+        # floor so short calls still get a complete answer.
+        "think": False,
+        "options": {"num_predict": max(max_tokens, 256)},
+    }
+    if system:
+        payload["system"] = system
+    if json_mode:
+        payload["format"] = "json"
+    async with httpx.AsyncClient(timeout=180.0) as client:
+        resp = await client.post(f"{settings.OLLAMA_BASE_URL}/api/generate", json=payload)
+        return resp.json().get("response", "") if resp.status_code == 200 else ""
+
+
+async def _ollama_text(agent_name: str, symbol: str, prompt: str,
+                       max_tokens: int, system: str | None) -> str:
+    start = time.monotonic()
+    response = await _ollama_generate(prompt, max_tokens, system)
+    elapsed = (time.monotonic() - start) * 1000
+    asyncio.create_task(_post_hook(agent_name, settings.OLLAMA_FALLBACK_MODEL,
+                                   symbol, elapsed, response, 0, 0))
+    return response or "Analysis unavailable (Ollama fallback returned empty)"
+
+
+async def _ollama_structured(agent_name: str, symbol: str, prompt: str,
+                             output_schema: dict, max_tokens: int) -> dict:
+    start = time.monotonic()
+    schema_prompt = (
+        prompt + "\n\nRespond ONLY with a single JSON object matching this schema "
+        f"(fill every field): {json.dumps(output_schema)}\nNo prose, no markdown fences."
+    )
+    raw = await _ollama_generate(schema_prompt, max_tokens, json_mode=True)
+    try:
+        result = json.loads(raw) if raw else {}
+    except json.JSONDecodeError:
+        result = {}
+    if not isinstance(result, dict):
+        result = {}
+    elapsed = (time.monotonic() - start) * 1000
+    asyncio.create_task(_post_hook(agent_name, settings.OLLAMA_FALLBACK_MODEL,
+                                   symbol, elapsed, str(result), 0, 0))
+    return result
 
 
 async def llm_call(
@@ -44,6 +124,9 @@ async def llm_call(
     Falls back down the model chain on RateLimitError or APIStatusError.
     Post-hook fires agent_monitor.record non-blocking regardless of outcome.
     """
+    if _anthropic_disabled:
+        return await _ollama_text(agent_name, symbol, prompt, max_tokens, system)
+
     primary = model or settings.ANTHROPIC_MODEL
     fallback = _FALLBACK.get(primary)
 
@@ -57,6 +140,9 @@ async def llm_call(
             response, input_tokens, output_tokens = await _do_call(prompt, attempt_model, max_tokens, system)
             used_model = attempt_model
             break
+        except AuthenticationError as e:
+            _disable_anthropic(type(e).__name__)
+            return await _ollama_text(agent_name, symbol, prompt, max_tokens, system)
         except (RateLimitError, APIStatusError) as e:
             if attempt_model == primary and fallback:
                 logger.warning(
@@ -97,6 +183,9 @@ async def llm_call_structured(
     every field in output_schema. Retries once on the fallback model if needed.
     Returns empty dict on complete failure — callers must handle this gracefully.
     """
+    if _anthropic_disabled:
+        return await _ollama_structured(agent_name, symbol, prompt, output_schema, max_tokens)
+
     primary = model or settings.ANTHROPIC_MODEL
     fallback = _FALLBACK.get(primary)
 
@@ -127,6 +216,9 @@ async def llm_call_structured(
                     break
             if result:
                 break
+        except AuthenticationError as e:
+            _disable_anthropic(type(e).__name__)
+            return await _ollama_structured(agent_name, symbol, prompt, output_schema, max_tokens)
         except (RateLimitError, APIStatusError) as e:
             if attempt_model == primary and fallback:
                 logger.warning(

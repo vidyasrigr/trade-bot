@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
     ANTHROPIC_MODEL: str = "claude-sonnet-4-6"          # analysts + risk manager (checklist tasks)
     ANTHROPIC_TRADER_MODEL: str = "claude-sonnet-4-6"   # trader synthesis only (weighs all factors)
+    # When Anthropic is unusable (no key OR invalid key — it's expensive, off by
+    # intent), all agent LLM calls fall back to this local Ollama model. Default
+    # qwen3.5:9b: clean instruct output, ~10s/call, already on the box. NOTE: qwq
+    # is NOT pulled here; the 30B/reasoning models (qwen3:30b-a3b) leak <think>
+    # text and starve short outputs. Set to qwq:32b only after `ollama pull qwq`.
+    OLLAMA_FALLBACK_MODEL: str = "qwen3.5:9b"
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_CHAT_MODEL: str = "llama3.1:8b"
     # Adversary / devil's-advocate model. Recommended (in order):

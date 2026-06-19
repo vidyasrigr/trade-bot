@@ -59,6 +59,8 @@ class RecommendationInput:
     signals_fired: list[str] | None = None
     market_climate: str | None = None
     stock_climate: str | None = None
+    market_regime: str | None = None   # vol|market tag from regime_classifier (Phase 2)
+    stock_regime: str | None = None
     model_version: str | None = None
     pipeline_version: str | None = None
     raw_ticket: dict | None = None
@@ -93,6 +95,7 @@ async def log_recommendation(rec: RecommendationInput, session=None) -> int:
              expected_value_pct, prob_profit,
              target_resolution_date, thesis,
              signals_fired, market_climate, stock_climate,
+             market_regime, stock_regime,
              model_version, pipeline_version, raw_ticket)
         VALUES
             (:stream, :symbol, :strategy, :direction, :conviction,
@@ -101,6 +104,7 @@ async def log_recommendation(rec: RecommendationInput, session=None) -> int:
              :ev, :pp,
              :target_res, :thesis,
              :sigs, :mc, :sc,
+             :mreg, :sreg,
              :mv, :pv, CAST(:raw AS jsonb))
         RETURNING id
     """), {
@@ -114,6 +118,7 @@ async def log_recommendation(rec: RecommendationInput, session=None) -> int:
         "thesis": (rec.thesis or "")[:8000],
         "sigs": signals,
         "mc": rec.market_climate, "sc": rec.stock_climate,
+        "mreg": rec.market_regime, "sreg": rec.stock_regime,
         "mv": rec.model_version, "pv": rec.pipeline_version,
         "raw": raw,
     })

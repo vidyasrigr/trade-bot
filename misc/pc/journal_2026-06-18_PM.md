@@ -1,0 +1,32 @@
+# Journal 2026-06-18 PM (PC Opus) — NEXT_RUNBOOK execution leg
+
+Owner: PC Opus. Goal: complete ALL of NEXT_RUNBOOK_2026-06-18.md toward a profitable,
+robust system. Decision-maker for promotion/capital/budget/tier: V.
+
+## Recap of this leg before NEXT_RUNBOOK phases
+- Anthropic made OPTIONAL: key in .env was INVALID (401). hooks.py now routes ALL LLM
+  calls to Ollama (qwen3.5:9b) on empty-or-invalid key (flips _anthropic_disabled on first
+  401). cross_stock_context + postmortem rerouted through hooks. Pipeline runs at $0. Committed.
+- Phase 0 LIVE HTTP SMOKE TEST: PASSED 9/9. Booted app; /health 200; landed recommendation_id
+  via the real agent pipeline (all Ollama); paper-open 200; bogus->404; earnings-in-DTE->409 +
+  rec stale. 6 latent bugs surfaced+fixed (numpy-json, two ::jsonb binds, non-numeric strike,
+  expiry str->DATE, invalid-key fallback). pytest 94/94. Committed/pushed (0fe6648).
+- Non-blocking findings to address this leg: paper_trades missing 'stream'/'unrealized_pnl'
+  cols; options_selection LIVE chain fetch 500s; FRED macro pulls failing (Phase 2 fixes).
+
+## NEXT_RUNBOOK phases — starting now
+
+## [22:15] Phase 1 LAUNCHED — MTM re-validation sweep
+run_full_validation --vrp-universe full (40-name, now cached) --concurrency 3. Produces
+MASTER_REPORT with MTM drawdowns for all variants. Running.
+
+## [22:30] Phase 2 DONE — FRED ingest + regime classifier + wiring
+- analysis/macro_ingest.py: banked 11 FRED series FULL history to data/feature_store/macro/
+  (VIXCLS 1990+, DFF, DGS10/2, T10Y2Y, UNRATE, CPIAUCSL, DTWEXBGS, DCOILWTICO, BAMLH0A0HYM2, ICSA).
+- analysis/regime_classifier.py: classify(as_of) from banked macro (VIX vol bucket + HY-OAS/curve
+  risk-on/off), PIT. VERIFIED: 2020-03-15 -> high_vol|bear (VIX 57.8); 2021-11 -> normal_vol|bull;
+  2022-09 -> high_vol|bear (curve inverted); today -> normal_vol|range (VIX 18.4). Matches done-when.
+- Wired market_regime into recommendation_log (RecommendationInput + INSERT) + graph._log_recommendation_for
+  stamps regime_tag() on every emit. VERIFIED: a rec carries market_regime='normal_vol|range'.
+- Smoke "macro failed" was just Redis-not-init in the standalone script; FRED itself works.
+- Follow-up (optional): stock_climate.py could read UNRATE/CPIAUCSL from the banked store. pytest 94/94.

@@ -666,6 +666,11 @@ async def _log_recommendation_for(state: AgentState) -> int | None:
         return None
     try:
         from scoring.recommendation_log import RecommendationInput, log_recommendation
+        try:
+            from analysis.regime_classifier import regime_tag
+            mkt_regime = regime_tag()
+        except Exception:
+            mkt_regime = None
         proj = t.get("return_projection") or {}
         rec = RecommendationInput(
             stream=t.get("stream", "options"),
@@ -680,6 +685,8 @@ async def _log_recommendation_for(state: AgentState) -> int | None:
             signals_fired=list((state.get("category_scores") or {}).keys()) or None,
             market_climate=state.get("market_climate"),
             stock_climate=state.get("stock_climate"),
+            market_regime=mkt_regime,
+            stock_regime=state.get("stock_climate"),
             raw_ticket=t,
         )
         rid = await log_recommendation(rec)

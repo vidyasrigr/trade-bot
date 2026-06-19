@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-19T05:17:05.786699",
+  "updated_at": "2026-06-19T05:21:24.870999",
   "variants": [
     {
       "signal": "momentum_12_1",
@@ -454,11 +454,60 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 694,
+          "win_rate": 0.24495677233429394,
+          "total_pnl": -59115.3,
+          "avg_pnl": -85.18054755043228,
+          "expectancy": -85.18054755043228,
+          "sharpe": -10.035794571441466,
+          "probabilistic_sharpe": 8.859869964851787e-43,
+          "deflated_sharpe": 6.782922618653155e-55,
+          "max_drawdown": 0.5911529999999932,
+          "max_drawdown_realized": 0.5906121987144964,
+          "equity_curve_method": "daily_mtm",
+          "source_stats": {
+            "api_fetches": 394,
+            "disk_hits": 18474,
+            "memory_hits": 60391,
+            "expirations_api": 0,
+            "expirations_disk": 2247,
+            "total_lookups": 79259,
+            "disk_hit_rate": 0.23308393999419624
+          }
+        },
+        "walk_forward": {
+          "num_trades": 301,
+          "win_rate": 0.18604651162790697,
+          "total_pnl": -37098.700000000004,
+          "avg_pnl": -123.25149501661132,
+          "expectancy": -123.25149501661132,
+          "sharpe": -9.90597731338787,
+          "probabilistic_sharpe": 3.087787785661556e-19,
+          "deflated_sharpe": 1.9286205453201027e-27,
+          "max_drawdown": 0.37098700000000084,
+          "max_drawdown_realized": 0.370849215978297,
+          "equity_curve_method": "daily_mtm",
+          "source_stats": {
+            "api_fetches": 566,
+            "disk_hits": 18739,
+            "memory_hits": 73839,
+            "expirations_api": 0,
+            "expirations_disk": 2247,
+            "total_lookups": 93144,
+            "disk_hit_rate": 0.20118311431761574
+          }
+        },
+        "train_trades": 694,
+        "wf_trades": 301,
+        "credits_burned": 566,
+        "universe_size": 40
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-19T05:17:05.787374",
+      "finished_at": "2026-06-19T05:20:12.385606"
     },
     {
       "signal": "vrp_harvest",
@@ -475,11 +524,60 @@
       "needs_marketdata": true,
       "estimated_credits": 0,
       "universe_size": 40,
-      "status": "pending",
-      "result": null,
+      "status": "sandboxed",
+      "result": {
+        "train": {
+          "num_trades": 695,
+          "win_rate": 0.34676258992805753,
+          "total_pnl": -54486.0,
+          "avg_pnl": -78.39712230215828,
+          "expectancy": -78.39712230215828,
+          "sharpe": -8.675494313283169,
+          "probabilistic_sharpe": 8.520988245265791e-39,
+          "deflated_sharpe": 2.3829023684218554e-50,
+          "max_drawdown": 0.5452851557853277,
+          "max_drawdown_realized": 0.5452188223491615,
+          "equity_curve_method": "daily_mtm",
+          "source_stats": {
+            "api_fetches": 619,
+            "disk_hits": 18846,
+            "memory_hits": 111006,
+            "expirations_api": 0,
+            "expirations_disk": 2247,
+            "total_lookups": 130471,
+            "disk_hit_rate": 0.14444589219060175
+          }
+        },
+        "walk_forward": {
+          "num_trades": 301,
+          "win_rate": 0.3023255813953488,
+          "total_pnl": -36521.200000000004,
+          "avg_pnl": -121.33289036544852,
+          "expectancy": -121.33289036544852,
+          "sharpe": -8.618407631066827,
+          "probabilistic_sharpe": 1.814870069868424e-15,
+          "deflated_sharpe": 7.738673760788599e-23,
+          "max_drawdown": 0.3652120000000009,
+          "max_drawdown_realized": 0.3648064289048532,
+          "equity_curve_method": "daily_mtm",
+          "source_stats": {
+            "api_fetches": 658,
+            "disk_hits": 18886,
+            "memory_hits": 125431,
+            "expirations_api": 0,
+            "expirations_disk": 2247,
+            "total_lookups": 144975,
+            "disk_hit_rate": 0.13027073633385067
+          }
+        },
+        "train_trades": 695,
+        "wf_trades": 301,
+        "credits_burned": 92,
+        "universe_size": 40
+      },
       "error": null,
-      "started_at": null,
-      "finished_at": null
+      "started_at": "2026-06-19T05:20:12.386283",
+      "finished_at": "2026-06-19T05:21:24.870989"
     },
     {
       "signal": "vrp_harvest",
@@ -608,10 +706,10 @@
   ],
   "summary": {
     "total": 20,
-    "pending": 8,
+    "pending": 6,
     "running": 2,
     "done": 0,
-    "sandboxed": 7,
+    "sandboxed": 9,
     "blocked": 3,
     "error": 0
   }

@@ -343,9 +343,10 @@ async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTa
     async with AsyncSessionLocal() as session:
         # P0 Stage 1.4 — the paper trade MUST link to a logged recommendation.
         rec = (await session.execute(
-            text("SELECT id FROM recommendations WHERE id = :rid"),
+            text("SELECT id, stream FROM recommendations WHERE id = :rid"),
             {"rid": req.recommendation_id},
         )).first()
+        rec_stream = rec[1] if rec else "options"
         if rec is None:
             raise HTTPException(
                 status_code=404,
@@ -385,15 +386,16 @@ async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTa
             INSERT INTO paper_trades
                 (symbol, analysis_id, direction, strategy, expiry, long_strike,
                  contracts, entry_price, max_loss, max_profit, conviction, status,
-                 legs, strategy_type, recommendation_id)
+                 legs, strategy_type, recommendation_id, stream, unrealized_pnl)
             VALUES
                 (:sym, :aid, :dir, :strat, :exp, :strike,
                  :contracts, :entry, :max_loss, :max_profit, :conviction, 'open',
-                 CAST(:legs AS jsonb), :stype, :rid)
+                 CAST(:legs AS jsonb), :stype, :rid, :strm, 0)
             RETURNING id
         """), {
             "sym": req.symbol, "aid": req.analysis_id, "dir": req.direction,
             "strat": req.strategy, "exp": exp_val, "strike": req.strike,
+            "strm": rec_stream,
             "contracts": req.contracts, "entry": req.entry_price,
             "max_loss": req.max_loss, "max_profit": req.max_profit,
             "conviction": req.conviction,

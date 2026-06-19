@@ -1,0 +1,50 @@
+{
+  "names": [
+    "C",
+    "SCHW",
+    "GILD",
+    "AMGN",
+    "REGN",
+    "PLTR",
+    "COIN",
+    "SMCI",
+    "MRVL"
+  ],
+  "train_trades": 221,
+  "wf_trades": 1,
+  "train_metrics": {
+    "num_trades": 221,
+    "win_rate": 0.5113122171945701,
+    "total_pnl": -53676.1,
+    "avg_pnl": -242.87828054298643,
+    "expectancy": -242.87828054298643,
+    "sharpe": -1.2805357069315266,
+    "probabilistic_sharpe": 0.20289186906192708,
+    "deflated_sharpe": 0.0031471354160098894,
+    "max_drawdown": 0.8547019603644763,
+    "max_drawdown_realized": 0.6298897781993206,
+    "equity_curve_method": "daily_mtm"
+  },
+  "wf_metrics": {
+    "num_trades": 1,
+    "win_rate": 0.0,
+    "total_pnl": -572.6,
+    "avg_pnl": -572.6,
+    "expectancy": -572.6,
+    "sharpe": 0.0,
+    "probabilistic_sharpe": 0.0,
+    "deflated_sharpe": 0.0,
+    "max_drawdown": 0.005726000000000058,
+    "max_drawdown_realized": 0.0,
+    "equity_curve_method": "daily_mtm"
+  },
+  "stats": {
+    "api_fetches": 2081,
+    "disk_hits": 0,
+    "memory_hits": 4386,
+    "expirations_api": 349,
+    "expirations_disk": 0,
+    "total_lookups": 6467,
+    "disk_hit_rate": 0.0
+  }
+}

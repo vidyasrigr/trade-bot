@@ -53,3 +53,26 @@ SME decision: spend remaining ~2,471 MarketData credits banking ~9 new sector/sk
 optionable names (C,SCHW,GILD,AMGN,REGN,PLTR,COIN,SMCI,MRVL) train+wf -> permanent reusable data
 asset for the regime-conditioned skew direction (the most promising OOS signal). Banks forever,
 not data-snooping. Target: leave <150 credits.
+
+## [23:20] Phase 4 DONE — credit burn to 0
+Banked 9 new names (C,SCHW,GILD,AMGN,REGN,PLTR,COIN,SMCI,MRVL): TRAIN fully banked (221 VRP trades,
+2,430 credits incl 349 expirations); WF hit the 0-credit wall mid-run (1 trade) — new-name WF chains
+can finish on tomorrow's reset. MarketData remaining: 0/10000 (rule "<150 unspent" satisfied).
+phase4_bank.json saved. These chains are a permanent reusable asset (VRP/skew/IV cross-section).
+
+## [23:25] Phase 5 — assessed, no worthwhile burn (documented per runbook)
+Alpha Vantage free tier: TIME_SERIES_DAILY works but is NON-adjusted (adjusted = premium-gated) ->
+strictly inferior to yfinance (redundant, worse). NEWS_SENTIMENT is unique but has no consumer wired.
+Per runbook "if nothing else has a quota worth burning, end here." No value-additive free pull -> ended.
+FRED (Phase 2) was the real free-quota win and is fully banked.
+
+## RUNBOOK ACCEPTANCE (NEXT_RUNBOOK_2026-06-18)
+[x] MASTER_REPORT_MTM_2026-06-18.md — covers every promotion-eligible signal (nothing promotes)
+[x] FRED feature store: 11 series, full history
+[x] PEAD walk-forward has a row in the MTM report (333/135; FMP served during the sweep)
+[x] MarketData remaining < 150 (= 0)
+[~] FMP daily quota: Phase 3 DEFERRED (probe still 429) — documented per runbook
+[x] pytest 94/94 throughout
+[x] Journal entry per phase
+BONUS fixes this leg: Anthropic optional (Ollama fallback), 6 smoke-test latent bugs, mig 023
+(paper_trades stream/unrealized_pnl, nullable expiry), regime_classifier wired to recommendations.

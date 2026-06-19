@@ -725,12 +725,25 @@ async def _apply_ticket_guards(state: AgentState) -> None:
     state["order_ticket"] = ticket
 
 
+def _num(x, default: float = 0.0) -> float:
+    """
+    Coerce an LLM-supplied value to float. Models (esp. the Ollama fallback) can
+    return prose in numeric fields, e.g. strike='0.40-0.45 delta call near ATM'.
+    This keeps the production ticket path from crashing on that — bad value ->
+    default, surfaced as a warning by the caller rather than a hard failure.
+    """
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return default
+
+
 def _build_order_ticket(state: AgentState, analysis: AnalysisResult, scoring=None) -> dict:
     from scoring.return_projection import compute_return_projection
 
     ts = state.get("trade_structure", {})
-    bid  = ts.get("bid") or 0.0
-    ask  = ts.get("ask") or 0.0
+    bid  = _num(ts.get("bid"), 0.0)
+    ask  = _num(ts.get("ask"), 0.0)
     mid  = round((bid + ask) / 2, 2) if bid and ask else bid or ask or 0.0
 
     # Realistic execution price + slippage (Phase H.11).
@@ -748,11 +761,11 @@ def _build_order_ticket(state: AgentState, analysis: AnalysisResult, scoring=Non
         0.30,
     )
 
-    underlying = float(state.get("underlying_price") or 0.0)
-    strike_val = float(ts.get("strike") or ts.get("long_strike") or underlying or 0)
+    underlying = _num(state.get("underlying_price"), 0.0)
+    strike_val = _num(ts.get("strike"), 0.0) or _num(ts.get("long_strike"), 0.0) or underlying or 0.0
     if underlying <= 0:
         underlying = strike_val  # last resort — flagged below so it is never silent
-    dte = int(ts.get("dte_min") or ts.get("dte") or 21)
+    dte = int(_num(ts.get("dte_min"), 0) or _num(ts.get("dte"), 0) or 21)
 
     # Project returns from the REALISTIC fill price, not theoretical mid.
     # Using mid systematically overstated EV by ~half the spread on entry.

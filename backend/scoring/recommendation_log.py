@@ -79,7 +79,10 @@ async def log_recommendation(rec: RecommendationInput, session=None) -> int:
     import orjson
 
     target_res = rec.target_resolution_date or rec.default_resolution()
-    raw = orjson.dumps(rec.raw_ticket or {}).decode()
+    # OPT_SERIALIZE_NUMPY: the order ticket carries numpy.float64 (from scoring /
+    # return-projection math); plain orjson.dumps raises "Type is not JSON
+    # serializable" on it. Surfaced by the live HTTP smoke test.
+    raw = orjson.dumps(rec.raw_ticket or {}, option=orjson.OPT_SERIALIZE_NUMPY).decode()
     signals = rec.signals_fired or []
 
     result = await session.execute(text("""

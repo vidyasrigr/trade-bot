@@ -374,6 +374,13 @@ async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTa
                         "reasons": [f"{f.name}: {f.message}" for f in criticals]},
             )
 
+        # paper_trades.expiry is a DATE column — coerce the string (e.g. a "~21-45
+        # DTE" placeholder won't parse, store NULL rather than crash the insert).
+        from datetime import date as _date
+        try:
+            exp_val = _date.fromisoformat(str(req.expiry)[:10])
+        except ValueError:
+            exp_val = None
         result = await session.execute(text("""
             INSERT INTO paper_trades
                 (symbol, analysis_id, direction, strategy, expiry, long_strike,
@@ -382,11 +389,11 @@ async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTa
             VALUES
                 (:sym, :aid, :dir, :strat, :exp, :strike,
                  :contracts, :entry, :max_loss, :max_profit, :conviction, 'open',
-                 :legs::jsonb, :stype, :rid)
+                 CAST(:legs AS jsonb), :stype, :rid)
             RETURNING id
         """), {
             "sym": req.symbol, "aid": req.analysis_id, "dir": req.direction,
-            "strat": req.strategy, "exp": req.expiry, "strike": req.strike,
+            "strat": req.strategy, "exp": exp_val, "strike": req.strike,
             "contracts": req.contracts, "entry": req.entry_price,
             "max_loss": req.max_loss, "max_profit": req.max_profit,
             "conviction": req.conviction,

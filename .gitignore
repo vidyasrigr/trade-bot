@@ -36,6 +36,7 @@ API_KEYS.md
 # Transient data caches (FMP json daemon bank, etc.) — large, reproducible
 backend/data/cache/
 data/cache/
+backend/data/marketdata_cache/_expirations/
 
 # Logs
 *.log

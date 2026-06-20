@@ -56,6 +56,7 @@ class SignalSpec:
     influences_conviction: bool = True
     research_anchor: str | None = None
     stale_after_days: int = 2   # default freshness window
+    streams: tuple[str, ...] = ()   # trading streams this signal informs: O/S/M/L
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -213,8 +214,57 @@ REGISTRY: tuple[SignalSpec, ...] = (
 )
 
 
+# ---------------------------------------------------------------------------
+# Trading-stream mapping (O=Options, S=Swing 1-10d, M=Mid 2-8wk, L=Long months)
+# Kept as one map and applied via replace() so streams live ON each SignalSpec
+# (data-driven for the trackers) without editing all 49 constructor calls.
+# ---------------------------------------------------------------------------
+
+_SIGNAL_STREAMS: dict[str, tuple[str, ...]] = {
+    # engine
+    "macro": ("L",), "calendar": ("S", "L"), "fundamental": ("M", "L"),
+    "trend": ("S", "M"), "support_resistance": ("S",), "candles": ("S",),
+    "chart_patterns": ("S",), "momentum": ("S", "M"), "iv_analysis": ("O",),
+    "options_chain": ("O",), "greeks": ("O",), "trade_structure": ("O",),
+    "sentiment": ("S",), "liquidity": ("O", "S"), "risk": ("S", "M"),
+    # overlay
+    "gex_dex": ("O",), "options_flow": ("O",), "volatility_regime": ("O", "S"),
+    "earnings_adj_iv": ("O",),
+    # cross_section
+    "vrp_z": ("O",), "vrp_level": ("O",), "skew_25d": ("O",),
+    "iv_call_put_spread": ("O",), "iv_term_slope": ("O",),
+    "momentum_12_1": ("S", "M", "L"), "whale_flow": ("O",),
+    "short_squeeze": ("S", "M"), "reddit_mentions": ("S",), "reddit_polarity": ("S",),
+    "insider_cluster": ("M", "L"), "insider_analyst_combo": ("M", "L"),
+    # compound
+    "beat_and_raise_pead": ("S", "M"), "analyst_revision_cascade": ("S", "M"),
+    "sector_dispersion": ("M",),
+    # macro/regime overlays
+    "pre_fomc_drift": ("O", "S"), "regime_markov_market": ("M", "L"),
+    "regime_markov_per_symbol": ("S", "M"), "supply_chain_lead_lag": ("S", "M"),
+    # dna
+    "stock_dna": ("S", "M", "L"),
+    # strategy
+    "vrp_harvest": ("O",), "pre_fomc_straddle": ("O",),
+    # feature_only
+    "political_boost": ("M", "L"), "halo_boost": ("S", "M"), "cot_extreme": ("S", "M"),
+    "smart_money_crowded": ("L",), "vix_term_contango": ("O",),
+    "yield_curve_slope": ("L",), "hy_credit_spread": ("L",), "finra_short_volume": ("S",),
+}
+
+# Re-stamp every spec with its streams (frozen dataclass -> replace).
+from dataclasses import replace as _replace
+REGISTRY = tuple(
+    _replace(s, streams=_SIGNAL_STREAMS.get(s.name, ())) for s in REGISTRY
+)
+
+
 def by_name() -> dict[str, SignalSpec]:
     return {s.name: s for s in REGISTRY}
+
+
+def streams_for(signal_name: str) -> tuple[str, ...]:
+    return by_name().get(signal_name, SignalSpec("", "", "", "", ())).streams
 
 
 # P0 Stage 1.5 — promotion statuses allowed to feed conviction, per operating mode.

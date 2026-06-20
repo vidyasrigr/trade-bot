@@ -105,6 +105,19 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
     )
 
+    # Trackers regen (CONSTRAINT_RUNBOOK Track 5): hourly single-source-of-truth
+    # dashboards (SIGNAL_STATUS / DATA_INVENTORY / VALIDATION_LEDGER). Read-only,
+    # <5s; also invoked at the end of each validation run.
+    async def _rebuild_trackers():
+        from scripts.build_trackers import generate
+        await asyncio.to_thread(generate)
+    scheduler.add_job(
+        _rebuild_trackers,
+        CronTrigger(minute=5, timezone="America/New_York"),
+        id="rebuild_trackers",
+        replace_existing=True,
+    )
+
     # Nightly whale flow (Phase I.2): 6:50 PM ET (after scan completes; uses chains)
     scheduler.add_job(
         run_nightly_whale_flow,

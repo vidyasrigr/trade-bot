@@ -41,20 +41,19 @@ def _parse_directory(text: str, symbol_col: str, etf_col: str = "ETF",
         df = df[df[test_col] == "N"]
     if etf_col in df.columns:
         df = df[df[etf_col] != "Y"]
-    syms = [s for s in df[symbol_col].astype(str) if _SYMBOL_RE.match(s)]
+    # dropna first: the directory footer row parses as a NaN symbol that astype(str)
+    # can leave as a float in some pandas versions, blowing up the regex.
+    col = df[symbol_col].dropna().astype(str)
+    syms = [s for s in col if _SYMBOL_RE.match(s)]
     return syms
 
 
-async def get_dynamic_universe(include_other_listed: bool = True) -> list[str]:
+async def fetch_listed_symbols(include_other_listed: bool = True) -> list[str]:
     """
-    Full listed common-stock universe (~5,000+ symbols), cached 24h.
-    Returns [] on failure so callers can fall back to the static lists loudly.
+    Keyless, Redis-free fetch+parse of the listed common-stock universe (~5,000+).
+    Standalone processes (e.g. the FMP daemon) use this directly so they don't need
+    the app's Redis cache to be initialized. Returns [] on total failure.
     """
-    cached = await cache_get(_CACHE_KEY)
-    if cached:
-        import orjson
-        return orjson.loads(cached)
-
     symbols: set[str] = set()
     urls = [(NASDAQ_LISTED_URL, "Symbol")]
     if include_other_listed:
@@ -71,7 +70,20 @@ async def get_dynamic_universe(include_other_listed: bool = True) -> list[str]:
             except Exception as e:
                 logger.warning(f"Universe fetch failed for {url}: {e}")
 
-    result = sorted(symbols)
+    return sorted(symbols)
+
+
+async def get_dynamic_universe(include_other_listed: bool = True) -> list[str]:
+    """
+    Full listed common-stock universe (~5,000+ symbols), cached 24h.
+    Returns [] on failure so callers can fall back to the static lists loudly.
+    """
+    cached = await cache_get(_CACHE_KEY)
+    if cached:
+        import orjson
+        return orjson.loads(cached)
+
+    result = await fetch_listed_symbols(include_other_listed=include_other_listed)
     if result:
         import orjson
         await cache_set(_CACHE_KEY, orjson.dumps(result).decode(), ttl=_CACHE_TTL)

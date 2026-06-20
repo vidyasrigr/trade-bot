@@ -56,3 +56,14 @@ sandboxed on drawdown.
 Promote nothing (matches the gates). Next research: regime-conditioned skew_25d, and a clean PEAD
 re-run once FMP quota + disk cache are in. No signal_registry change — V's call.
 pytest 94/94. Prior realized-DD report preserved at MASTER_REPORT.md / MASTER_REPORT_prePhase1.md.
+
+---
+
+## Addendum 2026-06-19 — skew_25d regime-conditioning (Track 4b)
+
+Pre-registered hypothesis (calm-regime concentration) **REJECTED**. The edge does not live in the
+hypothesized calm-bull bucket (dead in train: DSR 0.03/0.01). Train edge sits in bear buckets
+(normal_vol|bear 0.25/0.99), WF edge sits in normal_vol|range (0.66/0.47) — different buckets, no
+stable cross-window regime. Pooled WF rests on 7-8 cohorts; the strength is a small-sample artifact.
+skew_25d stays SANDBOX; re-test when the chain bank reaches 200+ names (Track 1). Full result +
+pre-registration: SKEW_REGIME_2026-06-19.md, SKEW_REGIME_PREREG_2026-06-19.md.

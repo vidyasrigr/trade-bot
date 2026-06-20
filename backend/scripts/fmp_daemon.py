@@ -82,11 +82,13 @@ ENDPOINTS: list[Endpoint] = [
     Endpoint("analyst_est",     "stable/analyst-estimates",    {"period": "annual", "limit": 40}, ttl_days=2, priority=50),
     Endpoint("price_target",    "stable/price-target-summary", {},             ttl_days=2,  priority=51),
     Endpoint("grades",          "stable/grades-historical",    {"limit": 100}, ttl_days=2,  priority=52),
-    # --- fundamental engine signal ---
-    # quarterly income is allowed on Starter; quarterly ratios/key-metrics are 402 -> annual.
-    Endpoint("income",          "stable/income-statement",     {"period": "quarter", "limit": 16}, ttl_days=7, priority=60),
-    Endpoint("ratios",          "stable/ratios",               {"period": "annual", "limit": 8}, ttl_days=7, priority=61),
-    Endpoint("key_metrics",     "stable/key-metrics",          {"period": "annual", "limit": 8}, ttl_days=7, priority=62),
+    # --- fundamental engine signal (annual on Starter; bumped priority so the
+    #     quality factors unblock — 0619.3 Track D) ---
+    Endpoint("income",          "stable/income-statement",     {"period": "annual", "limit": 10}, ttl_days=7, priority=33),
+    Endpoint("balance_sheet",   "stable/balance-sheet-statement", {"period": "annual", "limit": 10}, ttl_days=7, priority=34),
+    Endpoint("cash_flow",       "stable/cash-flow-statement",  {"period": "annual", "limit": 10}, ttl_days=7, priority=35),
+    Endpoint("ratios",          "stable/ratios",               {"period": "annual", "limit": 10}, ttl_days=7, priority=36),
+    Endpoint("key_metrics",     "stable/key-metrics",          {"period": "annual", "limit": 10}, ttl_days=7, priority=37),
     # --- sentiment (replaces AlphaVantage spend) ---
     Endpoint("news",            "stable/news/stock",           {"limit": 100}, ttl_days=1,  priority=70),
 ]

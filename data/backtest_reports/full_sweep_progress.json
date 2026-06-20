@@ -1,0 +1,1118 @@
+{
+  "updated_at": "2026-06-20",
+  "variants": [
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=105 top100",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [top100]",
+      "label": "top100",
+      "result": {
+        "train": {
+          "num_trades": 692,
+          "win_rate": 0.5086705202312138,
+          "total_pnl": 8657.080809815438,
+          "avg_pnl": 12.510232384126354,
+          "expectancy": 0.0012510232384126353,
+          "sharpe": 0.06237209345593823,
+          "deflated_sharpe": 0.05994853872157517,
+          "max_drawdown": 0.4258288754994528,
+          "num_cohorts": 38,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 320,
+          "win_rate": 0.55,
+          "total_pnl": 65255.10108103405,
+          "avg_pnl": 203.92219087823142,
+          "expectancy": 0.020392219087823137,
+          "sharpe": 0.7318963591227015,
+          "deflated_sharpe": 0.22441534986043954,
+          "max_drawdown": 0.24285590651221814,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=126 top100",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [top100]",
+      "label": "top100",
+      "result": {
+        "train": {
+          "num_trades": 672,
+          "win_rate": 0.5282738095238095,
+          "total_pnl": 60108.06171582184,
+          "avg_pnl": 89.44652041044918,
+          "expectancy": 0.008944652041044917,
+          "sharpe": 0.4888924130542701,
+          "deflated_sharpe": 0.2086400879606744,
+          "max_drawdown": 0.48143459387371773,
+          "num_cohorts": 37,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 320,
+          "win_rate": 0.53125,
+          "total_pnl": 53192.51964297583,
+          "avg_pnl": 166.22662388429953,
+          "expectancy": 0.016622662388429948,
+          "sharpe": 0.623778818930571,
+          "deflated_sharpe": 0.17494236106548183,
+          "max_drawdown": 0.24981452426940556,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=147 top100",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [top100]",
+      "label": "top100",
+      "result": {
+        "train": {
+          "num_trades": 652,
+          "win_rate": 0.5291411042944786,
+          "total_pnl": 41266.72351855294,
+          "avg_pnl": 63.29252073397691,
+          "expectancy": 0.006329252073397692,
+          "sharpe": 0.3355880649241447,
+          "deflated_sharpe": 0.13964655916580127,
+          "max_drawdown": 0.5447894004149655,
+          "num_cohorts": 36,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 320,
+          "win_rate": 0.528125,
+          "total_pnl": 77940.97626825047,
+          "avg_pnl": 243.56555083828272,
+          "expectancy": 0.024356555083828276,
+          "sharpe": 0.8778741156816883,
+          "deflated_sharpe": 0.285903714647764,
+          "max_drawdown": 0.19464370796025127,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=168 top100",
+      "needs_marketdata": false,
+      "status": "sandbox",
+      "verdict": "SANDBOX(partial) [top100]",
+      "label": "top100",
+      "result": {
+        "train": {
+          "num_trades": 632,
+          "win_rate": 0.5284810126582279,
+          "total_pnl": 9968.429870078593,
+          "avg_pnl": 15.772832072909193,
+          "expectancy": 0.0015772832072909189,
+          "sharpe": 0.08742357983840601,
+          "deflated_sharpe": 0.06459699128505847,
+          "max_drawdown": 0.6044979052750771,
+          "num_cohorts": 35,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 320,
+          "win_rate": 0.51875,
+          "total_pnl": 113174.78245311305,
+          "avg_pnl": 353.67119516597825,
+          "expectancy": 0.035367119516597836,
+          "sharpe": 1.2716341955335646,
+          "deflated_sharpe": 0.5312827634435999,
+          "max_drawdown": 0.1359438623560999,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=105 top250",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [top250]",
+      "label": "top250",
+      "result": {
+        "train": {
+          "num_trades": 1136,
+          "win_rate": 0.49383802816901406,
+          "total_pnl": -67968.79051427278,
+          "avg_pnl": -59.83168179073307,
+          "expectancy": -0.005983168179073308,
+          "sharpe": -0.4875644625801428,
+          "deflated_sharpe": 0.012188757439212017,
+          "max_drawdown": 0.4845420889712288,
+          "num_cohorts": 24,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 244,
+          "win_rate": 0.4918032786885246,
+          "total_pnl": 94933.90025926924,
+          "avg_pnl": 389.07336171831656,
+          "expectancy": 0.03890733617183166,
+          "sharpe": 0.6786073283295002,
+          "deflated_sharpe": 0.12555131094099026,
+          "max_drawdown": 0.0,
+          "num_cohorts": 5,
+          "periods_per_year": 5
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=126 top250",
+      "needs_marketdata": false,
+      "status": "sandbox",
+      "verdict": "SANDBOX(partial) [top250]",
+      "label": "top250",
+      "result": {
+        "train": {
+          "num_trades": 1136,
+          "win_rate": 0.5044014084507042,
+          "total_pnl": -40951.549255753045,
+          "avg_pnl": -36.04889899274034,
+          "expectancy": -0.0036048898992740346,
+          "sharpe": -0.286836032807697,
+          "deflated_sharpe": 0.022529669100743787,
+          "max_drawdown": 0.491278980837041,
+          "num_cohorts": 24,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 344,
+          "win_rate": 0.5232558139534884,
+          "total_pnl": 185616.2594101719,
+          "avg_pnl": 539.582149448174,
+          "expectancy": 0.0539582149448174,
+          "sharpe": 2.9974398754377023,
+          "deflated_sharpe": 0.6039978312066497,
+          "max_drawdown": 0.07978765038894493,
+          "num_cohorts": 7,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=147 top250",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [top250]",
+      "label": "top250",
+      "result": {
+        "train": {
+          "num_trades": 1040,
+          "win_rate": 0.5221153846153846,
+          "total_pnl": 51601.26821289481,
+          "avg_pnl": 49.61660405086039,
+          "expectancy": 0.004961660405086039,
+          "sharpe": 0.43863395339291067,
+          "deflated_sharpe": 0.13471413069516402,
+          "max_drawdown": 0.20853975113899495,
+          "num_cohorts": 22,
+          "periods_per_year": 14
+        },
+        "walk_forward": {
+          "num_trades": 294,
+          "win_rate": 0.5476190476190477,
+          "total_pnl": 44784.03754959356,
+          "avg_pnl": 152.32665833195082,
+          "expectancy": 0.015232665833195084,
+          "sharpe": 0.4979046921503027,
+          "deflated_sharpe": 0.08293236396898779,
+          "max_drawdown": 0.0664752635016861,
+          "num_cohorts": 6,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=168 top250",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [top250]",
+      "label": "top250",
+      "result": {
+        "train": {
+          "num_trades": 994,
+          "win_rate": 0.5352112676056338,
+          "total_pnl": 34758.09134964291,
+          "avg_pnl": 34.96789874209548,
+          "expectancy": 0.0034967898742095495,
+          "sharpe": 0.34224103398927336,
+          "deflated_sharpe": 0.10460660491762158,
+          "max_drawdown": 0.2820110159673661,
+          "num_cohorts": 21,
+          "periods_per_year": 14
+        },
+        "walk_forward": {
+          "num_trades": 342,
+          "win_rate": 0.47368421052631576,
+          "total_pnl": -41605.86584132701,
+          "avg_pnl": -121.6545784834123,
+          "expectancy": -0.012165457848341228,
+          "sharpe": -0.3963065579347488,
+          "deflated_sharpe": 0.024350902650826792,
+          "max_drawdown": 0.21775953478875673,
+          "num_cohorts": 7,
+          "periods_per_year": 10
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=105 top500",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [top500]",
+      "label": "top500",
+      "result": {
+        "train": {
+          "num_trades": 2154,
+          "win_rate": 0.5069637883008357,
+          "total_pnl": -29938.045956834954,
+          "avg_pnl": -13.898814278939165,
+          "expectancy": -0.0013898814278939158,
+          "sharpe": -0.20271840679097405,
+          "deflated_sharpe": 0.022812156104836733,
+          "max_drawdown": 0.5196752792060214,
+          "num_cohorts": 42,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 652,
+          "win_rate": 0.5168711656441718,
+          "total_pnl": 102041.84053299697,
+          "avg_pnl": 156.50589038803219,
+          "expectancy": 0.01565058903880321,
+          "sharpe": 0.553817703565729,
+          "deflated_sharpe": 0.11959163345010443,
+          "max_drawdown": 0.2261329323600019,
+          "num_cohorts": 13,
+          "periods_per_year": 14
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=126 top500",
+      "needs_marketdata": false,
+      "status": "sandbox",
+      "verdict": "SANDBOX(partial) [top500]",
+      "label": "top500",
+      "result": {
+        "train": {
+          "num_trades": 2226,
+          "win_rate": 0.5017969451931716,
+          "total_pnl": -3971.31888190293,
+          "avg_pnl": -1.7840605938467826,
+          "expectancy": -0.0001784060593846778,
+          "sharpe": -0.19190310871909771,
+          "deflated_sharpe": 0.024011225688652216,
+          "max_drawdown": 0.5105835621864941,
+          "num_cohorts": 41,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 770,
+          "win_rate": 0.5337662337662338,
+          "total_pnl": 202289.62037726652,
+          "avg_pnl": 262.7137926977487,
+          "expectancy": 0.026271379269774874,
+          "sharpe": 1.2766000370348114,
+          "deflated_sharpe": 0.3362679864253836,
+          "max_drawdown": 0.2229512237460781,
+          "num_cohorts": 14,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=147 top500",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [top500]",
+      "label": "top500",
+      "result": {
+        "train": {
+          "num_trades": 1992,
+          "win_rate": 0.516566265060241,
+          "total_pnl": 100490.1040078477,
+          "avg_pnl": 50.446839361369314,
+          "expectancy": 0.005044683936136931,
+          "sharpe": 0.5255116156848366,
+          "deflated_sharpe": 0.20572401890139458,
+          "max_drawdown": 0.1842739318380757,
+          "num_cohorts": 37,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 672,
+          "win_rate": 0.5491071428571429,
+          "total_pnl": 71717.2169568589,
+          "avg_pnl": 106.72204904294478,
+          "expectancy": 0.010672204904294482,
+          "sharpe": 0.19070676267726663,
+          "deflated_sharpe": 0.06721973969267758,
+          "max_drawdown": 0.26837516631686986,
+          "num_cohorts": 13,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "mom lb=168 top500",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [top500]",
+      "label": "top500",
+      "result": {
+        "train": {
+          "num_trades": 1930,
+          "win_rate": 0.5129533678756477,
+          "total_pnl": 39611.08914862698,
+          "avg_pnl": 20.523880387889633,
+          "expectancy": 0.0020523880387889643,
+          "sharpe": 0.2620754864232737,
+          "deflated_sharpe": 0.09945743635591203,
+          "max_drawdown": 0.39667007186170683,
+          "num_cohorts": 36,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 770,
+          "win_rate": 0.4727272727272727,
+          "total_pnl": -99068.06163631508,
+          "avg_pnl": -128.6598203069027,
+          "expectancy": -0.012865982030690263,
+          "sharpe": -0.6525470555787144,
+          "deflated_sharpe": 0.010433859496429082,
+          "max_drawdown": 0.29579938916852455,
+          "num_cohorts": 15,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "skew_25d",
+      "name": "skew hold=21",
+      "needs_marketdata": true,
+      "status": "sandbox",
+      "verdict": "SANDBOX(partial) [CACHE_LIMITED]",
+      "label": "CACHE_LIMITED",
+      "result": {
+        "train": {
+          "num_trades": 362,
+          "win_rate": 0.4558011049723757,
+          "total_pnl": -17471.19764856291,
+          "avg_pnl": -48.262976929731806,
+          "expectancy": -0.004826297692973179,
+          "sharpe": 0.08875109060930111,
+          "deflated_sharpe": 0.09582916757094567,
+          "max_drawdown": 0.3616686264472513,
+          "num_cohorts": 35,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 86,
+          "win_rate": 0.46511627906976744,
+          "total_pnl": 11731.91681954357,
+          "avg_pnl": 136.41763743655318,
+          "expectancy": 0.013641763743655316,
+          "sharpe": 1.5723708600711643,
+          "deflated_sharpe": 0.6708194733360244,
+          "max_drawdown": 0.10208106951313925,
+          "num_cohorts": 8,
+          "periods_per_year": 11
+        }
+      }
+    },
+    {
+      "signal": "vrp_z",
+      "name": "vrp_z",
+      "needs_marketdata": true,
+      "status": "sandbox",
+      "verdict": "SANDBOX(partial) [CACHE_LIMITED]",
+      "label": "CACHE_LIMITED",
+      "result": {
+        "train": {
+          "num_trades": 362,
+          "win_rate": 0.5248618784530387,
+          "total_pnl": 27983.545761717312,
+          "avg_pnl": 77.30261260142905,
+          "expectancy": 0.007730261260142903,
+          "sharpe": 1.3672187495280719,
+          "deflated_sharpe": 0.903483787826467,
+          "max_drawdown": 0.1393248688237483,
+          "num_cohorts": 35,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 86,
+          "win_rate": 0.5813953488372093,
+          "total_pnl": 3915.9539007559615,
+          "avg_pnl": 45.53434768320888,
+          "expectancy": 0.004553434768320883,
+          "sharpe": -0.7510643075624659,
+          "deflated_sharpe": 0.012944483329800364,
+          "max_drawdown": 0.6263805673208177,
+          "num_cohorts": 8,
+          "periods_per_year": 11
+        }
+      }
+    },
+    {
+      "signal": "vrp_level",
+      "name": "vrp_level",
+      "needs_marketdata": true,
+      "status": "sandbox",
+      "verdict": "SANDBOX(partial) [CACHE_LIMITED]",
+      "label": "CACHE_LIMITED",
+      "result": {
+        "train": {
+          "num_trades": 362,
+          "win_rate": 0.5248618784530387,
+          "total_pnl": 27983.545761717312,
+          "avg_pnl": 77.30261260142905,
+          "expectancy": 0.007730261260142903,
+          "sharpe": 1.3672187495280719,
+          "deflated_sharpe": 0.903483787826467,
+          "max_drawdown": 0.1393248688237483,
+          "num_cohorts": 35,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 86,
+          "win_rate": 0.5813953488372093,
+          "total_pnl": 3915.9539007559615,
+          "avg_pnl": 45.53434768320888,
+          "expectancy": 0.004553434768320883,
+          "sharpe": -0.7510643075624659,
+          "deflated_sharpe": 0.012944483329800364,
+          "max_drawdown": 0.6263805673208177,
+          "num_cohorts": 8,
+          "periods_per_year": 11
+        }
+      }
+    },
+    {
+      "signal": "iv_call_put_spread",
+      "name": "iv_cp_spread",
+      "needs_marketdata": true,
+      "status": "sandbox",
+      "verdict": "SANDBOX(partial) [CACHE_LIMITED]",
+      "label": "CACHE_LIMITED",
+      "result": {
+        "train": {
+          "num_trades": 362,
+          "win_rate": 0.5,
+          "total_pnl": 1861.1606739759964,
+          "avg_pnl": 5.141327828662966,
+          "expectancy": 0.0005141327828662962,
+          "sharpe": 0.14172030506645755,
+          "deflated_sharpe": 0.1135120458987195,
+          "max_drawdown": 0.3944819526785303,
+          "num_cohorts": 35,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 86,
+          "win_rate": 0.4883720930232558,
+          "total_pnl": 9513.1974410053,
+          "avg_pnl": 110.61857489541048,
+          "expectancy": 0.011061857489541048,
+          "sharpe": 1.7902536617936904,
+          "deflated_sharpe": 0.6543471687930223,
+          "max_drawdown": 0.011364364756469377,
+          "num_cohorts": 8,
+          "periods_per_year": 11
+        }
+      }
+    },
+    {
+      "signal": "iv_term_slope",
+      "name": "iv_term_slope",
+      "needs_marketdata": true,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [CACHE_LIMITED]",
+      "label": "CACHE_LIMITED",
+      "result": {
+        "train": {
+          "num_trades": 0
+        },
+        "walk_forward": {
+          "num_trades": 12,
+          "win_rate": 0.5,
+          "total_pnl": -1402.237073797975,
+          "avg_pnl": -116.85308948316462,
+          "expectancy": -0.011685308948316458,
+          "sharpe": -0.8461828994224542,
+          "deflated_sharpe": 0.008992951208158574,
+          "max_drawdown": 0.08112231478539,
+          "num_cohorts": 3,
+          "periods_per_year": 2
+        }
+      }
+    },
+    {
+      "signal": "rsi_14",
+      "name": "rsi_14",
+      "needs_marketdata": false,
+      "status": "sandbox",
+      "verdict": "SANDBOX(partial) [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 3130,
+          "win_rate": 0.5041533546325878,
+          "total_pnl": 207982.89997470702,
+          "avg_pnl": 66.44821085453898,
+          "expectancy": 0.006644821085453899,
+          "sharpe": 0.8147361418824743,
+          "deflated_sharpe": 0.5039982177217827,
+          "max_drawdown": 0.2284709377474096,
+          "num_cohorts": 47,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1189,
+          "win_rate": 0.4861227922624054,
+          "total_pnl": -54698.698601252654,
+          "avg_pnl": -46.00395172519147,
+          "expectancy": -0.004600395172519148,
+          "sharpe": -0.5454121876622243,
+          "deflated_sharpe": 0.01107654735690988,
+          "max_drawdown": 0.18333428661956483,
+          "num_cohorts": 19,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "macd",
+      "name": "macd",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 3122,
+          "win_rate": 0.49007046764894296,
+          "total_pnl": -101316.98282160675,
+          "avg_pnl": -32.45258898834297,
+          "expectancy": -0.0032452588988342965,
+          "sharpe": -0.3098877115189365,
+          "deflated_sharpe": 0.014164779803086131,
+          "max_drawdown": 0.3798770383212284,
+          "num_cohorts": 46,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1189,
+          "win_rate": 0.5004205214465938,
+          "total_pnl": -85254.7899705252,
+          "avg_pnl": -71.7029352149077,
+          "expectancy": -0.007170293521490764,
+          "sharpe": -0.5869441240978878,
+          "deflated_sharpe": 0.008944207121058213,
+          "max_drawdown": 0.2889558117723922,
+          "num_cohorts": 20,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "stoch",
+      "name": "stoch",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 3129,
+          "win_rate": 0.49536593160754233,
+          "total_pnl": 153825.333143703,
+          "avg_pnl": 49.16118029520711,
+          "expectancy": 0.004916118029520709,
+          "sharpe": 0.5334739579663194,
+          "deflated_sharpe": 0.26870708440672164,
+          "max_drawdown": 0.22395460299807476,
+          "num_cohorts": 46,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1192,
+          "win_rate": 0.48070469798657717,
+          "total_pnl": 11445.7814491314,
+          "avg_pnl": 9.602165645244432,
+          "expectancy": 0.0009602165645244466,
+          "sharpe": 0.13562837442894918,
+          "deflated_sharpe": 0.06990439413388869,
+          "max_drawdown": 0.1981327608803419,
+          "num_cohorts": 18,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "roc_63",
+      "name": "roc_63",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 3115,
+          "win_rate": 0.4825040128410915,
+          "total_pnl": -258079.63715535656,
+          "avg_pnl": -82.85060582836486,
+          "expectancy": -0.008285060582836486,
+          "sharpe": -0.9363445678200963,
+          "deflated_sharpe": 0.0008781727962102037,
+          "max_drawdown": 0.45773880848720094,
+          "num_cohorts": 46,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1190,
+          "win_rate": 0.5084033613445378,
+          "total_pnl": 206479.91111640492,
+          "avg_pnl": 173.5125303499201,
+          "expectancy": 0.01735125303499201,
+          "sharpe": 0.7964245676634137,
+          "deflated_sharpe": 0.21977982840870297,
+          "max_drawdown": 0.3230677102475257,
+          "num_cohorts": 19,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "ema_align",
+      "name": "ema_align",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 2383,
+          "win_rate": 0.483004616030214,
+          "total_pnl": -221396.77051324252,
+          "avg_pnl": -92.90674381588022,
+          "expectancy": -0.00929067438158802,
+          "sharpe": -1.2949950470463585,
+          "deflated_sharpe": 8.606044675586438e-07,
+          "max_drawdown": 0.40530374416838505,
+          "num_cohorts": 39,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1183,
+          "win_rate": 0.47675401521555366,
+          "total_pnl": -556.322456600979,
+          "avg_pnl": -0.47026412223242864,
+          "expectancy": -4.702641222324331e-05,
+          "sharpe": -0.002737184630510307,
+          "deflated_sharpe": 0.052051415988003294,
+          "max_drawdown": 0.11494442415756437,
+          "num_cohorts": 20,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "slope",
+      "name": "slope",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 3110,
+          "win_rate": 0.4742765273311897,
+          "total_pnl": -280719.06556120736,
+          "avg_pnl": -90.26336513222101,
+          "expectancy": -0.009026336513222101,
+          "sharpe": -1.0503310707611304,
+          "deflated_sharpe": 0.0003784796819890478,
+          "max_drawdown": 0.49584694452349687,
+          "num_cohorts": 45,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1188,
+          "win_rate": 0.51010101010101,
+          "total_pnl": 234391.7991728648,
+          "avg_pnl": 197.2994942532532,
+          "expectancy": 0.01972994942532532,
+          "sharpe": 0.9475456048679485,
+          "deflated_sharpe": 0.2857307807510203,
+          "max_drawdown": 0.28402272384681004,
+          "num_cohorts": 19,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "adx_dir",
+      "name": "adx_dir",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 3128,
+          "win_rate": 0.4862531969309463,
+          "total_pnl": -220290.99780151004,
+          "avg_pnl": -70.42551080610934,
+          "expectancy": -0.007042551080610935,
+          "sharpe": -0.8981576550995266,
+          "deflated_sharpe": 0.00033927298163238383,
+          "max_drawdown": 0.5130708251983997,
+          "num_cohorts": 47,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1188,
+          "win_rate": 0.5075757575757576,
+          "total_pnl": 63810.057807153156,
+          "avg_pnl": 53.712169871341025,
+          "expectancy": 0.0053712169871341035,
+          "sharpe": 0.5568618445332942,
+          "deflated_sharpe": 0.17050076770751682,
+          "max_drawdown": 0.07508074943039292,
+          "num_cohorts": 18,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "bb_width",
+      "name": "bb_width",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 3122,
+          "win_rate": 0.5291479820627802,
+          "total_pnl": -206938.6171170268,
+          "avg_pnl": -66.28399010795222,
+          "expectancy": -0.006628399010795219,
+          "sharpe": -0.46483717403852814,
+          "deflated_sharpe": 0.006556052613582793,
+          "max_drawdown": 0.5914114669234423,
+          "num_cohorts": 48,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1193,
+          "win_rate": 0.46689019279128247,
+          "total_pnl": -445311.07455498865,
+          "avg_pnl": -373.26997028917737,
+          "expectancy": -0.03732699702891774,
+          "sharpe": -1.664056428136264,
+          "deflated_sharpe": 0.0005070091247564682,
+          "max_drawdown": 0.7032214735227736,
+          "num_cohorts": 19,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "atr_pct",
+      "name": "atr_pct",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 3120,
+          "win_rate": 0.5442307692307692,
+          "total_pnl": -306076.5616533607,
+          "avg_pnl": -98.1014620683848,
+          "expectancy": -0.009810146206838486,
+          "sharpe": -0.5739131982899832,
+          "deflated_sharpe": 0.0036361641109381075,
+          "max_drawdown": 0.7138020433607464,
+          "num_cohorts": 48,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1189,
+          "win_rate": 0.44575273338940286,
+          "total_pnl": -553211.7881146633,
+          "avg_pnl": -465.27484282141575,
+          "expectancy": -0.046527484282141575,
+          "sharpe": -1.8073262452060157,
+          "deflated_sharpe": 0.00014824201754559357,
+          "max_drawdown": 0.7687094965931682,
+          "num_cohorts": 20,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "rvol",
+      "name": "rvol",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 3118,
+          "win_rate": 0.536241180243746,
+          "total_pnl": -288777.4400501055,
+          "avg_pnl": -92.61624119631351,
+          "expectancy": -0.00926162411963135,
+          "sharpe": -0.5486332814213303,
+          "deflated_sharpe": 0.004358426508253289,
+          "max_drawdown": 0.7083937643531282,
+          "num_cohorts": 47,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1187,
+          "win_rate": 0.45998315080033697,
+          "total_pnl": -531052.8974626182,
+          "avg_pnl": -447.390815048541,
+          "expectancy": -0.044739081504854096,
+          "sharpe": -1.8549678150969229,
+          "deflated_sharpe": 0.0003934312393228364,
+          "max_drawdown": 0.7635214702790404,
+          "num_cohorts": 18,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "support_res",
+      "name": "support_res",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [primitive]",
+      "label": "primitive",
+      "result": {
+        "train": {
+          "num_trades": 3119,
+          "win_rate": 0.5149086245591535,
+          "total_pnl": -151285.46818842826,
+          "avg_pnl": -48.504478418861254,
+          "expectancy": -0.004850447841886127,
+          "sharpe": -0.4670176429547358,
+          "deflated_sharpe": 0.0071186626708068445,
+          "max_drawdown": 0.5158139527039866,
+          "num_cohorts": 43,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1184,
+          "win_rate": 0.504222972972973,
+          "total_pnl": -27206.26105261458,
+          "avg_pnl": -22.978261024167715,
+          "expectancy": -0.002297826102416773,
+          "sharpe": -0.1653451446929013,
+          "deflated_sharpe": 0.03563773130117516,
+          "max_drawdown": 0.34335496524603787,
+          "num_cohorts": 19,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "trend",
+      "name": "trend(rollup)",
+      "needs_marketdata": false,
+      "status": "sandbox",
+      "verdict": "SANDBOX(partial) [rollup]",
+      "label": "rollup",
+      "result": {
+        "train": {
+          "num_trades": 2383,
+          "win_rate": 0.46999580360889637,
+          "total_pnl": -258092.27198286317,
+          "avg_pnl": -108.30561140699251,
+          "expectancy": -0.010830561140699252,
+          "sharpe": -1.1919351179119921,
+          "deflated_sharpe": 0.0005513777876871564,
+          "max_drawdown": 0.49338692374152643,
+          "num_cohorts": 37,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1179,
+          "win_rate": 0.48770144189991516,
+          "total_pnl": 143058.21256987503,
+          "avg_pnl": 121.33860268861326,
+          "expectancy": 0.012133860268861329,
+          "sharpe": 0.8314681507847013,
+          "deflated_sharpe": 0.4011475048588299,
+          "max_drawdown": 0.20840925837114102,
+          "num_cohorts": 19,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "risk",
+      "name": "risk(rollup)",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [rollup]",
+      "label": "rollup",
+      "result": {
+        "train": {
+          "num_trades": 3122,
+          "win_rate": 0.5371556694426649,
+          "total_pnl": -300868.19418519636,
+          "avg_pnl": -96.37033766341972,
+          "expectancy": -0.009637033766341969,
+          "sharpe": -0.5812768918648943,
+          "deflated_sharpe": 0.011756208766682546,
+          "max_drawdown": 0.6968674725348907,
+          "num_cohorts": 48,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1189,
+          "win_rate": 0.4659377628259041,
+          "total_pnl": -520609.876156792,
+          "avg_pnl": -437.85523646492175,
+          "expectancy": -0.04378552364649217,
+          "sharpe": -1.7139900486958761,
+          "deflated_sharpe": 0.0019130167066161042,
+          "max_drawdown": 0.765220134989006,
+          "num_cohorts": 19,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "beat_and_raise_pead",
+      "name": "pead hold=10",
+      "needs_marketdata": false,
+      "status": "sandbox",
+      "verdict": "SANDBOX(DD>25%) [FMP]",
+      "label": "FMP",
+      "result": {
+        "train": {
+          "num_trades": 1454,
+          "win_rate": 0.5275103163686382,
+          "total_pnl": 85924.21954387268,
+          "avg_pnl": 59.095061584506645,
+          "expectancy": 0.005909506158450664,
+          "sharpe": 0.7822743659206975,
+          "deflated_sharpe": 0.5416260552523151,
+          "max_drawdown": 0.7673736348459582,
+          "num_cohorts": 377,
+          "periods_per_year": 182
+        },
+        "walk_forward": {
+          "num_trades": 620,
+          "win_rate": 0.5532258064516129,
+          "total_pnl": 36929.08500045024,
+          "avg_pnl": 59.56304032330686,
+          "expectancy": 0.005956304032330686,
+          "sharpe": 0.8506191397625033,
+          "deflated_sharpe": 0.3780553812065924,
+          "max_drawdown": 0.7923333660068486,
+          "num_cohorts": 162,
+          "periods_per_year": 182
+        }
+      }
+    },
+    {
+      "signal": "beat_and_raise_pead",
+      "name": "pead hold=5",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [FMP]",
+      "label": "FMP",
+      "result": {
+        "train": {
+          "num_trades": 1349,
+          "win_rate": 0.5018532246108228,
+          "total_pnl": 15426.715712601655,
+          "avg_pnl": 11.435667689104266,
+          "expectancy": 0.0011435667689104264,
+          "sharpe": -0.5207044630243125,
+          "deflated_sharpe": 0.06146441835466791,
+          "max_drawdown": 0.7480284506471452,
+          "num_cohorts": 322,
+          "periods_per_year": 365
+        },
+        "walk_forward": {
+          "num_trades": 596,
+          "win_rate": 0.5335570469798657,
+          "total_pnl": 28668.111683720075,
+          "avg_pnl": 48.10085852973167,
+          "expectancy": 0.0048100858529731665,
+          "sharpe": 0.5755502508719909,
+          "deflated_sharpe": 0.24434093081056008,
+          "max_drawdown": 0.4546934832683519,
+          "num_cohorts": 144,
+          "periods_per_year": 365
+        }
+      }
+    },
+    {
+      "signal": "insider_cluster",
+      "name": "insider hold=60",
+      "needs_marketdata": false,
+      "status": "sandbox",
+      "verdict": "SANDBOX(DD>25%) [FMP]",
+      "label": "FMP",
+      "result": {
+        "train": {
+          "num_trades": 6,
+          "win_rate": 0.5,
+          "total_pnl": 1579.3508121074651,
+          "avg_pnl": 263.2251353512442,
+          "expectancy": 0.02632251353512442,
+          "sharpe": 4.277225436800054,
+          "deflated_sharpe": 0.45417404928045524,
+          "max_drawdown": 0.042155786776816286,
+          "num_cohorts": 6,
+          "periods_per_year": 122
+        },
+        "walk_forward": {
+          "num_trades": 12,
+          "win_rate": 0.6666666666666666,
+          "total_pnl": 20774.542481823162,
+          "avg_pnl": 1731.2118734852636,
+          "expectancy": 0.17312118734852633,
+          "sharpe": 1.367071864087618,
+          "deflated_sharpe": 0.8455847932479892,
+          "max_drawdown": 0.36538512307480764,
+          "num_cohorts": 12,
+          "periods_per_year": 14
+        }
+      }
+    }
+  ]
+}

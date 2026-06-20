@@ -365,12 +365,13 @@ def generate() -> None:
     md_syms = _md_symbols()
     fmp = _fmp_counts()
 
-    # validation results: merge the options master_progress + free sweep progress
+    # validation results: merge master_progress + free sweep + full sweep (newest).
+    # Keep the highest-wf-DSR variant per signal across all sources.
     _PROGRESS = _load_progress(REPORTS / "master_progress.json")
-    free = _load_progress(REPORTS / "free_sweep_progress.json")
-    for k, v in free.items():
-        if k not in _PROGRESS or (v.get("wf_dsr") or -9) > (_PROGRESS[k].get("wf_dsr") or -9):
-            _PROGRESS[k] = v
+    for src in ("free_sweep_progress.json", "full_sweep_progress.json"):
+        for k, v in _load_progress(REPORTS / src).items():
+            if k not in _PROGRESS or (v.get("wf_dsr") or -9) > (_PROGRESS[k].get("wf_dsr") or -9):
+                _PROGRESS[k] = v
 
     ready = {s.name: _data_ready(s, md_syms, fmp) for s in REGISTRY}
     verdicts = {}

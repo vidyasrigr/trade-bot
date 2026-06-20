@@ -11,6 +11,7 @@ Windows: train 2021-07-01..2024-12-31 | wf 2025-01-01..2026-06-30. num_trials=5.
 | momentum lookback=189 | 1768 | 832 | 0.083 | 0.746 | 58% | 5% | SANDBOX (partial) |
 | momentum lookback=126 | 1924 | 832 | 0.678 | 0.332 | 20% | 15% | SANDBOX (survivorship-capped) |
 | momentum lookback=63 | 2080 | 832 | 0.485 | 0.202 | 31% | 35% | NO_EDGE |
+| lead_lag (top120) | 292 | 232 | 0.026 | 0.040 | 16% | 26% | NO_EDGE |
 
 ## Notes
 - Only the pure-free generators (momentum, lead_lag) run here; they need no FMP/MarketData.

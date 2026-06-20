@@ -133,6 +133,39 @@
           "periods_per_year": 12
         }
       }
+    },
+    {
+      "signal": "supply_chain_lead_lag",
+      "name": "lead_lag (top120)",
+      "needs_marketdata": false,
+      "universe_size": 264,
+      "status": "no_edge",
+      "result": {
+        "train": {
+          "num_trades": 292,
+          "win_rate": 0.5171232876712328,
+          "total_pnl": -9036.052037259993,
+          "avg_pnl": -30.94538368924654,
+          "expectancy": -0.003094538368924656,
+          "sharpe": -0.5481203534848696,
+          "deflated_sharpe": 0.02577478402825198,
+          "max_drawdown": 0.16255443118752572,
+          "num_cohorts": 23,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 232,
+          "win_rate": 0.46551724137931033,
+          "total_pnl": -29610.031154822384,
+          "avg_pnl": -127.6294446328551,
+          "expectancy": -0.012762944463285509,
+          "sharpe": -0.48858660376404156,
+          "deflated_sharpe": 0.040058155731050635,
+          "max_drawdown": 0.2611807017075674,
+          "num_cohorts": 17,
+          "periods_per_year": 12
+        }
+      }
     }
   ]
 }

@@ -32,6 +32,13 @@ FMP_INSIDER = "https://financialmodelingprep.com/api/v4/insider-trading"
 
 
 async def _fetch_insider(symbol: str, sem: asyncio.Semaphore, limit: int = 1000) -> list[dict]:
+    # disk-first: the FMP daemon banks /stable/insider-trading/search, whose shape
+    # (transactionType, transactionDate, reportingName, securitiesTransacted, price,
+    # acquisitionOrDisposition) matches insider_flow's parser. No re-fetch per fold.
+    from data import fmp_cache
+    banked = fmp_cache.read("insider", symbol)
+    if banked is not None:
+        return banked if isinstance(banked, list) else []
     if not settings.FMP_API_KEY:
         return []
     async with sem:

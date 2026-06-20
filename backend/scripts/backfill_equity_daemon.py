@@ -30,11 +30,29 @@ PROGRESS_LOG = equity_cache.EQUITY_DIR / "_backfill_progress.log"
 
 
 def liquid_universe() -> list[str]:
-    """Curated liquid set: chain-bank CORE_200 (ex-ETFs ok) + get_full_universe."""
-    from scripts.chain_bank_daemon import CORE_200
+    """Real ADV-ranked liquid set: top-500 by ADV + get_full_universe + chain cache.
+
+    ADV ranking from the banked FMP profiles (free). Falls back to the curated lists
+    if profiles are unavailable. This is the substrate for the momentum multi-slice
+    depth (top-100/250/500) and the breadth sweep.
+    """
     from data.scanner import get_full_universe
-    names = list(dict.fromkeys(list(get_full_universe()) + list(CORE_200)))
-    return names
+    names: list[str] = []
+    try:
+        from backtest.liquid_universe import liquid_top
+        names += liquid_top(500)
+    except Exception:
+        from scripts.chain_bank_daemon import CORE_200
+        names += list(CORE_200)
+    names += list(get_full_universe())
+    # include any name we have chains for (so options XS panels resolve from cache)
+    try:
+        from backtest.marketdata_source import DEFAULT_CACHE_ROOT
+        names += [d.name for d in DEFAULT_CACHE_ROOT.iterdir()
+                  if d.is_dir() and not d.name.startswith("_")]
+    except Exception:
+        pass
+    return list(dict.fromkeys(names))
 
 
 def _log(msg: str) -> None:

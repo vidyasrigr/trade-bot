@@ -100,6 +100,32 @@ CORE_200 = [
 CORE_200 = list(dict.fromkeys(CORE_200))
 
 
+def work_list() -> list[str]:
+    """Full ADV-ranked optionable work-list (0619.3 Track C): CORE first (already
+    curated/known-good), then every other name by descending ADV from the FMP
+    profile bank. The list always exceeds the daily budget so credits — never the
+    work-list — are the binding constraint.
+    """
+    names = list(CORE_200)
+    try:
+        from backtest.liquid_universe import full_ranked_symbols
+        names += full_ranked_symbols(include_etf=True)
+    except Exception as e:
+        logger.warning(f"ADV work-list unavailable, using CORE only: {e}")
+    return list(dict.fromkeys(names))
+
+
+def _unavailable(sym: str) -> bool:
+    """Sentinel: symbol has no listed options (confirmed) -> never retry."""
+    return (DEFAULT_CACHE_ROOT / _safe(sym) / "_UNAVAILABLE").exists()
+
+
+def _mark_unavailable(sym: str) -> None:
+    d = DEFAULT_CACHE_ROOT / _safe(sym)
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "_UNAVAILABLE").write_text(date.today().isoformat())
+
+
 def _banked_symbols() -> set[str]:
     """Symbols that already have at least one non-trivial cached chain parquet."""
     root = DEFAULT_CACHE_ROOT
@@ -178,9 +204,25 @@ async def _bank_one(source, sym: str) -> None:
 
     No yfinance dependency: dates come from the cached calendar, expiry from the
     (counted) expirations endpoint, chain via _load_chain (persists parquet).
+
+    Probe-first: check a recent date for ANY listed expiry. If none (after one retry)
+    the name has no options -> write a DATA_UNAVAILABLE sentinel and skip, so we never
+    re-waste credits on it. Transient emptiness (429) is guarded by the retry + the
+    daemon's pacing; a true optionless name stays empty across the retry.
     """
     before = source.client.rate_limit.get("remaining")
     dates = await _rebalance_dates(source, sym)
+    if not dates:
+        return
+    probe_date = dates[-1]   # most recent -> definitely listed if optionable
+    exps = await source.expirations(sym, probe_date)
+    if not exps:
+        await asyncio.sleep(1.0)
+        exps = await source.expirations(sym, probe_date)
+    if not exps:
+        _mark_unavailable(sym)
+        _log(f"bank {sym}: no options listed (probe empty x2) -> DATA_UNAVAILABLE")
+        return
     banked = 0
     for d in dates:
         # stop early if we cross the floor mid-symbol
@@ -204,15 +246,17 @@ async def _bank_one(source, sym: str) -> None:
 
 async def run(once: bool, max_names: int | None) -> None:
     source = MarketDataHistoricalSource()
+    full = work_list()
     while True:
         rl = await _refresh_credits(source)
         remaining = rl.get("remaining")
-        targets = [s for s in CORE_200 if s not in _banked_symbols()]
+        banked = _banked_symbols()
+        targets = [s for s in full if s not in banked and not _unavailable(s)]
         if max_names:
             targets = targets[:max_names]
 
         if not targets:
-            _log("all core-200 names banked. sleeping 1h then re-scan.")
+            _log("entire ADV work-list banked. sleeping 1h then re-scan.")
             if once:
                 return
             await asyncio.sleep(3600)
@@ -239,7 +283,8 @@ async def run(once: bool, max_names: int | None) -> None:
         if once and (source.client.rate_limit.get("remaining") or 0) < FLOOR:
             _log("once: floor reached, exiting.")
             return
-        if once and not [s for s in CORE_200 if s not in _banked_symbols()][:1]:
+        if once and not [s for s in full if s not in _banked_symbols()
+                         and not _unavailable(s)][:1]:
             return
 
 

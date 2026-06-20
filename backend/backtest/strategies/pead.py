@@ -47,10 +47,18 @@ def _pdate(raw) -> date | None:
 
 
 async def _fetch_surprises(symbol: str, sem: asyncio.Semaphore) -> list[dict]:
-    if not settings.FMP_API_KEY:
-        return []
     if symbol in _SURPRISE_CACHE:
         return _SURPRISE_CACHE[symbol]
+    # disk-first: the FMP daemon banks /stable/earnings (same epsActual/epsEstimated/date
+    # shape). Read it so a sweep never re-fetches per fold.
+    from data import fmp_cache
+    banked = fmp_cache.read("earnings", symbol)
+    if banked is not None:
+        out = banked if isinstance(banked, list) else []
+        _SURPRISE_CACHE[symbol] = out
+        return out
+    if not settings.FMP_API_KEY:
+        return []
     async with sem:
         if symbol in _SURPRISE_CACHE:
             return _SURPRISE_CACHE[symbol]

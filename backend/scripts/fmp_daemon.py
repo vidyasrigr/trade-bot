@@ -79,7 +79,7 @@ ENDPOINTS: list[Endpoint] = [
     Endpoint("float",           "stable/shares-float",         {},             ttl_days=7,  priority=41),
     # --- unblocks analyst_revision_cascade ---
     # NOTE: period=quarter is a premium param on Starter (402). Annual is allowed.
-    Endpoint("analyst_est",     "stable/analyst-estimates",    {"period": "annual", "limit": 40}, ttl_days=2, priority=50),
+    Endpoint("analyst_est",     "stable/analyst-estimates",    {"period": "annual", "limit": 10}, ttl_days=2, priority=50),
     Endpoint("price_target",    "stable/price-target-summary", {},             ttl_days=2,  priority=51),
     Endpoint("grades",          "stable/grades-historical",    {"limit": 100}, ttl_days=2,  priority=52),
     # --- fundamental engine signal (annual on Starter; bumped priority so the

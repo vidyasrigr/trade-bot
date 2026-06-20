@@ -121,6 +121,12 @@ class MarketDataClient:
             "Authorization": f"Bearer {settings.MARKETDATA_API_KEY}",
             "Accept": "application/json",
         }
+        # Last-seen rate-limit state from response headers (the chain-banking
+        # daemon reads this to know remaining daily credits + reset time, so it
+        # can spend to the cap then sleep until reset). Updated on every _get.
+        self.rate_limit: dict[str, int | None] = {
+            "limit": None, "remaining": None, "reset": None,
+        }
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=8))
     async def _get(self, path: str, params: dict | None = None) -> dict:
@@ -132,6 +138,7 @@ class MarketDataClient:
             )
             # MarketData returns 203 (Non-Authoritative) for cached responses,
             # 204 (No Content) when no data is available — both are non-errors.
+            self._capture_rate_limit(resp)
             if resp.status_code == 204:
                 return {}
             if resp.status_code not in (200, 203):
@@ -140,6 +147,25 @@ class MarketDataClient:
                 return resp.json()
             except ValueError:
                 return {}
+
+    def _capture_rate_limit(self, resp) -> None:
+        """Record MarketData rate-limit headers for the banking daemon."""
+        h = resp.headers
+        def _int(name):
+            v = h.get(name)
+            try:
+                return int(v) if v is not None else None
+            except (TypeError, ValueError):
+                return None
+        lim = _int("X-Api-Ratelimit-Limit")
+        rem = _int("X-Api-Ratelimit-Remaining")
+        rst = _int("X-Api-Ratelimit-Reset")
+        if lim is not None:
+            self.rate_limit["limit"] = lim
+        if rem is not None:
+            self.rate_limit["remaining"] = rem
+        if rst is not None:
+            self.rate_limit["reset"] = rst
 
     # ----------------------------------------------------------------------
     # QUOTES (stocks)

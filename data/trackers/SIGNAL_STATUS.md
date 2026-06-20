@@ -1,7 +1,7 @@
-SIGNAL STATUS  -  generated 2026-06-20 00:31
+SIGNAL STATUS  -  generated 2026-06-20 00:54
 ===============================================================================================
-Tested: 12/49   PASS: 0   SANDBOX: 9   NO_EDGE: 3   BLOCKED: 0   PENDING: 37
-By stream:  O 6/19   S 5/23   M 6/18   L 2/12
+Tested: 13/49   PASS: 0   SANDBOX: 10   NO_EDGE: 3   BLOCKED: 0   PENDING: 36
+By stream:  O 6/19   S 6/23   M 7/18   L 2/12
 ===============================================================================================
 
 -- ENGINE ------------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ iv_term_slope             x . . .  ready        -    0.01      8%  NO_EDGE   -
 momentum_12_1             . x x x  ready     0.28    0.75      8%  SANDBOX   partial gate
 reddit_mentions           . x . .  ready        -       -       -  PENDING   -
 reddit_polarity           . x . .  ready        -       -       -  PENDING   -
-short_squeeze             . x x .  ready        -       -       -  PENDING   -
+short_squeeze             . x x .  ready     0.08    0.45     12%  SANDBOX   partial gate
 skew_25d                  x . . .  ready     0.00    0.75      5%  SANDBOX   partial gate
 supply_chain_lead_lag     . x x .  ready     0.03    0.04     26%  NO_EDGE   -
 vrp_level                 x . . .  ready     0.90    0.01     63%  SANDBOX   partial gate

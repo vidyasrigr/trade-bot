@@ -189,6 +189,18 @@ async def fmp_section():
                {"hold_days": 60}, num_trials=4, label="FMP")
 
 
+async def si_section():
+    print("== SHORT INTEREST (FINRA biweekly): bearish + squeeze framings ==")
+    from backtest.strategies.short_interest_xs import (
+        generate_si_bearish_trades, generate_squeeze_candidate_trades)
+    uni = liquid_top(500)
+    panel = _close_panel(uni)
+    await _run("short_squeeze", "si_bearish", generate_si_bearish_trades, uni, panel,
+               {"hold_days": 21}, num_trials=4, label="SI")
+    await _run("short_squeeze", "squeeze_candidate", generate_squeeze_candidate_trades, uni,
+               panel, {"hold_days": 21}, num_trials=4, label="SI")
+
+
 async def run(sections):
     _load_existing()
     if "depth" in sections:
@@ -197,6 +209,8 @@ async def run(sections):
         await breadth_section()
     if "fmp" in sections:
         await fmp_section()
+    if "si" in sections:
+        await si_section()
     print(f"\nwritten -> FULL_SWEEP_2026-06-20.md ({len(_ROWS)} variants)")
 
 

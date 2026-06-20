@@ -39,45 +39,44 @@ Windows: train 2021-07-01..2024-12-31 | wf 2025-01-01..2026-06-30.
 | beat_and_raise_pead | pead hold=10 | 1454 | 620 | 0.542 | 0.378 | 77% | 79% | SANDBOX(DD>25%) [FMP] |
 | beat_and_raise_pead | pead hold=5 | 1349 | 596 | 0.061 | 0.244 | 75% | 45% | NO_EDGE [FMP] |
 | insider_cluster | insider hold=60 | 6 | 12 | 0.454 | 0.846 | 4% | 37% | SANDBOX(DD>25%) [FMP] |
+| short_squeeze | si_bearish | 4687 | 1792 | 0.076 | 0.448 | 22% | 12% | SANDBOX(partial) [SI] |
+| short_squeeze | squeeze_candidate | 1299 | 341 | 0.000 | 0.272 | 57% | 17% | NO_EDGE [SI] |
 
 ---
 
 ## Incumbent benchmark for the GPT-18 comparison (0619.2)
 
-Across **33 existing-signal variants** tested with identical methodology (MTM, costs, train/WF,
-SANDBOX-cap), **ZERO clear the promotion gates** (train DSR>=0.50 AND wf DSR>=0.30 AND wf MTM-DD<25%
-AND adequate n). The dominant signature is **regime-dependence / non-stationarity**: signals are
-strong in one window and dead in the other, almost never both.
+**35 existing-signal variants**, identical methodology (MTM, costs, train/WF, SANDBOX-cap). **ZERO clear
+the promotion gates** (train DSR>=0.50 AND wf DSR>=0.30 AND wf MTM-DD<25% AND adequate n). Dominant
+signature: **regime-dependence / non-stationarity** — strong in one window, dead in the other.
 
-**Strongest incumbents (the bar GPT-18 must beat) — all SANDBOX, with the catch noted:**
+**Strongest incumbents (the bar GPT-18 must beat) — all SANDBOX, catch noted:**
 | signal | train | wf | wf DD | catch |
 |---|---|---|---|---|
 | skew_25d | 0.10 | **0.67** | 10% | train-dead (regime); n_wf=86 small |
 | iv_call_put_spread | 0.11 | **0.65** | 1% | train-dead; n_wf=86 small |
 | momentum_12_1 (126, top250) | 0.02 | 0.60 | 8% | train-dead; not stable across slices |
+| short_squeeze (si_bearish) | 0.08 | 0.45 | 12% | train-dead; bearish framing only |
 | trend (rollup) | 0.00 | 0.40 | 21% | train-dead |
-| pead hold=10 | **0.54** | 0.38 | 79% | clears both DSR gates but DD disqualifying |
-| insider_cluster | 0.45 | **0.85** | 37% | only 6 train / 12 wf trades — too small to trust |
+| pead hold=10 | **0.54** | 0.38 | 79% | clears both DSR gates, DD disqualifying |
+| insider_cluster | 0.45 | **0.85** | 37% | only 6 train / 12 wf trades — too small |
 
-**Reading for the GPT decision:** the incumbents' best honest OOS is ~0.65 wf DSR at low DD from the
-options-implied family (skew, iv_call_put_spread) — but train-dead, so regime-gated at best. The only
-signals clearing the *train* gate (pead 0.54, insider 0.45, rsi 0.50) all fail on DD, sample, or wf.
-So **a GPT-18 signal is "worth incorporating" if it beats ~0.65 wf DSR at <25% DD with a non-dead
-train and n>=100** — none of the incumbents do all four. The bar is low because the incumbents are
-weak; the value is a *stable* edge, which none here is.
+**Reading for the GPT decision:** best honest OOS is ~0.65 wf DSR at low DD from the options-implied
+family (skew, iv_call_put_spread), but train-dead -> regime-gated at best. The only signals clearing
+the *train* gate (pead 0.54, insider 0.45, rsi 0.50) fail on DD/sample/wf. So a **GPT-18 signal is
+"worth incorporating" only if it beats ~0.65 wf DSR at <25% DD with a non-dead train and n>=100** — no
+incumbent does all four. The bar is low because incumbents are weak; the prize is a STABLE edge.
 
 ## Honest corrections + labels
 - **Momentum reversal:** last night's "lookback=126 clears all gates on liquid_264" does NOT replicate
-  on the ADV-ranked slices or across the neighborhood {105,126,147,168} x {100,250,500}. Train DSR is
-  dead (~0.02-0.21) everywhere; it was a universe-composition artifact. Why the runbook mandates the
-  whole neighborhood.
-- **Primitive decomposition:** no single primitive (RSI/MACD/Stoch/ROC/EMA/slope/ADX/BB/ATR/RVol)
-  carries robust edge; best is slope/roc (wf ~0.22-0.29, train-dead). The momentum "edge" is fragile.
-- **vrp_z/vrp_level:** train 0.90 / wf 0.01 / 63% DD — classic overfit, not an edge.
-- **CACHE_LIMITED:** options signals on the 169-name chain cache (n_wf~86). iv_term_slope CHAINS_LIMITED
-  (n_tr=0 — term structure needs 2 expiries/date, only dense for original names).
-- **FUNDAMENTALS_PENDING:** `fundamental` + quality factors not run — income/balance/cashflow only just
-  prioritized in the FMP daemon (banking overnight). Adapter wiring is next; NOT no-edge.
-- **short_squeeze:** PENDING — free exchange short-interest CSV ingester not built tonight (the one
-  genuine remaining data gap; FMP short-interest is 404 on Starter).
+  across ADV slices or the neighborhood {105,126,147,168}x{100,250,500} — train-dead everywhere. A
+  universe-composition artifact. Why the runbook mandates the whole neighborhood.
+- **short_squeeze REFRAMED + tested (Track E):** FINRA biweekly SI (250 names, 2021-2026). The bearish
+  framing (long low-SI / short high-SI, Boehmer-Jones-Zhang) gets wf 0.45; the squeeze-candidate framing
+  (high-SI + momentum) only 0.27 -> NO_EDGE. Confirms high SI is BEARISH, not a squeeze-long.
+- **Primitives:** no single one carries robust edge (best slope/roc wf ~0.22-0.29, train-dead).
+- **vrp_z/vrp_level:** train 0.90 / wf 0.01 / 63% DD = overfit.
+- **CACHE_LIMITED:** options XS on 169-name chain cache (n_wf~86). iv_term_slope CHAINS_LIMITED (n_tr=0).
+- **FUNDAMENTALS_PENDING:** `fundamental`/quality not run — income/balance/cashflow banking overnight
+  (FMP daemon priority bumped). Adapter wiring next; NOT no-edge.
 - Everything SANDBOX-capped (survivorship) until a PIT universe exists.

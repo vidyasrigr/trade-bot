@@ -1113,6 +1113,74 @@
           "periods_per_year": 14
         }
       }
+    },
+    {
+      "signal": "short_squeeze",
+      "name": "si_bearish",
+      "needs_marketdata": false,
+      "status": "sandbox",
+      "verdict": "SANDBOX(partial) [SI]",
+      "label": "SI",
+      "result": {
+        "train": {
+          "num_trades": 4687,
+          "win_rate": 0.5013868145935566,
+          "total_pnl": -50066.79198388297,
+          "avg_pnl": -10.682055042432884,
+          "expectancy": -0.0010682055042432895,
+          "sharpe": -0.2063823510177111,
+          "deflated_sharpe": 0.07562278464544711,
+          "max_drawdown": 0.22066510109686133,
+          "num_cohorts": 51,
+          "periods_per_year": 15
+        },
+        "walk_forward": {
+          "num_trades": 1792,
+          "win_rate": 0.5061383928571429,
+          "total_pnl": 141666.21054418938,
+          "avg_pnl": 79.0548049911771,
+          "expectancy": 0.00790548049911771,
+          "sharpe": 0.788963081893702,
+          "deflated_sharpe": 0.44840619992051556,
+          "max_drawdown": 0.11809737643759831,
+          "num_cohorts": 20,
+          "periods_per_year": 15
+        }
+      }
+    },
+    {
+      "signal": "short_squeeze",
+      "name": "squeeze_candidate",
+      "needs_marketdata": false,
+      "status": "no_edge",
+      "verdict": "NO_EDGE [SI]",
+      "label": "SI",
+      "result": {
+        "train": {
+          "num_trades": 1299,
+          "win_rate": 0.472671285604311,
+          "total_pnl": -171232.05229622195,
+          "avg_pnl": -131.81836204482056,
+          "expectancy": -0.013181836204482059,
+          "sharpe": -1.5358794632800619,
+          "deflated_sharpe": 0.00047857237517125357,
+          "max_drawdown": 0.5686889992963172,
+          "num_cohorts": 33,
+          "periods_per_year": 14
+        },
+        "walk_forward": {
+          "num_trades": 341,
+          "win_rate": 0.533724340175953,
+          "total_pnl": 36434.557521827875,
+          "avg_pnl": 106.84620974143074,
+          "expectancy": 0.010684620974143069,
+          "sharpe": 0.40496121753286435,
+          "deflated_sharpe": 0.272372191213746,
+          "max_drawdown": 0.1739060322571712,
+          "num_cohorts": 10,
+          "periods_per_year": 7
+        }
+      }
     }
   ]
 }

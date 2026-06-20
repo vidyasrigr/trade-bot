@@ -33,16 +33,36 @@ _PANEL_CACHE: dict[tuple, pd.DataFrame] = {}
 
 
 def _close_panel(universe: list[str], period: str = "10y") -> pd.DataFrame:
+    """Close panel: persistent equity cache first, yfinance (write-through) for misses.
+
+    The disk cache (backtest.equity_cache) makes large-universe sweeps repeatable and
+    throttle-free. Names not yet cached are pulled in bulk from yfinance and written
+    through so the next run is free.
+    """
     from data.market import get_multi_ohlcv_yfinance
+    from backtest import equity_cache
     key = (tuple(sorted(set(universe))), period)
     if key in _PANEL_CACHE:
         return _PANEL_CACHE[key]
-    prices = get_multi_ohlcv_yfinance(list(dict.fromkeys(universe)), period=period)
-    cols = {s: df["close"] for s, df in prices.items()
-            if df is not None and not df.empty and len(df) > 260}
-    if not cols:
+
+    panel, missing = equity_cache.cached_panel(universe)
+    if missing:
+        try:
+            prices = get_multi_ohlcv_yfinance(list(dict.fromkeys(missing)), period=period)
+        except Exception:
+            prices = {}
+        new_cols = {}
+        for s, df in prices.items():
+            if df is not None and not df.empty and len(df) > 260:
+                equity_cache.write_ohlcv(s, df)        # write-through
+                new_cols[s] = df["close"]
+        if new_cols:
+            add = pd.DataFrame(new_cols)
+            add.index = pd.to_datetime(add.index)
+            panel = add if panel.empty else panel.join(add, how="outer")
+
+    if panel.empty:
         return pd.DataFrame()  # don't cache an empty (rate-limited) result
-    panel = pd.DataFrame(cols)
     panel.index = pd.to_datetime(panel.index)
     panel = panel.sort_index()
     _PANEL_CACHE[key] = panel

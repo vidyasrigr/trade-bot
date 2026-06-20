@@ -1,0 +1,138 @@
+{
+  "updated_at": "2026-06-19",
+  "universe_liquid": 264,
+  "variants": [
+    {
+      "signal": "momentum_12_1",
+      "name": "momentum lookback=252",
+      "needs_marketdata": false,
+      "universe_size": 264,
+      "status": "sandbox",
+      "result": {
+        "train": {
+          "num_trades": 1612,
+          "win_rate": 0.5514888337468983,
+          "total_pnl": 87925.84215232258,
+          "avg_pnl": 54.54456709201152,
+          "expectancy": 0.005454456709201155,
+          "sharpe": 0.3903799790486829,
+          "deflated_sharpe": 0.27731153327867814,
+          "max_drawdown": 0.34527271442642404,
+          "num_cohorts": 31,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 832,
+          "win_rate": 0.5252403846153846,
+          "total_pnl": 226196.80033957982,
+          "avg_pnl": 271.8711542543026,
+          "expectancy": 0.02718711542543027,
+          "sharpe": 1.6804392454981167,
+          "deflated_sharpe": 0.7514405884624374,
+          "max_drawdown": 0.08433204334339983,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "momentum lookback=189",
+      "needs_marketdata": false,
+      "universe_size": 264,
+      "status": "sandbox",
+      "result": {
+        "train": {
+          "num_trades": 1768,
+          "win_rate": 0.5209276018099548,
+          "total_pnl": -30777.139891826464,
+          "avg_pnl": -17.407884554200454,
+          "expectancy": -0.0017407884554200487,
+          "sharpe": -0.11554057082328043,
+          "deflated_sharpe": 0.08279199848214325,
+          "max_drawdown": 0.581139351780343,
+          "num_cohorts": 34,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 832,
+          "win_rate": 0.5300480769230769,
+          "total_pnl": 224986.52560303066,
+          "avg_pnl": 270.41649711902727,
+          "expectancy": 0.027041649711902725,
+          "sharpe": 1.6409034939671483,
+          "deflated_sharpe": 0.7457538329582666,
+          "max_drawdown": 0.04866407053030036,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "momentum lookback=126",
+      "needs_marketdata": false,
+      "universe_size": 264,
+      "status": "sandbox",
+      "result": {
+        "train": {
+          "num_trades": 1924,
+          "win_rate": 0.5223492723492723,
+          "total_pnl": 237616.19649892504,
+          "avg_pnl": 123.50114163145793,
+          "expectancy": 0.012350114163145793,
+          "sharpe": 1.0439108821998235,
+          "deflated_sharpe": 0.6776997011125465,
+          "max_drawdown": 0.19950328873010706,
+          "num_cohorts": 37,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 832,
+          "win_rate": 0.5132211538461539,
+          "total_pnl": 96970.61676561093,
+          "avg_pnl": 116.55122207405157,
+          "expectancy": 0.011655122207405158,
+          "sharpe": 0.6889340711524788,
+          "deflated_sharpe": 0.3320537264887442,
+          "max_drawdown": 0.14997643139410602,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        }
+      }
+    },
+    {
+      "signal": "momentum_12_1",
+      "name": "momentum lookback=63",
+      "needs_marketdata": false,
+      "universe_size": 264,
+      "status": "no_edge",
+      "result": {
+        "train": {
+          "num_trades": 2080,
+          "win_rate": 0.5139423076923076,
+          "total_pnl": 162415.3902812988,
+          "avg_pnl": 78.08432225062445,
+          "expectancy": 0.007808432225062445,
+          "sharpe": 0.6051052342409393,
+          "deflated_sharpe": 0.4852410740174535,
+          "max_drawdown": 0.31375868185817996,
+          "num_cohorts": 40,
+          "periods_per_year": 12
+        },
+        "walk_forward": {
+          "num_trades": 832,
+          "win_rate": 0.5024038461538461,
+          "total_pnl": 51337.79392211947,
+          "avg_pnl": 61.70407923331667,
+          "expectancy": 0.006170407923331667,
+          "sharpe": 0.335528269006772,
+          "deflated_sharpe": 0.20246749501498806,
+          "max_drawdown": 0.3535849525731702,
+          "num_cohorts": 16,
+          "periods_per_year": 12
+        }
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-SIGNAL STATUS  -  generated 2026-06-19 19:54
+SIGNAL STATUS  -  generated 2026-06-19 20:17
 ===============================================================================================
 Tested: 4/49   PASS: 0   SANDBOX: 4   NO_EDGE: 0   BLOCKED: 0   PENDING: 45
 By stream:  O 2/19   S 2/23   M 2/18   L 1/12
@@ -38,7 +38,7 @@ insider_analyst_combo     . . x x  ready        -       -       -  PENDING   -
 insider_cluster           . . x x  ready        -       -       -  PENDING   -
 iv_call_put_spread        x . . .  ready        -       -       -  PENDING   -
 iv_term_slope             x . . .  ready        -       -       -  PENDING   -
-momentum_12_1             . x x x  ready     0.00    0.60     18%  SANDBOX   partial gate
+momentum_12_1             . x x x  ready     0.28    0.75      8%  SANDBOX   partial gate
 reddit_mentions           . x . .  ready        -       -       -  PENDING   -
 reddit_polarity           . x . .  ready        -       -       -  PENDING   -
 short_squeeze             . x x .  ready        -       -       -  PENDING   -

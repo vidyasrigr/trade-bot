@@ -1,0 +1,6 @@
+signal,sim,label,train_sharpe,occ_oracle,occ_app,wf_excess_spy,n_train,git_sha
+etf_mean_reversion_narrow,long_only,REGIME_CONDITIONAL_CANDIDATE,0.321752402379034,7,13,0.13686817561999232,737,70655e7
+etf_mean_reversion_broad,long_only,WEAK_LEAD,-0.03262513313166811,10,10,-0.02764326080648316,6357,70655e7
+sector_relative_strength,xs,WEAK_LEAD,-0.08858142640703044,11,7,-0.25292135499771673,8684,70655e7
+pairs_statarb,xs,NO_EDGE,0.1730150685485514,10,7,-0.41686927675678587,1494,70655e7
+earnings_announcement_premium,xs,CANDIDATE_DD_GATED,1.4229476271669144,4,1,0.14678251016828936,7674,70655e7

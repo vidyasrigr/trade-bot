@@ -40,6 +40,79 @@ def _daily_returns(panel: pd.DataFrame) -> pd.DataFrame:
     return panel.pct_change()
 
 
+def run_long_only_account(
+    trades: list[EquityTrade],
+    panel: pd.DataFrame,
+    *,
+    cost_bps: float = 5.0,
+    periods_per_year: int = 252,
+    fully_invested_when_active: bool = True,
+) -> PortfolioResult:
+    """Cash-aware EQUAL-WEIGHT long-only account for timing strategies (e.g. ETF dip-buys).
+
+    Each day, capital is split EQUALLY across all currently-open positions (gross <= 100%),
+    and sits in CASH (0 return) when nothing is open. This is the realistic sizing for a
+    dip-buy strategy — 20 ETFs triggering the same day each get ~5%, not 20x leverage — so
+    the drawdown is a true account DD, not a leverage artifact. Round-trip cost per position.
+    """
+    if not trades or panel is None or panel.empty:
+        return PortfolioResult(metrics={"num_trades": 0, "true_account_dd": None})
+    rets = panel.pct_change()
+    idx = panel.index
+    rt_cost = 2.0 * cost_bps / 1e4
+
+    # per-day list of (symbol-position daily return) for open positions
+    open_legs: dict[pd.Timestamp, list[float]] = {}
+    cost_by_day: dict[pd.Timestamp, float] = {}
+    for tr in trades:
+        if tr.symbol not in panel.columns:
+            continue
+        e, x = pd.Timestamp(tr.entry_date), pd.Timestamp(tr.exit_date)
+        seg = rets.loc[(rets.index > e) & (rets.index <= x), tr.symbol]
+        if seg.empty:
+            continue
+        for d, r in seg.items():
+            open_legs.setdefault(d, []).append(float(r))
+        # charge round-trip cost on the first held day
+        cost_by_day[seg.index[0]] = cost_by_day.get(seg.index[0], 0.0) + rt_cost
+
+    if not open_legs:
+        return PortfolioResult(metrics={"num_trades": len(trades), "true_account_dd": None})
+
+    days = sorted(set(open_legs) | set(cost_by_day))
+    acct = []
+    n_open_series = []
+    for d in days:
+        legs = open_legs.get(d, [])
+        n = len(legs)
+        n_open_series.append(n)
+        # equal-weight across open positions; cash (0) if none open
+        day_ret = (sum(legs) / n) if (n and fully_invested_when_active) else (sum(legs) if n else 0.0)
+        # cost: spread the day's entries' cost across the equal weights
+        day_ret -= cost_by_day.get(d, 0.0) / max(n, 1)
+        acct.append(day_ret)
+    acct = pd.Series(acct, index=pd.to_datetime(days)).sort_index()
+    equity = (1.0 + acct).cumprod()
+    peak = equity.cummax()
+    dd = (equity / peak - 1.0).min()
+    ann = np.sqrt(periods_per_year)
+    sharpe = (acct.mean() / acct.std() * ann) if acct.std() > 0 else 0.0
+    n_years = max(len(acct) / periods_per_year, 1e-6)
+    cagr = equity.iloc[-1] ** (1 / n_years) - 1.0 if equity.iloc[-1] > 0 else None
+    return PortfolioResult(
+        metrics={
+            "num_trades": len(trades),
+            "account_days": int(len(acct)),
+            "true_account_dd": float(abs(dd)),
+            "sharpe_daily": float(sharpe),
+            "cagr": float(cagr) if cagr is not None else None,
+            "max_concurrent_positions": int(max(n_open_series)) if n_open_series else 0,
+            "pct_days_invested": float(np.mean([1 if n else 0 for n in n_open_series])),
+        },
+        equity_curve=equity,
+    )
+
+
 def run_daily_portfolio(
     trades: list[EquityTrade],
     panel: pd.DataFrame,

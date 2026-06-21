@@ -48,6 +48,19 @@ def load_close(symbol: str) -> pd.Series | None:
         return None
 
 
+def load_ohlc(symbol: str) -> pd.DataFrame | None:
+    """Date-indexed OHLCV frame (open/high/low/close/volume) from the cache, or None."""
+    p = _path(symbol)
+    if not p.exists():
+        return None
+    try:
+        df = pd.read_parquet(p)
+        df["date"] = pd.to_datetime(df["date"])
+        return df.set_index("date").sort_index()
+    except Exception:
+        return None
+
+
 def write_ohlcv(symbol: str, df: pd.DataFrame) -> None:
     """Persist a yfinance-shaped OHLCV frame (index=date) to the cache."""
     if df is None or df.empty:

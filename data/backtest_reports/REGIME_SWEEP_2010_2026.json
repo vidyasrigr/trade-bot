@@ -1,8 +1,8 @@
 {
   "windows": {
     "train": [
-      "2021-07-01",
-      "2024-12-31"
+      "2010-01-01",
+      "2019-12-31"
     ],
     "wf": [
       "2020-01-01",
@@ -2181,5 +2181,6 @@
       "avg_hold_days": 25.254282267792522,
       "label": "DATA_GATED"
     }
-  ]
+  ],
+  "_metadata_fixed": "0621.2 A1: window metadata corrected to actual run windows"
 }

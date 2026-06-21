@@ -1,0 +1,259 @@
+{
+  "windows": {
+    "train": [
+      "2010-01-01",
+      "2019-12-31"
+    ],
+    "wf": [
+      "2020-01-01",
+      "2026-06-18"
+    ]
+  },
+  "spy_wf_cagr": 0.15385894506609765,
+  "num_trials": 30,
+  "git_sha": "70655e7",
+  "arms": "no-regime | oracle(ex-post ceiling) | app(GMM)",
+  "rows": [
+    {
+      "signal": "etf_mean_reversion_narrow",
+      "sim": "long_only",
+      "label": "REGIME_CONDITIONAL_CANDIDATE",
+      "train_sharpe": 0.321752402379034,
+      "none": {
+        "n": 501,
+        "sharpe": 1.3585966594955994,
+        "true_account_dd": 0.13730753524392458,
+        "cagr": 0.29072712068608997,
+        "win_rate": 0.6806387225548902,
+        "expectancy": 0.00203406491023436,
+        "profit_factor": 1.5245672939477297
+      },
+      "oracle": {
+        "n": 127,
+        "sharpe": 1.716123806964228,
+        "true_account_dd": 0.07262854720041412,
+        "cagr": 0.3698320872916463,
+        "win_rate": 0.7322834645669292,
+        "expectancy": 0.0032279111939304203,
+        "profit_factor": 2.0257402557315727
+      },
+      "app": {
+        "n": 479,
+        "sharpe": 1.3057508470995736,
+        "true_account_dd": 0.1373075352439247,
+        "cagr": 0.27411213837289283,
+        "win_rate": 0.6805845511482255,
+        "expectancy": 0.0020239308623354476,
+        "profit_factor": 1.5220112486057256
+      },
+      "oracle_allowed": [
+        "bull_narrow",
+        "chop"
+      ],
+      "occ_oracle": 7,
+      "app_allowed": [
+        "5",
+        "0",
+        "2",
+        "1"
+      ],
+      "occ_app": 13,
+      "wf_excess_spy": 0.13686817561999232,
+      "n_train": 737,
+      "git_sha": "70655e7"
+    },
+    {
+      "signal": "etf_mean_reversion_broad",
+      "sim": "long_only",
+      "label": "WEAK_LEAD",
+      "train_sharpe": -0.03262513313166811,
+      "none": {
+        "n": 4568,
+        "sharpe": 0.693965244722837,
+        "true_account_dd": 0.23312266064400133,
+        "cagr": 0.1262156842596145,
+        "win_rate": 0.662215411558669,
+        "expectancy": 0.001382056852338962,
+        "profit_factor": 1.2807519205508677
+      },
+      "oracle": {
+        "n": 1615,
+        "sharpe": 0.5450386757427177,
+        "true_account_dd": 0.19388966475917968,
+        "cagr": 0.09983243448398738,
+        "win_rate": 0.6489164086687307,
+        "expectancy": 0.001565948664317442,
+        "profit_factor": 1.2995581680795036
+      },
+      "app": {
+        "n": 2997,
+        "sharpe": 0.6098840663532242,
+        "true_account_dd": 0.17230816975855567,
+        "cagr": 0.10491088741971422,
+        "win_rate": 0.6790123456790124,
+        "expectancy": 0.0019138491095484456,
+        "profit_factor": 1.4214287920013966
+      },
+      "oracle_allowed": [
+        "bull_narrow",
+        "chop",
+        "correction"
+      ],
+      "occ_oracle": 10,
+      "app_allowed": [
+        "5",
+        "0",
+        "1"
+      ],
+      "occ_app": 10,
+      "wf_excess_spy": -0.02764326080648316,
+      "n_train": 6357,
+      "git_sha": "70655e7"
+    },
+    {
+      "signal": "sector_relative_strength",
+      "sim": "xs",
+      "label": "WEAK_LEAD",
+      "train_sharpe": -0.08858142640703044,
+      "none": {
+        "n": 5497,
+        "sharpe": -0.2905998623699985,
+        "true_account_dd": 0.6273433090914244,
+        "cagr": -0.09906240993161908,
+        "win_rate": 0.49899945424777153,
+        "expectancy": -0.002052640484654774,
+        "profit_factor": 0.9671450931957659
+      },
+      "oracle": {
+        "n": 2745,
+        "sharpe": 0.6520008194709009,
+        "true_account_dd": 0.2896320313447722,
+        "cagr": 0.1260096106155777,
+        "win_rate": 0.5234972677595628,
+        "expectancy": 0.011571491380693263,
+        "profit_factor": 1.2239366293662926
+      },
+      "app": {
+        "n": 2067,
+        "sharpe": 0.29547675932200895,
+        "true_account_dd": 0.24097826271227007,
+        "cagr": 0.04298980127288954,
+        "win_rate": 0.5118529269472666,
+        "expectancy": 0.006028014106471768,
+        "profit_factor": 1.0957952968350702
+      },
+      "oracle_allowed": [
+        "bull_broad"
+      ],
+      "occ_oracle": 11,
+      "app_allowed": [
+        "1",
+        "2"
+      ],
+      "occ_app": 7,
+      "wf_excess_spy": -0.25292135499771673,
+      "n_train": 8684,
+      "git_sha": "70655e7"
+    },
+    {
+      "signal": "pairs_statarb",
+      "sim": "xs",
+      "label": "NO_EDGE",
+      "train_sharpe": 0.1730150685485514,
+      "none": {
+        "n": 298,
+        "sharpe": -0.2623829854321883,
+        "true_account_dd": 0.5228762202105982,
+        "cagr": -0.2630103316906882,
+        "win_rate": 0.47315436241610737,
+        "expectancy": -0.0023102191869057297,
+        "profit_factor": 0.9604664915513209
+      },
+      "oracle": {
+        "n": 80,
+        "sharpe": 0.015590645181386288,
+        "true_account_dd": 0.362311029428103,
+        "cagr": -0.3326949587370288,
+        "win_rate": 0.425,
+        "expectancy": 0.003321806249681346,
+        "profit_factor": 1.0438534920593918
+      },
+      "app": {
+        "n": 170,
+        "sharpe": -0.5746000628623561,
+        "true_account_dd": 0.567098567657988,
+        "cagr": -0.45808974567272387,
+        "win_rate": 0.4411764705882353,
+        "expectancy": -0.007435581415808615,
+        "profit_factor": 0.8848571483326848
+      },
+      "oracle_allowed": [
+        "correction",
+        "chop",
+        "bull_narrow"
+      ],
+      "occ_oracle": 10,
+      "app_allowed": [
+        "3",
+        "0",
+        "4"
+      ],
+      "occ_app": 7,
+      "wf_excess_spy": -0.41686927675678587,
+      "n_train": 1494,
+      "git_sha": "70655e7"
+    },
+    {
+      "signal": "earnings_announcement_premium",
+      "sim": "xs",
+      "label": "CANDIDATE_DD_GATED",
+      "train_sharpe": 1.4229476271669144,
+      "none": {
+        "n": 4943,
+        "sharpe": 1.2664563097537331,
+        "true_account_dd": 0.30260590981928226,
+        "cagr": 0.300641455234387,
+        "win_rate": 0.58345134533684,
+        "expectancy": 0.03456328270827212,
+        "profit_factor": 1.9174946556705663
+      },
+      "oracle": {
+        "n": 4860,
+        "sharpe": 1.240581461963768,
+        "true_account_dd": 0.30260590981928226,
+        "cagr": 0.2933419713675529,
+        "win_rate": 0.5792181069958847,
+        "expectancy": 0.0337189435525002,
+        "profit_factor": 1.882467699846573
+      },
+      "app": {
+        "n": 4943,
+        "sharpe": 1.2664563097537331,
+        "true_account_dd": 0.30260590981928226,
+        "cagr": 0.300641455234387,
+        "win_rate": 0.58345134533684,
+        "expectancy": 0.03456328270827212,
+        "profit_factor": 1.9174946556705663
+      },
+      "oracle_allowed": [
+        "bull_broad",
+        "correction",
+        "chop",
+        "bull_narrow"
+      ],
+      "occ_oracle": 4,
+      "app_allowed": [
+        "3",
+        "0",
+        "4",
+        "5",
+        "1",
+        "2"
+      ],
+      "occ_app": 1,
+      "wf_excess_spy": 0.14678251016828936,
+      "n_train": 7674,
+      "git_sha": "70655e7"
+    }
+  ]
+}

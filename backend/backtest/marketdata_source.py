@@ -254,12 +254,18 @@ class MarketDataHistoricalSource:
                 )
                 self._api_fetches += 1
             except Exception as e:
+                # 0620.2 P0.1: do NOT write an empty sentinel on a TRANSIENT failure
+                # (429/5xx/timeout/network/parse after the client's retries). Poisoning
+                # the cache with a false no-data here is the same class of silent-corruption
+                # bug as the credit leak. Return None and let a later run refetch faithfully.
                 logger.debug(f"MarketData historical chain fetch failed "
                              f"{underlying}/{expiry}/{day}: {e}")
                 self._chain_cache[chain_key] = None
-                self._write_empty(disk_path)
                 return None
 
+            # Success path: an empty `chain` here is TRUE no-data (204/empty content),
+            # so persisting an empty parquet is a legitimate "we asked, nothing listed"
+            # marker — distinct from the transient-failure path above.
             parsed, df_to_write = self._parse_api_response(chain)
             self._write_chain(disk_path, df_to_write)
             self._chain_cache[chain_key] = parsed if parsed else None

@@ -110,21 +110,35 @@ def _norm_signal(variant_signal: str) -> str:
     return base if base in by_name() else s
 
 
+def _clears_gate(r: dict) -> bool:
+    """All four hard gates incl. adequate n (0620.2 P0.3/P0.4)."""
+    n_tr, n_wf = r.get("n_tr") or 0, r.get("n_wf") or 0
+    if (n_tr and n_tr < 100) or (n_wf and n_wf < 50):
+        return False
+    return ((r.get("train_dsr") or 0) >= 0.50 and (r.get("wf_dsr") or 0) >= 0.30
+            and (r.get("wf_dd") or 1) < 0.25)
+
+
 def _load_progress(path: Path) -> dict[str, dict]:
-    """Read a validation master_progress.json -> best-variant verdict per signal."""
+    """Read a sweep progress json -> per-signal HEADLINE row that does NOT cherry-pick
+    max-WF (0620.2 P0.3). For each signal we keep ALL variants and choose a representative:
+      - if any variant clears all gates -> that gate-clearing variant is the headline,
+      - else the MEDIAN-wf variant (honest central tendency, not the best outlier).
+    Also annotate best_variant, gate_clearing_variant, n_variants for the tracker.
+    """
     if not path.exists():
         return {}
     try:
         data = json.loads(path.read_text())
     except Exception:
         return {}
-    out: dict[str, dict] = {}
+    by_sig: dict[str, list[dict]] = {}
     for v in data.get("variants", []):
         name = _norm_signal(v.get("signal", ""))
         res = v.get("result") or {}
         tr = res.get("train") or {}
         wf = res.get("walk_forward") or {}
-        row = {
+        by_sig.setdefault(name, []).append({
             "train_dsr": tr.get("deflated_sharpe"),
             "wf_dsr": wf.get("deflated_sharpe"),
             "train_dd": tr.get("max_drawdown"),
@@ -134,11 +148,22 @@ def _load_progress(path: Path) -> dict[str, dict]:
             "status": (v.get("status") or "").lower(),
             "needs_md": v.get("needs_marketdata", False),
             "variant": v.get("name", v.get("signal", "")),
-        }
-        # keep the variant with the highest wf_dsr per signal (best honest OOS)
-        prev = out.get(name)
-        if prev is None or (row["wf_dsr"] or -9) > (prev["wf_dsr"] or -9):
-            out[name] = row
+        })
+    out: dict[str, dict] = {}
+    for name, variants in by_sig.items():
+        clearing = [v for v in variants if _clears_gate(v)]
+        best = max(variants, key=lambda r: (r.get("wf_dsr") or -9))
+        if clearing:
+            head = max(clearing, key=lambda r: (r.get("wf_dsr") or -9))
+        else:
+            ordered = sorted(variants, key=lambda r: (r.get("wf_dsr") or -9))
+            head = ordered[len(ordered) // 2]   # median wf, not the max outlier
+        head = dict(head)
+        head["n_variants"] = len(variants)
+        head["best_variant"] = best["variant"]
+        head["best_wf"] = best.get("wf_dsr")
+        head["gate_clearing_variant"] = clearing[0]["variant"] if clearing else None
+        out[name] = head
     return out
 
 
@@ -151,19 +176,33 @@ def _verdict(spec, row: dict | None, data_ready: bool) -> tuple[str, str]:
     tr, wf, dd = row.get("train_dsr"), row.get("wf_dsr"), row.get("wf_dd")
     if tr is None and wf is None:
         return "PENDING", "-"
+    # variant truth: show the canonical headline + whether ANY variant clears, so the
+    # tracker never implies a cherry-picked max-WF is the result (0620.2 P0.3).
+    nv = row.get("n_variants", 1)
+    vtag = ""
+    if nv and nv > 1:
+        gc = row.get("gate_clearing_variant")
+        bw = row.get("best_wf")
+        vtag = (f" [{nv} variants; gate-clearer={gc}]" if gc
+                else f" [{nv} variants; none clear; best wf={_fmt(bw)} ({row.get('best_variant')})]")
+    # 0620.2 P0.4: small-sample hard pre-filter — statistically unusable n never
+    # reaches a candidate verdict (e.g. insider n_train=6/n_wf=12 with WF DSR 0.85).
+    n_tr, n_wf = row.get("n_tr") or 0, row.get("n_wf") or 0
+    if (n_tr and n_tr < 100) or (n_wf and n_wf < 50):
+        return "SMALL_N", f"n_tr={n_tr} n_wf={n_wf} (insufficient){vtag}"
     # Hard gates: train DSR >= 0.50 AND wf DSR >= 0.30 AND wf MTM-DD < 0.25.
     # Free/equity sweeps are survivorship-biased -> capped at SANDBOX (never PASS).
     survivorship = not row.get("needs_md", False)
     passes = (tr or 0) >= 0.50 and (wf or 0) >= 0.30 and (dd or 1) < 0.25
     if passes and survivorship:
-        return "SANDBOX", "survivorship-capped (liquid universe)"
+        return "SANDBOX", "survivorship-capped" + vtag
     if passes:
-        return "PASS", "-"
+        return "PASS", "-" + vtag
     if (dd or 0) >= 0.25 and (wf or 0) >= 0.30:
-        return "SANDBOX", "DD>25% hard gate"
+        return "SANDBOX", "DD>25% gate" + vtag
     if (wf or 0) >= 0.30 or (tr or 0) >= 0.50:
-        return "SANDBOX", "partial gate"
-    return "NO_EDGE", "-"
+        return "SANDBOX", "partial gate" + vtag
+    return "NO_EDGE", "-" + vtag
 
 
 def _blocked_reason(spec) -> str:
@@ -200,10 +239,12 @@ def _fmt(x, nd=2):
 
 
 def build_signal_status(verdicts: dict, ready: dict, ts: str) -> str:
-    counts = {"PASS": 0, "SANDBOX": 0, "NO_EDGE": 0, "BLOCKED": 0, "PENDING": 0, "PARTIAL": 0}
+    counts = {"PASS": 0, "SANDBOX": 0, "NO_EDGE": 0, "SMALL_N": 0,
+              "BLOCKED": 0, "PENDING": 0, "PARTIAL": 0}
     for v, _ in verdicts.values():
         counts[v] = counts.get(v, 0) + 1
-    tested = sum(1 for v, _ in verdicts.values() if v in ("PASS", "SANDBOX", "NO_EDGE"))
+    _TESTED = ("PASS", "SANDBOX", "NO_EDGE", "SMALL_N")
+    tested = sum(1 for v, _ in verdicts.values() if v in _TESTED)
     # per-stream tested
     stream_tot = {"O": 0, "S": 0, "M": 0, "L": 0}
     stream_done = {"O": 0, "S": 0, "M": 0, "L": 0}
@@ -211,7 +252,7 @@ def build_signal_status(verdicts: dict, ready: dict, ts: str) -> str:
         v = verdicts[spec.name][0]
         for st in spec.streams:
             stream_tot[st] += 1
-            if v in ("PASS", "SANDBOX", "NO_EDGE"):
+            if v in _TESTED:
                 stream_done[st] += 1
 
     L = []
@@ -219,7 +260,8 @@ def build_signal_status(verdicts: dict, ready: dict, ts: str) -> str:
     L.append("=" * 95)
     L.append(f"Tested: {tested}/{len(REGISTRY)}   PASS: {counts['PASS']}   "
              f"SANDBOX: {counts['SANDBOX']}   NO_EDGE: {counts['NO_EDGE']}   "
-             f"BLOCKED: {counts['BLOCKED']}   PENDING: {counts['PENDING']}")
+             f"SMALL_N: {counts['SMALL_N']}   BLOCKED: {counts['BLOCKED']}   "
+             f"PENDING: {counts['PENDING']}")
     L.append("By stream:  " + "   ".join(
         f"{k} {stream_done[k]}/{stream_tot[k]}" for k in ("O", "S", "M", "L")))
     L.append("=" * 95)
@@ -365,12 +407,12 @@ def generate() -> None:
     md_syms = _md_symbols()
     fmp = _fmp_counts()
 
-    # validation results: merge master_progress + free sweep + full sweep (newest).
-    # Keep the highest-wf-DSR variant per signal across all sources.
-    _PROGRESS = _load_progress(REPORTS / "master_progress.json")
-    for src in ("free_sweep_progress.json", "full_sweep_progress.json"):
+    # 0620.2 P0.3: the LATEST canonical sweep is the headline — never max-WF across
+    # sources. Newest-first; the first source that has a signal wins (no cherry-pick).
+    _PROGRESS = {}
+    for src in ("full_sweep_progress.json", "free_sweep_progress.json", "master_progress.json"):
         for k, v in _load_progress(REPORTS / src).items():
-            if k not in _PROGRESS or (v.get("wf_dsr") or -9) > (_PROGRESS[k].get("wf_dsr") or -9):
+            if k not in _PROGRESS:
                 _PROGRESS[k] = v
 
     ready = {s.name: _data_ready(s, md_syms, fmp) for s in REGISTRY}

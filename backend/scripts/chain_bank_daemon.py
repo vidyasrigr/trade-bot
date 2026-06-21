@@ -215,13 +215,22 @@ async def _bank_one(source, sym: str) -> None:
     if not dates:
         return
     probe_date = dates[-1]   # most recent -> definitely listed if optionable
+    rem0 = source.client.rate_limit.get("remaining")
     exps = await source.expirations(sym, probe_date)
     if not exps:
         await asyncio.sleep(1.0)
         exps = await source.expirations(sym, probe_date)
     if not exps:
-        _mark_unavailable(sym)
-        _log(f"bank {sym}: no options listed (probe empty x2) -> DATA_UNAVAILABLE")
+        # 0620.2 P0.1: only sentinel on a REAL API response (a credit was consumed ->
+        # the API actually said "no expirations"). If remaining is unchanged the probe
+        # was rejected/transient (429/network) -> do NOT write a false DATA_UNAVAILABLE;
+        # skip and let a later pass retry.
+        rem1 = source.client.rate_limit.get("remaining")
+        if rem0 is not None and rem1 is not None and rem1 < rem0:
+            _mark_unavailable(sym)
+            _log(f"bank {sym}: no options listed (probe empty, credit consumed) -> DATA_UNAVAILABLE")
+        else:
+            _log(f"bank {sym}: probe empty but no credit consumed (transient) -> skip, will retry")
         return
     banked = 0
     for d in dates:

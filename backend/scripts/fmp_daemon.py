@@ -155,16 +155,41 @@ class Stats:
         print(line, end="")
 
 
+class FMPError(Exception):
+    def __init__(self, status: int, msg: str):
+        super().__init__(msg)
+        self.status = status
+
+
+# statuses that mean "this endpoint is permanently unusable on our tier/path" ->
+# disable it for the run. 429/5xx/timeout are TRANSIENT -> retry, never disable (0620.2 P0.2).
+_DISABLE_STATUSES = {401, 402, 403, 404}
+
+
 async def _fetch(client: httpx.AsyncClient, ep: Endpoint, symbol: str) -> object | None:
     params = dict(ep.query)
     params["apikey"] = settings.FMP_API_KEY
     if ep.per_symbol:
         params["symbol"] = symbol
     url = BASE_URL + ep.path
-    resp = await client.get(url, params=params)
-    if resp.status_code != 200:
-        raise RuntimeError(f"{ep.name} HTTP {resp.status_code}: {resp.text[:120]}")
-    return resp.json()
+    # transient retry (max 2 extra) with backoff for 429/5xx/network; raise on tier-lock.
+    for attempt in range(3):
+        try:
+            resp = await client.get(url, params=params)
+        except Exception as e:                       # network/timeout -> transient
+            if attempt == 2:
+                raise FMPError(0, f"{ep.name} network: {e}")
+            await asyncio.sleep(1.5 * (attempt + 1))
+            continue
+        if resp.status_code == 200:
+            return resp.json()
+        if resp.status_code in _DISABLE_STATUSES:    # permanent -> raise, caller disables
+            raise FMPError(resp.status_code, f"{ep.name} HTTP {resp.status_code}: {resp.text[:120]}")
+        # 429 / 5xx -> transient
+        if attempt == 2:
+            raise FMPError(resp.status_code, f"{ep.name} HTTP {resp.status_code} (transient, gave up)")
+        await asyncio.sleep(2.0 * (attempt + 1))
+    return None
 
 
 async def run(universe: list[str], endpoints: list[Endpoint], once: bool):
@@ -214,12 +239,23 @@ async def run(universe: list[str], endpoints: list[Endpoint], once: bool):
                         stats.log(len(work), note=f"PROBE {ep.name} OK")
                     if data:                         # don't persist empty/None
                         _write(path, data)
+                except FMPError as e:
+                    stats.errors += 1
+                    if e.status in _DISABLE_STATUSES:
+                        # permanent (tier-lock / bad path) -> disable endpoint this run
+                        if ep.name not in dead:
+                            dead.add(ep.name)
+                            probed.add(ep.name)
+                            stats.log(len(work), note=f"{ep.name} DISABLED (HTTP {e.status}): {e}")
+                    else:
+                        # transient (429/5xx/network after retries) -> keep endpoint alive,
+                        # leave this (ep,sym) stale so a later pass retries it.
+                        if ep.name not in probed:
+                            probed.add(ep.name)
+                            stats.log(len(work), note=f"PROBE {ep.name} OK-ish (transient miss: {e})")
                 except Exception as e:
                     stats.errors += 1
-                    if ep.name not in probed:
-                        probed.add(ep.name)
-                        dead.add(ep.name)   # restricted/bad path -> skip rest of its symbols
-                        stats.log(len(work), note=f"PROBE {ep.name} FAIL (endpoint disabled this run): {e}")
+                    logger.debug(f"fmp fetch unexpected {ep.name}/{sym}: {e}")
 
                 if time.monotonic() - last_log > 3600:     # hourly heartbeat
                     stats.log(len(work))

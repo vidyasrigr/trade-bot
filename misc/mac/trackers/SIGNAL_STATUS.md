@@ -1,6 +1,6 @@
-SIGNAL STATUS  -  generated 2026-06-20 00:54
+SIGNAL STATUS  -  generated 2026-06-20 17:18
 ===============================================================================================
-Tested: 13/49   PASS: 0   SANDBOX: 10   NO_EDGE: 3   BLOCKED: 0   PENDING: 36
+Tested: 13/49   PASS: 0   SANDBOX: 8   NO_EDGE: 3   SMALL_N: 2   BLOCKED: 0   PENDING: 36
 By stream:  O 6/19   S 6/23   M 7/18   L 2/12
 ===============================================================================================
 
@@ -35,14 +35,14 @@ volatility_regime         x x . .  ready        -       -       -  PENDING   -
 -- CROSS_SECTION -----------------------------------------------------------------------------
 SIGNAL                    O S M L  DATA     TRAIN  WF_DSR  MTM_DD  VERDICT   BLOCKED_BY
 insider_analyst_combo     . . x x  ready        -       -       -  PENDING   -
-insider_cluster           . . x x  ready     0.45    0.85     37%  SANDBOX   DD>25% hard gate
+insider_cluster           . . x x  ready     0.45    0.85     37%  SMALL_N   n_tr=6 n_wf=12 (insufficient)
 iv_call_put_spread        x . . .  ready     0.11    0.65      1%  SANDBOX   partial gate
-iv_term_slope             x . . .  ready        -    0.01      8%  NO_EDGE   -
-momentum_12_1             . x x x  ready     0.28    0.75      8%  SANDBOX   partial gate
+iv_term_slope             x . . .  ready        -    0.01      8%  SMALL_N   n_tr=0 n_wf=12 (insufficient)
+momentum_12_1             . x x x  ready     0.21    0.17     25%  NO_EDGE   - [12 variants; none clear; best wf=0.60 (mom lb=126 top250)]
 reddit_mentions           . x . .  ready        -       -       -  PENDING   -
 reddit_polarity           . x . .  ready        -       -       -  PENDING   -
-short_squeeze             . x x .  ready     0.08    0.45     12%  SANDBOX   partial gate
-skew_25d                  x . . .  ready     0.00    0.75      5%  SANDBOX   partial gate
+short_squeeze             . x x .  ready     0.08    0.45     12%  SANDBOX   partial gate [2 variants; none clear; best wf=0.45 (si_bearish)]
+skew_25d                  x . . .  ready     0.10    0.67     10%  SANDBOX   partial gate
 supply_chain_lead_lag     . x x .  ready     0.03    0.04     26%  NO_EDGE   -
 vrp_level                 x . . .  ready     0.90    0.01     63%  SANDBOX   partial gate
 vrp_z                     x . . .  ready     0.90    0.01     63%  SANDBOX   partial gate
@@ -51,7 +51,7 @@ whale_flow                x . . .  ready        -       -       -  PENDING   -
 -- COMPOUND ----------------------------------------------------------------------------------
 SIGNAL                    O S M L  DATA     TRAIN  WF_DSR  MTM_DD  VERDICT   BLOCKED_BY
 analyst_revision_cascade  . x x .  ready        -       -       -  PENDING   -
-beat_and_raise_pead       . x x .  ready     0.54    0.38     79%  SANDBOX   DD>25% hard gate
+beat_and_raise_pead       . x x .  ready     0.54    0.38     79%  SANDBOX   DD>25% gate [2 variants; none clear; best wf=0.38 (pead hold=10)]
 sector_dispersion         . . x .  ready        -       -       -  PENDING   -
 
 -- DNA ---------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ stock_dna                 . x x x  ready        -       -       -  PENDING   -
 -- STRATEGY ----------------------------------------------------------------------------------
 SIGNAL                    O S M L  DATA     TRAIN  WF_DSR  MTM_DD  VERDICT   BLOCKED_BY
 pre_fomc_straddle         x . . .  ready        -       -       -  PENDING   -
-vrp_harvest               x . . .  ready     0.82    0.32     87%  SANDBOX   DD>25% hard gate
+vrp_harvest               x . . .  ready     0.80    0.30     79%  SANDBOX   DD>25% gate [9 variants; none clear; best wf=0.32 (vrp_naked_stop=1.5x)]
 
 -- FEATURE_ONLY ------------------------------------------------------------------------------
 SIGNAL                    O S M L  DATA     TRAIN  WF_DSR  MTM_DD  VERDICT   BLOCKED_BY

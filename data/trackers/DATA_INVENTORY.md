@@ -1,12 +1,12 @@
-DATA INVENTORY  -  generated 2026-06-20 00:54
+DATA INVENTORY  -  generated 2026-06-20 17:18
 ===============================================================================================
-MarketData chains: 169 symbols banked   |   FMP calls cached: 60461   |   FRED series: 33
+MarketData chains: 170 symbols banked   |   FMP calls cached: 60461   |   FRED series: 33
 MarketData credits today: see phase4_bank.json
 ===============================================================================================
 
 SOURCE      DATASET               SYMBOLS   COVERAGE(core-200)    NOTE
 -----------------------------------------------------------------------------------------------
-MarketData  option chains         169       ████████░░   84%      5y rolling, no hist greeks
+MarketData  option chains         170       ████████░░   85%      5y rolling, no hist greeks
 yfinance    daily OHLCV (feat)    538       (live, keyless)       backfill daemon
 FRED        macro series          33        ██████████  100%      target 30+
 FMP         earnings              5836      (no daily cap, 300/min)

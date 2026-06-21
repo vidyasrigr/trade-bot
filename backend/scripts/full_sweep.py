@@ -73,7 +73,10 @@ def _chain_universe() -> list[str]:
                   if (DEFAULT_CACHE_ROOT / d).is_dir() and not d.startswith("_"))
 
 
-def _verdict(tr, wf, dd, label: str) -> str:
+def _verdict(tr, wf, dd, label: str, n_tr: int = 0, n_wf: int = 0) -> str:
+    # 0620.2 P0.4: small-sample hard pre-filter ahead of any candidate verdict.
+    if (n_tr and n_tr < 100) or (n_wf and n_wf < 50):
+        return f"SMALL_N [{label}]" if label else "SMALL_N"
     passes = (tr or 0) >= 0.50 and (wf or 0) >= 0.30 and (dd or 1) < 0.25
     tag = f" [{label}]" if label else ""
     if passes:
@@ -96,7 +99,7 @@ async def _run(signal, name, gen, universe, panel, kw, num_trials, label=""):
     td, wd = tr.metrics.get("deflated_sharpe"), wf.metrics.get("deflated_sharpe")
     tdd, wdd = tr.metrics.get("max_drawdown"), wf.metrics.get("max_drawdown")
     n_tr, n_wf = tr.metrics.get("num_trades", 0), wf.metrics.get("num_trades", 0)
-    v = _verdict(td, wd, wdd, label) if (n_tr or n_wf) else f"PENDING [{label or 'no-data'}]"
+    v = _verdict(td, wd, wdd, label, n_tr, n_wf) if (n_tr or n_wf) else f"PENDING [{label or 'no-data'}]"
     _ROWS.append({"signal": signal, "name": name, "n_tr": n_tr, "n_wf": n_wf,
                   "train_dsr": td, "wf_dsr": wd, "train_dd": tdd, "wf_dd": wdd,
                   "verdict": v, "label": label,

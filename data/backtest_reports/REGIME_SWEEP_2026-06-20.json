@@ -1,0 +1,1810 @@
+{
+  "windows": {
+    "train": [
+      "2021-07-01",
+      "2024-12-31"
+    ],
+    "wf": [
+      "2025-01-01",
+      "2026-06-30"
+    ]
+  },
+  "spy_wf_cagr": 0.19456492567088968,
+  "qqq_wf_cagr": 0.29691079445215873,
+  "num_trials": 117,
+  "git_sha": "d6c9dbf",
+  "rows": [
+    {
+      "signal": "momentum_12_1",
+      "data_class": "EQUITY",
+      "train_dsr": 0.0017242428707395336,
+      "wf_dsr": 0.255642913144852,
+      "cohort_wf_dd": 0.07978765038894493,
+      "true_account_dd": 0.19155537247492893,
+      "n_train": 1136,
+      "n_wf": 344,
+      "wf_cagr": 0.3647331593186396,
+      "excess_spy": 0.1701682336477499,
+      "excess_qqq": 0.06782236486648086,
+      "theme_bet": false,
+      "theme_share": 0.269,
+      "d2_regime": {
+        "3": {
+          "n": 246,
+          "mean_ret": 0.05318890829214245
+        },
+        "1": {
+          "n": 48,
+          "mean_ret": 0.09917977171721974
+        },
+        "5": {
+          "n": 50,
+          "mean_ret": 0.014330509174471946
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5232558139534884,
+      "expectancy": 0.0539582149448174,
+      "profit_factor": 1.9863770800208431,
+      "avg_hold_days": 25.0,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "rsi_14",
+      "data_class": "EQUITY",
+      "train_dsr": 0.17026097773792448,
+      "wf_dsr": 0.000575223183711309,
+      "cohort_wf_dd": 0.18333428661956483,
+      "true_account_dd": 0.17520454330977364,
+      "n_train": 3130,
+      "n_wf": 1189,
+      "wf_cagr": -0.01352861664573235,
+      "excess_spy": -0.20809354231662203,
+      "excess_qqq": -0.3104394110978911,
+      "theme_bet": false,
+      "theme_share": 0.285,
+      "d2_regime": {
+        "3": {
+          "n": 799,
+          "mean_ret": -0.007964056582415748
+        },
+        "5": {
+          "n": 197,
+          "mean_ret": 0.001218149486404512
+        },
+        "1": {
+          "n": 193,
+          "mean_ret": 0.0033856782404312153
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3
+        ],
+        "gated_n": 799,
+        "gated_mean_ret": -0.007964056582415748,
+        "gated_win_rate": 0.48685857321652065,
+        "wf_occurrences": 1,
+        "max_episode_share": 1.0
+      },
+      "d3_allowed": [
+        3
+      ],
+      "d3_gated_n": 799,
+      "d3_gated_mean_ret": -0.007964056582415748,
+      "d3_wf_occurrences": 1,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.4861227922624054,
+      "expectancy": -0.004600395172519148,
+      "profit_factor": 0.9106848308434522,
+      "avg_hold_days": 25.323801513877207,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "macd",
+      "data_class": "EQUITY",
+      "train_dsr": 0.0008001586805284705,
+      "wf_dsr": 0.0004325542218999823,
+      "cohort_wf_dd": 0.2889558117723922,
+      "true_account_dd": 0.2523014700488043,
+      "n_train": 3122,
+      "n_wf": 1189,
+      "wf_cagr": -0.08305869661695386,
+      "excess_spy": -0.27762362228784354,
+      "excess_qqq": -0.3799694910691126,
+      "theme_bet": false,
+      "theme_share": 0.32,
+      "d2_regime": {
+        "3": {
+          "n": 796,
+          "mean_ret": 0.0031366231113657624
+        },
+        "5": {
+          "n": 197,
+          "mean_ret": -0.02486095920924628
+        },
+        "1": {
+          "n": 196,
+          "mean_ret": -0.031248071578970162
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5004205214465938,
+      "expectancy": -0.007170293521490764,
+      "profit_factor": 0.8955493465039984,
+      "avg_hold_days": 25.32296047098402,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "stoch",
+      "data_class": "EQUITY",
+      "train_dsr": 0.05706664489148836,
+      "wf_dsr": 0.007350543130368607,
+      "cohort_wf_dd": 0.1981327608803419,
+      "true_account_dd": 0.2155283773455614,
+      "n_train": 3129,
+      "n_wf": 1192,
+      "wf_cagr": -0.037537967528643024,
+      "excess_spy": -0.2321028931995327,
+      "excess_qqq": -0.33444876198080176,
+      "theme_bet": false,
+      "theme_share": 0.234,
+      "d2_regime": {
+        "3": {
+          "n": 799,
+          "mean_ret": -0.009498194378005757
+        },
+        "5": {
+          "n": 197,
+          "mean_ret": 0.000656872869333548
+        },
+        "1": {
+          "n": 196,
+          "mean_ret": 0.04389914029429096
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3
+        ],
+        "gated_n": 799,
+        "gated_mean_ret": -0.009498194378005757,
+        "gated_win_rate": 0.4806007509386733,
+        "wf_occurrences": 1,
+        "max_episode_share": 1.0
+      },
+      "d3_allowed": [
+        3
+      ],
+      "d3_gated_n": 799,
+      "d3_gated_mean_ret": -0.009498194378005757,
+      "d3_wf_occurrences": 1,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.48070469798657717,
+      "expectancy": 0.0009602165645244466,
+      "profit_factor": 1.0187607503031235,
+      "avg_hold_days": 25.323825503355703,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "roc_63",
+      "data_class": "EQUITY",
+      "train_dsr": 2.1404857396975365e-05,
+      "wf_dsr": 0.04127363630300181,
+      "cohort_wf_dd": 0.3230677102475257,
+      "true_account_dd": 0.23442197718195057,
+      "n_train": 3115,
+      "n_wf": 1190,
+      "wf_cagr": 0.05065485603601405,
+      "excess_spy": -0.14391006963487563,
+      "excess_qqq": -0.24625593841614468,
+      "theme_bet": true,
+      "theme_share": 0.403,
+      "d2_regime": {
+        "3": {
+          "n": 800,
+          "mean_ret": 0.03376758534104503
+        },
+        "5": {
+          "n": 199,
+          "mean_ret": -0.03342302891044223
+        },
+        "1": {
+          "n": 191,
+          "mean_ret": 0.0014926994344632396
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5084033613445378,
+      "expectancy": 0.01735125303499201,
+      "profit_factor": 1.2928283365598623,
+      "avg_hold_days": 25.323529411764707,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "ema_align",
+      "data_class": "EQUITY",
+      "train_dsr": 4.546621348816063e-09,
+      "wf_dsr": 0.004820628643648106,
+      "cohort_wf_dd": 0.11494442415756437,
+      "true_account_dd": 0.12926229043339887,
+      "n_train": 2383,
+      "n_wf": 1183,
+      "wf_cagr": -0.06844420226280568,
+      "excess_spy": -0.26300912793369535,
+      "excess_qqq": -0.3653549967149644,
+      "theme_bet": false,
+      "theme_share": 0.334,
+      "d2_regime": {
+        "3": {
+          "n": 793,
+          "mean_ret": -0.00039925209988674054
+        },
+        "5": {
+          "n": 196,
+          "mean_ret": -0.007388611021506905
+        },
+        "1": {
+          "n": 194,
+          "mean_ret": 0.008810012524564143
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.47675401521555366,
+      "expectancy": -4.702641222324331e-05,
+      "profit_factor": 0.9990443884006575,
+      "avg_hold_days": 25.32037193575655,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "slope",
+      "data_class": "EQUITY",
+      "train_dsr": 7.4139934723184595e-06,
+      "wf_dsr": 0.06312516276514644,
+      "cohort_wf_dd": 0.28402272384681004,
+      "true_account_dd": 0.2060417574639598,
+      "n_train": 3110,
+      "n_wf": 1188,
+      "wf_cagr": 0.0971500580773128,
+      "excess_spy": -0.09741486759357687,
+      "excess_qqq": -0.19976073637484593,
+      "theme_bet": true,
+      "theme_share": 0.41,
+      "d2_regime": {
+        "3": {
+          "n": 799,
+          "mean_ret": 0.03078922788729738
+        },
+        "5": {
+          "n": 199,
+          "mean_ret": -0.022931075857087927
+        },
+        "1": {
+          "n": 190,
+          "mean_ret": 0.017904583846822992
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.51010101010101,
+      "expectancy": 0.01972994942532532,
+      "profit_factor": 1.3350472773968642,
+      "avg_hold_days": 25.32070707070707,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "adx_dir",
+      "data_class": "EQUITY",
+      "train_dsr": 6.465757220738187e-06,
+      "wf_dsr": 0.02772426801050313,
+      "cohort_wf_dd": 0.07508074943039292,
+      "true_account_dd": 0.1639239500326164,
+      "n_train": 3128,
+      "n_wf": 1188,
+      "wf_cagr": -0.002118114376654101,
+      "excess_spy": -0.19668304004754378,
+      "excess_qqq": -0.29902890882881283,
+      "theme_bet": true,
+      "theme_share": 0.412,
+      "d2_regime": {
+        "3": {
+          "n": 797,
+          "mean_ret": 0.011349087156629141
+        },
+        "5": {
+          "n": 197,
+          "mean_ret": -0.010572475395287708
+        },
+        "1": {
+          "n": 194,
+          "mean_ret": -0.0029971084033321217
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5075757575757576,
+      "expectancy": 0.0053712169871341035,
+      "profit_factor": 1.1163011692741938,
+      "avg_hold_days": 25.324915824915823,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "bb_width",
+      "data_class": "EQUITY",
+      "train_dsr": 0.00028672936725706954,
+      "wf_dsr": 1.069975400135229e-05,
+      "cohort_wf_dd": 0.7032214735227736,
+      "true_account_dd": 0.42981852462818537,
+      "n_train": 3122,
+      "n_wf": 1193,
+      "wf_cagr": -0.2886394056315127,
+      "excess_spy": -0.48320433130240237,
+      "excess_qqq": -0.5855502000836714,
+      "theme_bet": true,
+      "theme_share": 0.533,
+      "d2_regime": {
+        "3": {
+          "n": 801,
+          "mean_ret": -0.04506700553689973
+        },
+        "5": {
+          "n": 197,
+          "mean_ret": 0.03588065579209032
+        },
+        "1": {
+          "n": 195,
+          "mean_ret": -0.07949192416145627
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.46689019279128247,
+      "expectancy": -0.03732699702891774,
+      "profit_factor": 0.5344919192355136,
+      "avg_hold_days": 25.32355406538139,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "atr_pct",
+      "data_class": "EQUITY",
+      "train_dsr": 0.00013252266563578606,
+      "wf_dsr": 2.3081584291544434e-06,
+      "cohort_wf_dd": 0.7687094965931682,
+      "true_account_dd": 0.5259172435946669,
+      "n_train": 3120,
+      "n_wf": 1189,
+      "wf_cagr": -0.3619299702190738,
+      "excess_spy": -0.5564948958899635,
+      "excess_qqq": -0.6588407646712325,
+      "theme_bet": true,
+      "theme_share": 0.534,
+      "d2_regime": {
+        "3": {
+          "n": 797,
+          "mean_ret": -0.047277985834430276
+        },
+        "5": {
+          "n": 198,
+          "mean_ret": 0.025664210457994316
+        },
+        "1": {
+          "n": 194,
+          "mean_ret": -0.11712442150571273
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.44575273338940286,
+      "expectancy": -0.046527484282141575,
+      "profit_factor": 0.47852805318101543,
+      "avg_hold_days": 25.324642556770396,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "rvol",
+      "data_class": "EQUITY",
+      "train_dsr": 0.0001678169744063339,
+      "wf_dsr": 7.782677956439397e-06,
+      "cohort_wf_dd": 0.7635214702790404,
+      "true_account_dd": 0.5087820087670996,
+      "n_train": 3118,
+      "n_wf": 1187,
+      "wf_cagr": -0.3707446958174735,
+      "excess_spy": -0.5653096214883632,
+      "excess_qqq": -0.6676554902696322,
+      "theme_bet": true,
+      "theme_share": 0.557,
+      "d2_regime": {
+        "3": {
+          "n": 797,
+          "mean_ret": -0.04781879085243875
+        },
+        "5": {
+          "n": 197,
+          "mean_ret": 0.03200963105035319
+        },
+        "1": {
+          "n": 193,
+          "mean_ret": -0.11036067748076533
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.45998315080033697,
+      "expectancy": -0.044739081504854096,
+      "profit_factor": 0.4913751397499274,
+      "avg_hold_days": 25.32603201347936,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "support_res",
+      "data_class": "EQUITY",
+      "train_dsr": 0.0003196416852944047,
+      "wf_dsr": 0.0028298220006870755,
+      "cohort_wf_dd": 0.34335496524603787,
+      "true_account_dd": 0.24350117316535247,
+      "n_train": 3119,
+      "n_wf": 1184,
+      "wf_cagr": -0.05039190490408485,
+      "excess_spy": -0.24495683057497453,
+      "excess_qqq": -0.3473026993562436,
+      "theme_bet": false,
+      "theme_share": 0.4,
+      "d2_regime": {
+        "3": {
+          "n": 798,
+          "mean_ret": 0.023038627993617285
+        },
+        "5": {
+          "n": 196,
+          "mean_ret": -0.03348128354286381
+        },
+        "1": {
+          "n": 190,
+          "mean_ret": -0.07654273510403549
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.504222972972973,
+      "expectancy": -0.002297826102416773,
+      "profit_factor": 0.9566584175206948,
+      "avg_hold_days": 25.326013513513512,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "trend",
+      "data_class": "EQUITY",
+      "train_dsr": 1.6146411496884443e-06,
+      "wf_dsr": 0.05017687680246591,
+      "cohort_wf_dd": 0.20840925837114102,
+      "true_account_dd": 0.20321377211802583,
+      "n_train": 2383,
+      "n_wf": 1179,
+      "wf_cagr": -0.013932647050052815,
+      "excess_spy": -0.2084975727209425,
+      "excess_qqq": -0.31084344150221155,
+      "theme_bet": false,
+      "theme_share": 0.397,
+      "d2_regime": {
+        "3": {
+          "n": 793,
+          "mean_ret": 0.021255812334169507
+        },
+        "5": {
+          "n": 196,
+          "mean_ret": -0.0296612718608103
+        },
+        "1": {
+          "n": 190,
+          "mean_ret": 0.017176691372157393
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.48770144189991516,
+      "expectancy": 0.012133860268861329,
+      "profit_factor": 1.2378626837839455,
+      "avg_hold_days": 25.32654792196777,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "risk",
+      "data_class": "EQUITY",
+      "train_dsr": 0.00012721094721651862,
+      "wf_dsr": 9.140134123544926e-06,
+      "cohort_wf_dd": 0.765220134989006,
+      "true_account_dd": 0.49079350070041294,
+      "n_train": 3122,
+      "n_wf": 1189,
+      "wf_cagr": -0.3383785788440896,
+      "excess_spy": -0.5329435045149793,
+      "excess_qqq": -0.6352893732962483,
+      "theme_bet": true,
+      "theme_share": 0.576,
+      "d2_regime": {
+        "3": {
+          "n": 799,
+          "mean_ret": -0.04697919599620215
+        },
+        "5": {
+          "n": 197,
+          "mean_ret": 0.03917050612907345
+        },
+        "1": {
+          "n": 193,
+          "mean_ret": -0.11523937679865882
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.4659377628259041,
+      "expectancy": -0.04378552364649217,
+      "profit_factor": 0.5012342082361102,
+      "avg_hold_days": 25.324642556770396,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "skew_25d",
+      "data_class": "OPTIONS",
+      "train_dsr": 0.007507191491862649,
+      "wf_dsr": 0.24693522904202875,
+      "cohort_wf_dd": 0.10208106951313925,
+      "true_account_dd": 0.1270706870540833,
+      "n_train": 362,
+      "n_wf": 86,
+      "wf_cagr": 1.3815556614867393,
+      "excess_spy": 1.1869907358158496,
+      "excess_qqq": 1.0846448670345805,
+      "theme_bet": true,
+      "theme_share": 0.602,
+      "d2_regime": {
+        "3": {
+          "n": 48,
+          "mean_ret": 0.033093934924971376
+        },
+        "1": {
+          "n": 38,
+          "mean_ret": -0.010929399853796554
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "CACHE_LIMITED|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.46511627906976744,
+      "expectancy": 0.013641763743655316,
+      "profit_factor": 1.4201017798237738,
+      "avg_hold_days": 30.790697674418606,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "vrp_z",
+      "data_class": "OPTIONS",
+      "train_dsr": 0.5695849965316733,
+      "wf_dsr": 0.0003979507381186119,
+      "cohort_wf_dd": 0.6263805673208177,
+      "true_account_dd": 0.4486799585040856,
+      "n_train": 362,
+      "n_wf": 86,
+      "wf_cagr": -0.383124518951081,
+      "excess_spy": -0.5776894446219707,
+      "excess_qqq": -0.6800353134032397,
+      "theme_bet": true,
+      "theme_share": 0.472,
+      "d2_regime": {
+        "3": {
+          "n": 48,
+          "mean_ret": -0.02592839530049905
+        },
+        "1": {
+          "n": 38,
+          "mean_ret": 0.043056799065777654
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3
+        ],
+        "gated_n": 48,
+        "gated_mean_ret": -0.02592839530049905,
+        "gated_win_rate": 0.5416666666666666,
+        "wf_occurrences": 1,
+        "max_episode_share": 1.0
+      },
+      "d3_allowed": [
+        3
+      ],
+      "d3_gated_n": 48,
+      "d3_gated_mean_ret": -0.02592839530049905,
+      "d3_wf_occurrences": 1,
+      "data_flags": "CACHE_LIMITED|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5813953488372093,
+      "expectancy": 0.004553434768320883,
+      "profit_factor": 1.1095359160350236,
+      "avg_hold_days": 30.790697674418606,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "iv_call_put_spread",
+      "data_class": "OPTIONS",
+      "train_dsr": 0.00978731044351694,
+      "wf_dsr": 0.23292158473522273,
+      "cohort_wf_dd": 0.011364364756469377,
+      "true_account_dd": 0.1509578811696043,
+      "n_train": 362,
+      "n_wf": 86,
+      "wf_cagr": 0.49195964677330384,
+      "excess_spy": 0.29739472110241416,
+      "excess_qqq": 0.1950488523211451,
+      "theme_bet": false,
+      "theme_share": 0.395,
+      "d2_regime": {
+        "3": {
+          "n": 48,
+          "mean_ret": 0.006741403992288143
+        },
+        "1": {
+          "n": 38,
+          "mean_ret": 0.016519272433439453
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3
+        ],
+        "gated_n": 48,
+        "gated_mean_ret": 0.006741403992288143,
+        "gated_win_rate": 0.5,
+        "wf_occurrences": 1,
+        "max_episode_share": 1.0
+      },
+      "d3_allowed": [
+        3
+      ],
+      "d3_gated_n": 48,
+      "d3_gated_mean_ret": 0.006741403992288143,
+      "d3_wf_occurrences": 1,
+      "data_flags": "CACHE_LIMITED|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.4883720930232558,
+      "expectancy": 0.011061857489541048,
+      "profit_factor": 1.343562666030664,
+      "avg_hold_days": 30.790697674418606,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "beat_and_raise_pead",
+      "data_class": "FMP",
+      "train_dsr": 0.0765447954206097,
+      "wf_dsr": 0.032604233174910076,
+      "cohort_wf_dd": 0.7923333660068486,
+      "true_account_dd": 0.14812373925895472,
+      "n_train": 1454,
+      "n_wf": 620,
+      "wf_cagr": 0.13073746476347492,
+      "excess_spy": -0.06382746090741476,
+      "excess_qqq": -0.1661733296886838,
+      "theme_bet": false,
+      "theme_share": 0.287,
+      "d2_regime": {
+        "4": {
+          "n": 2,
+          "mean_ret": -0.01927467664417537
+        },
+        "3": {
+          "n": 450,
+          "mean_ret": 0.0018526335226208663
+        },
+        "2": {
+          "n": 27,
+          "mean_ret": 0.043238502595620114
+        },
+        "1": {
+          "n": 92,
+          "mean_ret": 0.016418727478053598
+        },
+        "5": {
+          "n": 49,
+          "mean_ret": 0.004485923879414525
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3
+        ],
+        "gated_n": 450,
+        "gated_mean_ret": 0.0018526335226208663,
+        "gated_win_rate": 0.5333333333333333,
+        "wf_occurrences": 1,
+        "max_episode_share": 1.0
+      },
+      "d3_allowed": [
+        3
+      ],
+      "d3_gated_n": 450,
+      "d3_gated_mean_ret": 0.0018526335226208663,
+      "d3_wf_occurrences": 1,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5532258064516129,
+      "expectancy": 0.005956304032330686,
+      "profit_factor": 1.1973053811141003,
+      "avg_hold_days": 12.138709677419355,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "insider_cluster",
+      "data_class": "FMP",
+      "train_dsr": 0.04963975893074364,
+      "wf_dsr": 0.30308264468805135,
+      "cohort_wf_dd": 0.36538512307480764,
+      "true_account_dd": 0.3334408193371159,
+      "n_train": 6,
+      "n_wf": 12,
+      "wf_cagr": 0.5427357366659713,
+      "excess_spy": 0.3481708109950816,
+      "excess_qqq": 0.24582494221381257,
+      "theme_bet": true,
+      "theme_share": 0.772,
+      "d2_regime": {
+        "1": {
+          "n": 3,
+          "mean_ret": 0.11065447217331086
+        },
+        "3": {
+          "n": 9,
+          "mean_ret": 0.19394342574026485
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3
+        ],
+        "gated_n": 9,
+        "gated_mean_ret": 0.19394342574026485,
+        "gated_win_rate": 0.6666666666666666,
+        "wf_occurrences": 1,
+        "max_episode_share": 1.0
+      },
+      "d3_allowed": [
+        3
+      ],
+      "d3_gated_n": 9,
+      "d3_gated_mean_ret": 0.19394342574026485,
+      "d3_wf_occurrences": 1,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.6666666666666666,
+      "expectancy": 0.17312118734852633,
+      "profit_factor": 4.615084355388136,
+      "avg_hold_days": 72.08333333333333,
+      "label": "SMALL_N"
+    },
+    {
+      "signal": "short_squeeze_bearish",
+      "data_class": "SI",
+      "train_dsr": 0.0014968701815963011,
+      "wf_dsr": 0.04816389555224244,
+      "cohort_wf_dd": 0.11809737643759831,
+      "true_account_dd": 0.08243056705760776,
+      "n_train": 4687,
+      "n_wf": 1792,
+      "wf_cagr": 0.060739848618239556,
+      "excess_spy": -0.13382507705265012,
+      "excess_qqq": -0.23617094583391918,
+      "theme_bet": false,
+      "theme_share": 0.238,
+      "d2_regime": {
+        "3": {
+          "n": 1197,
+          "mean_ret": 0.010262665078376237
+        },
+        "5": {
+          "n": 298,
+          "mean_ret": -0.020389320627045546
+        },
+        "1": {
+          "n": 297,
+          "mean_ret": 0.02679538216317224
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5061383928571429,
+      "expectancy": 0.00790548049911771,
+      "profit_factor": 1.1493358604033894,
+      "avg_hold_days": 25.324776785714285,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "squeeze_candidate",
+      "data_class": "SI",
+      "train_dsr": 6.621766600084011e-07,
+      "wf_dsr": 0.016222353238809863,
+      "cohort_wf_dd": 0.1739060322571712,
+      "true_account_dd": 0.14850739022232606,
+      "n_train": 1299,
+      "n_wf": 341,
+      "wf_cagr": 0.13604727437400221,
+      "excess_spy": -0.05851765129688746,
+      "excess_qqq": -0.16086352007815652,
+      "theme_bet": true,
+      "theme_share": 0.419,
+      "d2_regime": {
+        "5": {
+          "n": 98,
+          "mean_ret": 0.017624625176477945
+        },
+        "1": {
+          "n": 95,
+          "mean_ret": -0.03436955771227383
+        },
+        "3": {
+          "n": 148,
+          "mean_ret": 0.035009124780770014
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.533724340175953,
+      "expectancy": 0.010684620974143069,
+      "profit_factor": 1.192641612077555,
+      "avg_hold_days": 25.266862170087975,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "residual_momentum",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.03047587339971846,
+      "wf_dsr": 0.09555200612440568,
+      "cohort_wf_dd": 0.10348583670397593,
+      "true_account_dd": 0.14237772136119986,
+      "n_train": 2005,
+      "n_wf": 1165,
+      "wf_cagr": 0.014779059676633732,
+      "excess_spy": -0.17978586599425594,
+      "excess_qqq": -0.282131734775525,
+      "theme_bet": false,
+      "theme_share": 0.291,
+      "d2_regime": {
+        "3": {
+          "n": 780,
+          "mean_ret": 0.02079021621906864
+        },
+        "5": {
+          "n": 192,
+          "mean_ret": -0.017310970634256153
+        },
+        "1": {
+          "n": 193,
+          "mean_ret": 0.010614173060561288
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5064377682403434,
+      "expectancy": 0.012825062394664964,
+      "profit_factor": 1.2335412730211717,
+      "avg_hold_days": 25.320171673819743,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "high_52w_proximity",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 1.2970741770857124e-05,
+      "wf_dsr": 0.0007874366668805709,
+      "cohort_wf_dd": 0.21911934659900778,
+      "true_account_dd": 0.24112314797870382,
+      "n_train": 2008,
+      "n_wf": 1162,
+      "wf_cagr": -0.1355824028497853,
+      "excess_spy": -0.33014732852067497,
+      "excess_qqq": -0.432493197301944,
+      "theme_bet": false,
+      "theme_share": 0.389,
+      "d2_regime": {
+        "3": {
+          "n": 780,
+          "mean_ret": 0.0054291983599850865
+        },
+        "5": {
+          "n": 193,
+          "mean_ret": -0.028736010250040852
+        },
+        "1": {
+          "n": 189,
+          "mean_ret": -0.04111992745434333
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.49827882960413084,
+      "expectancy": -0.007816645048485718,
+      "profit_factor": 0.8657782267677092,
+      "avg_hold_days": 25.322719449225474,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "time_series_momentum",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.0007642392310572774,
+      "wf_dsr": 0.05033494412453124,
+      "cohort_wf_dd": 0.1327204617822295,
+      "true_account_dd": 0.181776361173425,
+      "n_train": 2106,
+      "n_wf": 1177,
+      "wf_cagr": 0.017068268733224867,
+      "excess_spy": -0.1774966569376648,
+      "excess_qqq": -0.27984252571893387,
+      "theme_bet": false,
+      "theme_share": 0.358,
+      "d2_regime": {
+        "3": {
+          "n": 789,
+          "mean_ret": 0.028303357812168174
+        },
+        "5": {
+          "n": 192,
+          "mean_ret": -0.039655825997253445
+        },
+        "1": {
+          "n": 196,
+          "mean_ret": -0.012062996955251459
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5123194562446899,
+      "expectancy": 0.010495397892182448,
+      "profit_factor": 1.2147332197789855,
+      "avg_hold_days": 25.324553950722176,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "short_term_reversal",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.07286648877391276,
+      "wf_dsr": 0.0004851290802849131,
+      "cohort_wf_dd": 0.267020603948122,
+      "true_account_dd": 0.22025559237511383,
+      "n_train": 2998,
+      "n_wf": 1177,
+      "wf_cagr": -0.006742212948570692,
+      "excess_spy": -0.20130713861946037,
+      "excess_qqq": -0.3036530074007294,
+      "theme_bet": false,
+      "theme_share": 0.295,
+      "d2_regime": {
+        "3": {
+          "n": 792,
+          "mean_ret": -0.015967227620273618
+        },
+        "5": {
+          "n": 195,
+          "mean_ret": 0.03861442358133353
+        },
+        "1": {
+          "n": 190,
+          "mean_ret": -0.017926929079882876
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.47323704333050126,
+      "expectancy": -0.007240737639825331,
+      "profit_factor": 0.8877192730184669,
+      "avg_hold_days": 25.322005097706032,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "long_term_reversal",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.17389722744955322,
+      "wf_dsr": 0.015842739676124935,
+      "cohort_wf_dd": 0.10729432243408253,
+      "true_account_dd": 0.09550507220807536,
+      "n_train": 190,
+      "n_wf": 1134,
+      "wf_cagr": 0.07034485363707876,
+      "excess_spy": -0.12422007203381091,
+      "excess_qqq": -0.22656594081507997,
+      "theme_bet": false,
+      "theme_share": 0.274,
+      "d2_regime": {
+        "3": {
+          "n": 761,
+          "mean_ret": 0.007035921406352646
+        },
+        "5": {
+          "n": 186,
+          "mean_ret": 0.012173434834507989
+        },
+        "1": {
+          "n": 187,
+          "mean_ret": -0.016964372557444405
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5061728395061729,
+      "expectancy": 0.003920861905829582,
+      "profit_factor": 1.0712978042045975,
+      "avg_hold_days": 25.329805996472665,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "idiosyncratic_vol",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 9.710806987593005e-06,
+      "wf_dsr": 6.656986289783754e-06,
+      "cohort_wf_dd": 0.7454095270108732,
+      "true_account_dd": 0.4857916340123464,
+      "n_train": 2388,
+      "n_wf": 1179,
+      "wf_cagr": -0.3270969233073122,
+      "excess_spy": -0.5216618489782019,
+      "excess_qqq": -0.624007717759471,
+      "theme_bet": true,
+      "theme_share": 0.605,
+      "d2_regime": {
+        "3": {
+          "n": 791,
+          "mean_ret": -0.0422278322258369
+        },
+        "5": {
+          "n": 194,
+          "mean_ret": 0.028340230466802525
+        },
+        "1": {
+          "n": 194,
+          "mean_ret": -0.11350508648496432
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.4724342663273961,
+      "expectancy": -0.04234452702134045,
+      "profit_factor": 0.5057340275934659,
+      "avg_hold_days": 25.321458863443596,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "max_lottery_avoid",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.0118577489436388,
+      "wf_dsr": 1.5392750235733063e-05,
+      "cohort_wf_dd": 0.6517754409687739,
+      "true_account_dd": 0.42357537324383865,
+      "n_train": 2993,
+      "n_wf": 1174,
+      "wf_cagr": -0.29938707947037213,
+      "excess_spy": -0.4939520051412618,
+      "excess_qqq": -0.5962978739225309,
+      "theme_bet": true,
+      "theme_share": 0.55,
+      "d2_regime": {
+        "3": {
+          "n": 790,
+          "mean_ret": -0.043995037501407826
+        },
+        "5": {
+          "n": 194,
+          "mean_ret": 0.03317556004645615
+        },
+        "1": {
+          "n": 190,
+          "mean_ret": -0.048732751740755836
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.45826235093696766,
+      "expectancy": -0.03200957734909991,
+      "profit_factor": 0.5634229116258996,
+      "avg_hold_days": 25.32793867120954,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "vol_contraction_breakout",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 4.227406486421593e-05,
+      "wf_dsr": 7.727297010687884e-06,
+      "cohort_wf_dd": 0.3748925482598935,
+      "true_account_dd": 0.21159941031479046,
+      "n_train": 3028,
+      "n_wf": 1189,
+      "wf_cagr": -0.13202573724059652,
+      "excess_spy": -0.3265906629114862,
+      "excess_qqq": -0.42893653169275525,
+      "theme_bet": false,
+      "theme_share": 0.287,
+      "d2_regime": {
+        "3": {
+          "n": 797,
+          "mean_ret": -0.021998580613203762
+        },
+        "5": {
+          "n": 198,
+          "mean_ret": 0.016638207569197896
+        },
+        "1": {
+          "n": 194,
+          "mean_ret": -0.01565737304708071
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.47098402018502944,
+      "expectancy": -0.014529885635959522,
+      "profit_factor": 0.7531301172945756,
+      "avg_hold_days": 25.322119428090833,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "betting_against_beta",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 1.4032711351599055e-07,
+      "wf_dsr": 4.018791282838624e-05,
+      "cohort_wf_dd": 0.7025091939064617,
+      "true_account_dd": 0.4250402265683808,
+      "n_train": 2105,
+      "n_wf": 1177,
+      "wf_cagr": -0.25448975016831177,
+      "excess_spy": -0.44905467583920144,
+      "excess_qqq": -0.5514005446204705,
+      "theme_bet": true,
+      "theme_share": 0.56,
+      "d2_regime": {
+        "3": {
+          "n": 788,
+          "mean_ret": -0.03371071898750627
+        },
+        "5": {
+          "n": 196,
+          "mean_ret": 0.05281970402007478
+        },
+        "1": {
+          "n": 193,
+          "mean_ret": -0.12129512581163493
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.48598130841121495,
+      "expectancy": -0.03366299393021736,
+      "profit_factor": 0.5811713455465258,
+      "avg_hold_days": 25.320305862361938,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "volume_confirmed_momentum",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.15635130490458504,
+      "wf_dsr": 0.0083043473057513,
+      "cohort_wf_dd": 0.3209625036219234,
+      "true_account_dd": 0.2164967686946947,
+      "n_train": 2538,
+      "n_wf": 1179,
+      "wf_cagr": -0.04041917430658071,
+      "excess_spy": -0.23498409997747038,
+      "excess_qqq": -0.33732996875873944,
+      "theme_bet": false,
+      "theme_share": 0.283,
+      "d2_regime": {
+        "3": {
+          "n": 792,
+          "mean_ret": 0.028693606386950576
+        },
+        "5": {
+          "n": 196,
+          "mean_ret": -0.07458168279169289
+        },
+        "1": {
+          "n": 191,
+          "mean_ret": -0.01914712988221919
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.48770144189991516,
+      "expectancy": 0.003774575592696506,
+      "profit_factor": 1.0616907602586598,
+      "avg_hold_days": 25.324003392705684,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "revenue_surprise_drift",
+      "data_class": "RESEARCH:FMP_EARNINGS",
+      "train_dsr": 0.00032129205349924603,
+      "wf_dsr": 0.0005399134451005789,
+      "cohort_wf_dd": 0.22847545835650226,
+      "true_account_dd": 0.1959552431331707,
+      "n_train": 2073,
+      "n_wf": 785,
+      "wf_cagr": -0.02776790102868909,
+      "excess_spy": -0.22233282669957877,
+      "excess_qqq": -0.3246786954808478,
+      "theme_bet": true,
+      "theme_share": 0.448,
+      "d2_regime": {
+        "3": {
+          "n": 488,
+          "mean_ret": -0.0038931674345458064
+        },
+        "5": {
+          "n": 124,
+          "mean_ret": -0.011338295780898417
+        },
+        "1": {
+          "n": 173,
+          "mean_ret": -0.029031757903578793
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.4840764331210191,
+      "expectancy": -0.010609310193896672,
+      "profit_factor": 0.8253888839683746,
+      "avg_hold_days": 25.343949044585987,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "earnings_announcement_premium",
+      "data_class": "RESEARCH:FMP_EARNINGS",
+      "train_dsr": 0.22214967851029344,
+      "wf_dsr": 0.5595801799610834,
+      "cohort_wf_dd": 0.14369073494234502,
+      "true_account_dd": 0.1240820324580002,
+      "n_train": 2347,
+      "n_wf": 835,
+      "wf_cagr": 0.326895030533104,
+      "excess_spy": 0.1323301048622143,
+      "excess_qqq": 0.029984236080945248,
+      "theme_bet": false,
+      "theme_share": 0.28,
+      "d2_regime": {
+        "3": {
+          "n": 619,
+          "mean_ret": 0.03567939077248053
+        },
+        "5": {
+          "n": 180,
+          "mean_ret": -0.03678436805693687
+        },
+        "1": {
+          "n": 36,
+          "mean_ret": 0.27560851597260405
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3
+        ],
+        "gated_n": 619,
+        "gated_mean_ret": 0.03567939077248053,
+        "gated_win_rate": 0.5347334410339257,
+        "wf_occurrences": 1,
+        "max_episode_share": 1.0
+      },
+      "d3_allowed": [
+        3
+      ],
+      "d3_gated_n": 619,
+      "d3_gated_mean_ret": 0.03567939077248053,
+      "d3_wf_occurrences": 1,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5065868263473053,
+      "expectancy": 0.03040271043464738,
+      "profit_factor": 1.595242612992758,
+      "avg_hold_days": 25.226347305389222,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "accruals",
+      "data_class": "RESEARCH:FMP_STATEMENT",
+      "train_dsr": null,
+      "wf_dsr": null,
+      "cohort_wf_dd": null,
+      "true_account_dd": null,
+      "n_train": 0,
+      "n_wf": 0,
+      "wf_cagr": null,
+      "excess_spy": null,
+      "excess_qqq": null,
+      "theme_bet": false,
+      "theme_share": 0.0,
+      "d2_regime": {},
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "FUNDAMENTALS_PENDING|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "label": "DATA_GATED"
+    },
+    {
+      "signal": "piotroski_fscore",
+      "data_class": "RESEARCH:FMP_STATEMENT",
+      "train_dsr": null,
+      "wf_dsr": null,
+      "cohort_wf_dd": null,
+      "true_account_dd": null,
+      "n_train": 0,
+      "n_wf": 0,
+      "wf_cagr": null,
+      "excess_spy": null,
+      "excess_qqq": null,
+      "theme_bet": false,
+      "theme_share": 0.0,
+      "d2_regime": {},
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "FUNDAMENTALS_PENDING|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "label": "DATA_GATED"
+    },
+    {
+      "signal": "net_payout_yield",
+      "data_class": "RESEARCH:FMP_STATEMENT",
+      "train_dsr": null,
+      "wf_dsr": null,
+      "cohort_wf_dd": null,
+      "true_account_dd": null,
+      "n_train": 0,
+      "n_wf": 0,
+      "wf_cagr": null,
+      "excess_spy": null,
+      "excess_qqq": null,
+      "theme_bet": false,
+      "theme_share": 0.0,
+      "d2_regime": {},
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "FUNDAMENTALS_PENDING|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "label": "DATA_GATED"
+    },
+    {
+      "signal": "net_operating_assets",
+      "data_class": "RESEARCH:FMP_STATEMENT",
+      "train_dsr": null,
+      "wf_dsr": null,
+      "cohort_wf_dd": null,
+      "true_account_dd": null,
+      "n_train": 0,
+      "n_wf": 0,
+      "wf_cagr": null,
+      "excess_spy": null,
+      "excess_qqq": null,
+      "theme_bet": false,
+      "theme_share": 0.0,
+      "d2_regime": {},
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "FUNDAMENTALS_PENDING|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "label": "DATA_GATED"
+    },
+    {
+      "signal": "distress_risk_avoid",
+      "data_class": "RESEARCH:FMP_STATEMENT",
+      "train_dsr": null,
+      "wf_dsr": null,
+      "cohort_wf_dd": null,
+      "true_account_dd": null,
+      "n_train": 0,
+      "n_wf": 0,
+      "wf_cagr": null,
+      "excess_spy": null,
+      "excess_qqq": null,
+      "theme_bet": false,
+      "theme_share": 0.0,
+      "d2_regime": {},
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "FUNDAMENTALS_PENDING|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "label": "DATA_GATED"
+    },
+    {
+      "signal": "rv_minus_iv",
+      "data_class": "RESEARCH:OPTIONS",
+      "train_dsr": 0.5695849965316733,
+      "wf_dsr": 0.0003979507381186119,
+      "cohort_wf_dd": 0.6263805673208177,
+      "true_account_dd": 0.4486799585040856,
+      "n_train": 362,
+      "n_wf": 86,
+      "wf_cagr": -0.383124518951081,
+      "excess_spy": -0.5776894446219707,
+      "excess_qqq": -0.6800353134032397,
+      "theme_bet": true,
+      "theme_share": 0.472,
+      "d2_regime": {
+        "3": {
+          "n": 48,
+          "mean_ret": -0.025928395300499046
+        },
+        "1": {
+          "n": 38,
+          "mean_ret": 0.04305679906577763
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3
+        ],
+        "gated_n": 48,
+        "gated_mean_ret": -0.025928395300499046,
+        "gated_win_rate": 0.5416666666666666,
+        "wf_occurrences": 1,
+        "max_episode_share": 1.0
+      },
+      "d3_allowed": [
+        3
+      ],
+      "d3_gated_n": 48,
+      "d3_gated_mean_ret": -0.025928395300499046,
+      "d3_wf_occurrences": 1,
+      "data_flags": "CACHE_LIMITED|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2026-06-20",
+      "git_sha": "d6c9dbf",
+      "num_trials": 117,
+      "win_rate": 0.5813953488372093,
+      "expectancy": 0.00455343476832089,
+      "profit_factor": 1.1095359160350238,
+      "avg_hold_days": 30.790697674418606,
+      "label": "NO_EDGE"
+    }
+  ]
+}

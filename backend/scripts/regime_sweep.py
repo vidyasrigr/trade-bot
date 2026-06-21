@@ -17,7 +17,7 @@ Label taxonomy (no PASS/SANDBOX binary):
   REGIME_SUSPECT | INSUFFICIENT_REGIME_INSTANCES | SMALL_N | SURVIVORSHIP_CAPPED |
   THEME_BET | DD_PROVISIONAL | DATA_GATED | NO_EDGE
 
-Output (machine-readable so trackers never scrape markdown): REGIME_SWEEP_2026-06-20.md + .json + .csv
+Output (machine-readable so trackers never scrape markdown): {OUT_BASE}.md + .json + .csv
 with git_sha + source_report per row. Everything SANDBOX/SURVIVORSHIP_CAPPED until PIT (Session 3).
 """
 
@@ -55,6 +55,9 @@ TRAIN = (date(2021, 7, 1), date(2024, 12, 31))
 WF = (date(2025, 1, 1), date(2026, 6, 30))
 TRAIN_SELECT = (date(2021, 7, 1), date(2023, 12, 31))
 TRAIN_VALIDATE = (date(2024, 1, 1), date(2024, 12, 31))
+# overridable by the extended-history (2010-2026) variant (0620.3 Phase 5d)
+OUT_BASE = "REGIME_SWEEP_2026-06-20"
+EQUITY_ONLY = False        # extended history has no deep option chains -> skip kind==chain
 COST = 2.0 * 5.0 / 1e4
 
 _GIT_SHA = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
@@ -207,14 +210,19 @@ def _label(row, num_trials):
     uncond = (tr >= 0.50 and wf >= 0.30 and (dd is not None and dd < 0.25))
     if uncond:
         return "SURVIVORSHIP_CAPPED(UNCONDITIONAL_CANDIDATE)"
-    # regime-conditional: D3 gated positive + integrity + not theme bet
+    # regime-conditional: D3 gated positive + multi-instance integrity + not theme bet
+    # AND it must actually be investable (true account DD < 25%). A positive gated mean
+    # return alone is NOT a candidate — that was too generous. Positive-but-undeployable
+    # (high DD / dead DSR) -> REGIME_SUSPECT, flagged for review, not a candidate.
     d3 = row.get("_d3", {})
     if (d3.get("gated_mean_ret") or 0) > 0 and (d3.get("gated_n") or 0) >= 100:
         if (d3.get("wf_occurrences") or 0) < 3 or (d3.get("max_episode_share") or 1) > 0.5:
             return "INSUFFICIENT_REGIME_INSTANCES"
         if row.get("theme_bet"):
             return "THEME_BET"
-        return "SURVIVORSHIP_CAPPED(REGIME_CONDITIONAL_CANDIDATE)"
+        if dd is not None and dd < 0.25 and wf >= 0.30:
+            return "SURVIVORSHIP_CAPPED(REGIME_CONDITIONAL_CANDIDATE)"
+        return "REGIME_SUSPECT"   # recurs + not theme, but high DD / weak DSR -> not deployable
     if wf >= 0.30 and tr < 0.50:
         return "REGIME_CANDIDATE_PENDING_TEST"
     if dd is None:
@@ -224,6 +232,8 @@ def _label(row, num_trials):
 
 async def run():
     sigs = _signal_set()
+    if EQUITY_ONLY:
+        sigs = [s for s in sigs if s[4] != "chain"]   # no deep option chains pre-2021
     num_trials = max(len(sigs) * 3, 60)         # program-wide multiple-testing deflation
     rseries = _regime_series()
     sm = sector_map()
@@ -270,7 +280,7 @@ async def run():
             "d2_regime": d2, "_d3": d3,
             "d3_allowed": d3.get("allowed"), "d3_gated_n": d3.get("gated_n"),
             "d3_gated_mean_ret": d3.get("gated_mean_ret"), "d3_wf_occurrences": d3.get("wf_occurrences"),
-            "data_flags": "|".join(flags), "source_report": "REGIME_SWEEP_2026-06-20",
+            "data_flags": "|".join(flags), "source_report": OUT_BASE,
             "git_sha": _GIT_SHA, "num_trials": num_trials,
         }
         row.update(_trade_stats(wf_tr))
@@ -289,7 +299,7 @@ def _p(x): return f"{x*100:.0f}%" if isinstance(x, (int, float)) else "-"
 def _write(rows, spy, qqq, num_trials):
     REPORTS.mkdir(parents=True, exist_ok=True)
     # JSON (authoritative, tracker reads this)
-    (REPORTS / "REGIME_SWEEP_2026-06-20.json").write_text(json.dumps(
+    (REPORTS / f"{OUT_BASE}.json").write_text(json.dumps(
         {"windows": {"train": [str(d) for d in TRAIN], "wf": [str(d) for d in WF]},
          "spy_wf_cagr": spy, "qqq_wf_cagr": qqq, "num_trials": num_trials,
          "git_sha": _GIT_SHA, "rows": rows}, indent=2, default=str))
@@ -299,7 +309,7 @@ def _write(rows, spy, qqq, num_trials):
             "avg_hold_days", "wf_cagr", "excess_spy", "excess_qqq", "theme_bet", "theme_share",
             "d3_allowed", "d3_gated_n", "d3_gated_mean_ret", "d3_wf_occurrences",
             "data_flags", "source_report", "git_sha"]
-    with open(REPORTS / "REGIME_SWEEP_2026-06-20.csv", "w", newline="") as f:
+    with open(REPORTS / f"{OUT_BASE}.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
         w.writeheader()
         for r in rows:
@@ -319,7 +329,7 @@ def _write(rows, spy, qqq, num_trials):
                  f"{_p(r.get('win_rate'))} | {_p(r.get('excess_spy'))} | "
                  f"{'YES' if r.get('theme_bet') else '-'} | "
                  f"{r.get('d3_gated_n','-')}/{r.get('d3_wf_occurrences','-')} | {r.get('label','')} |")
-    (REPORTS / "REGIME_SWEEP_2026-06-20.md").write_text("\n".join(L) + "\n")
+    (REPORTS / f"{OUT_BASE}.md").write_text("\n".join(L) + "\n")
 
 
 if __name__ == "__main__":

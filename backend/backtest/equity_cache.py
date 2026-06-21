@@ -112,12 +112,38 @@ def backfill_symbol(symbol: str, period: str = "10y", prefer_marketdata: bool = 
     return _backfill_marketdata(symbol)
 
 
-def _backfill_marketdata(symbol: str) -> bool:
+def backfill_symbol_deep_yf(symbol: str, start_year: int = 2009) -> bool:
+    """0620.3 Phase 5b: deep history via yfinance per-Ticker .history(period=max).
+    The per-Ticker API serves full history (1980s+) reliably; only the bulk yf.download
+    throttles. Filters to >= start_year and overwrites the cache. Falls back to MarketData
+    (5y) on failure."""
+    try:
+        import yfinance as yf
+        df = yf.Ticker(symbol).history(period="max", auto_adjust=True)
+        if df is None or df.empty or len(df) < 260:
+            return _backfill_marketdata(symbol)
+        df = df.rename(columns={"Open": "open", "High": "high", "Low": "low",
+                                "Close": "close", "Volume": "volume"})
+        df = df[df.index.year >= start_year]
+        if len(df) < 260:
+            return _backfill_marketdata(symbol)
+        df.index = df.index.tz_localize(None) if df.index.tz is not None else df.index
+        write_ohlcv(symbol, df)
+        return True
+    except Exception as e:
+        logger.debug(f"deep yf backfill {symbol} failed: {e}")
+        return _backfill_marketdata(symbol)
+
+
+def _backfill_marketdata(symbol: str, start_year: int = 2009) -> bool:
+    # 0620.3 Phase 5b: MarketData serves DEEP equity history (the 5y cap is options-only),
+    # so pull from ~2009 to give the regime sweep multiple regime instances (GFC-recovery,
+    # 2015/2018/2020/2022 stress, 2021/2023-26 bull).
     import asyncio
-    from datetime import date, timedelta
+    from datetime import date
     try:
         from data.marketdata import MarketDataClient
-        start = (date.today() - timedelta(days=365 * 10)).isoformat()
+        start = f"{start_year}-01-01"
         end = date.today().isoformat()
         client = MarketDataClient()
         bars = asyncio.run(client.get_history(symbol, interval="daily",

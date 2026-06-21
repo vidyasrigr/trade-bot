@@ -1,0 +1,2185 @@
+{
+  "windows": {
+    "train": [
+      "2021-07-01",
+      "2024-12-31"
+    ],
+    "wf": [
+      "2020-01-01",
+      "2026-06-18"
+    ]
+  },
+  "spy_wf_cagr": 0.15385894506609765,
+  "qqq_wf_cagr": 0.21684191111270157,
+  "num_trials": 105,
+  "git_sha": "53d1caf",
+  "rows": [
+    {
+      "signal": "momentum_12_1",
+      "data_class": "EQUITY",
+      "train_dsr": 0.0038080392471315653,
+      "wf_dsr": 0.0033682840411291682,
+      "cohort_wf_dd": 0.8653823398644276,
+      "true_account_dd": 0.7636792415590276,
+      "n_train": 4602,
+      "n_wf": 2754,
+      "wf_cagr": -0.13010617487453224,
+      "excess_spy": -0.2839651199406299,
+      "excess_qqq": -0.3469480859872338,
+      "theme_bet": true,
+      "theme_share": 0.458,
+      "d2_regime": {
+        "1": {
+          "n": 330,
+          "mean_ret": 0.005512402886594389
+        },
+        "5": {
+          "n": 90,
+          "mean_ret": 0.04154004265749899
+        },
+        "4": {
+          "n": 84,
+          "mean_ret": 0.012693472669368367
+        },
+        "0": {
+          "n": 1366,
+          "mean_ret": -0.013792873474823227
+        },
+        "2": {
+          "n": 706,
+          "mean_ret": 0.01033018846099182
+        },
+        "3": {
+          "n": 178,
+          "mean_ret": 0.0007632341749552391
+        }
+      },
+      "_d3": {
+        "allowed": [
+          1
+        ],
+        "gated_n": 330,
+        "gated_mean_ret": 0.005512402886594389,
+        "gated_win_rate": 0.5333333333333333,
+        "wf_occurrences": 0,
+        "max_episode_share": null
+      },
+      "d3_allowed": [
+        1
+      ],
+      "d3_gated_n": 330,
+      "d3_gated_mean_ret": 0.005512402886594389,
+      "d3_wf_occurrences": 0,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.4989106753812636,
+      "expectancy": -0.0017386158075629165,
+      "profit_factor": 0.9774979867694845,
+      "avg_hold_days": 26.684095860566448,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "rsi_14",
+      "data_class": "EQUITY",
+      "train_dsr": 0.006453103699839727,
+      "wf_dsr": 0.0019040362946431127,
+      "cohort_wf_dd": 0.3920511366290088,
+      "true_account_dd": 0.34975990949913505,
+      "n_train": 9232,
+      "n_wf": 6700,
+      "wf_cagr": 0.010023789116029524,
+      "excess_spy": -0.14383515595006813,
+      "excess_qqq": -0.20681812199667204,
+      "theme_bet": true,
+      "theme_share": 0.405,
+      "d2_regime": {
+        "1": {
+          "n": 859,
+          "mean_ret": 0.004613674608128638
+        },
+        "5": {
+          "n": 281,
+          "mean_ret": -0.02388201745960032
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": -0.03173384625640776
+        },
+        "0": {
+          "n": 3322,
+          "mean_ret": 0.0028720518317832903
+        },
+        "2": {
+          "n": 1606,
+          "mean_ret": -0.0036845039970400217
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": -0.009221122953372124
+        }
+      },
+      "_d3": {
+        "allowed": [
+          0,
+          1
+        ],
+        "gated_n": 4181,
+        "gated_mean_ret": 0.0032298738755241795,
+        "gated_win_rate": 0.49892370246352546,
+        "wf_occurrences": 2,
+        "max_episode_share": 0.6804123711340206
+      },
+      "d3_allowed": [
+        0,
+        1
+      ],
+      "d3_gated_n": 4181,
+      "d3_gated_mean_ret": 0.0032298738755241795,
+      "d3_wf_occurrences": 2,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.49388059701492537,
+      "expectancy": -0.0013170142935045796,
+      "profit_factor": 0.9725432220763284,
+      "avg_hold_days": 26.421044776119402,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "macd",
+      "data_class": "EQUITY",
+      "train_dsr": 1.2704140421399562e-06,
+      "wf_dsr": 0.02939980922937219,
+      "cohort_wf_dd": 0.514274248111455,
+      "true_account_dd": 0.591210120460212,
+      "n_train": 9238,
+      "n_wf": 6697,
+      "wf_cagr": -0.05219693224977129,
+      "excess_spy": -0.20605587731586894,
+      "excess_qqq": -0.26903884336247286,
+      "theme_bet": false,
+      "theme_share": 0.308,
+      "d2_regime": {
+        "1": {
+          "n": 858,
+          "mean_ret": 0.000672673185096438
+        },
+        "5": {
+          "n": 280,
+          "mean_ret": 0.007072383132407133
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": 0.04501458862619039
+        },
+        "0": {
+          "n": 3321,
+          "mean_ret": 0.010018660733688319
+        },
+        "2": {
+          "n": 1606,
+          "mean_ret": -0.0074930016811849505
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": -0.016683036979968847
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.4924593101388681,
+      "expectancy": 0.0035633783334928617,
+      "profit_factor": 1.0605595358102224,
+      "avg_hold_days": 26.422577273406002,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "stoch",
+      "data_class": "EQUITY",
+      "train_dsr": 0.0014197807066007124,
+      "wf_dsr": 0.010629413455023204,
+      "cohort_wf_dd": 0.4370111355824061,
+      "true_account_dd": 0.4109328717612776,
+      "n_train": 9238,
+      "n_wf": 6692,
+      "wf_cagr": 0.0409899987808966,
+      "excess_spy": -0.11286894628520105,
+      "excess_qqq": -0.17585191233180497,
+      "theme_bet": true,
+      "theme_share": 0.408,
+      "d2_regime": {
+        "1": {
+          "n": 859,
+          "mean_ret": 0.006259121699776773
+        },
+        "5": {
+          "n": 279,
+          "mean_ret": -0.01101916287176386
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": -0.00042802366234297076
+        },
+        "0": {
+          "n": 3320,
+          "mean_ret": 0.002238184064773483
+        },
+        "2": {
+          "n": 1602,
+          "mean_ret": -0.0005141226387905296
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": -0.005290656011630229
+        }
+      },
+      "_d3": {
+        "allowed": [
+          0
+        ],
+        "gated_n": 3320,
+        "gated_mean_ret": 0.002238184064773483,
+        "gated_win_rate": 0.5090361445783133,
+        "wf_occurrences": 2,
+        "max_episode_share": 0.6804123711340206
+      },
+      "d3_allowed": [
+        0
+      ],
+      "d3_gated_n": 3320,
+      "d3_gated_mean_ret": 0.002238184064773483,
+      "d3_wf_occurrences": 2,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.49701135684399284,
+      "expectancy": 0.0009566742216555245,
+      "profit_factor": 1.0204171942491336,
+      "avg_hold_days": 26.422295277943814,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "roc_63",
+      "data_class": "EQUITY",
+      "train_dsr": 0.002621939383470762,
+      "wf_dsr": 0.003948192230053635,
+      "cohort_wf_dd": 0.7475374927101958,
+      "true_account_dd": 0.7356468525534481,
+      "n_train": 9232,
+      "n_wf": 6699,
+      "wf_cagr": -0.09942329297662977,
+      "excess_spy": -0.2532822380427274,
+      "excess_qqq": -0.31626520408933134,
+      "theme_bet": true,
+      "theme_share": 0.401,
+      "d2_regime": {
+        "1": {
+          "n": 857,
+          "mean_ret": -0.0009969715936007557
+        },
+        "5": {
+          "n": 280,
+          "mean_ret": 0.04093632826165585
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": 0.02176549859130602
+        },
+        "0": {
+          "n": 3324,
+          "mean_ret": -0.014370022634725012
+        },
+        "2": {
+          "n": 1606,
+          "mean_ret": 0.018213344888455683
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": -0.0016705881314917623
+        }
+      },
+      "_d3": {
+        "allowed": [
+          5,
+          1
+        ],
+        "gated_n": 1137,
+        "gated_mean_ret": 0.009329610604703423,
+        "gated_win_rate": 0.49340369393139843,
+        "wf_occurrences": 0,
+        "max_episode_share": null
+      },
+      "d3_allowed": [
+        5,
+        1
+      ],
+      "d3_gated_n": 1137,
+      "d3_gated_mean_ret": 0.009329610604703423,
+      "d3_wf_occurrences": 0,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.4975369458128079,
+      "expectancy": -0.0007362831575160318,
+      "profit_factor": 0.9878380165316037,
+      "avg_hold_days": 26.420361247947454,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "ema_align",
+      "data_class": "EQUITY",
+      "train_dsr": 4.814309880148013e-05,
+      "wf_dsr": 6.225203715548997e-05,
+      "cohort_wf_dd": 0.60768062563484,
+      "true_account_dd": 0.5617580539815177,
+      "n_train": 9142,
+      "n_wf": 6594,
+      "wf_cagr": -0.08811862722015407,
+      "excess_spy": -0.24197757228625172,
+      "excess_qqq": -0.30496053833285564,
+      "theme_bet": true,
+      "theme_share": 0.424,
+      "d2_regime": {
+        "1": {
+          "n": 854,
+          "mean_ret": -0.0025643946479188516
+        },
+        "5": {
+          "n": 275,
+          "mean_ret": 0.02109814805270584
+        },
+        "4": {
+          "n": 168,
+          "mean_ret": 0.01781477000679231
+        },
+        "0": {
+          "n": 3277,
+          "mean_ret": -0.01093832445264242
+        },
+        "2": {
+          "n": 1580,
+          "mean_ret": -0.0016147666540389715
+        },
+        "3": {
+          "n": 440,
+          "mean_ret": 0.0015602837422342536
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.4960570215347285,
+      "expectancy": -0.004717139316317136,
+      "profit_factor": 0.9051319843094602,
+      "avg_hold_days": 26.424021838034577,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "slope",
+      "data_class": "EQUITY",
+      "train_dsr": 0.0032141626157033355,
+      "wf_dsr": 0.0019299410984521081,
+      "cohort_wf_dd": 0.7432837460090632,
+      "true_account_dd": 0.7366775159015243,
+      "n_train": 9234,
+      "n_wf": 6697,
+      "wf_cagr": -0.11182976088954999,
+      "excess_spy": -0.26568870595564764,
+      "excess_qqq": -0.32867167200225156,
+      "theme_bet": false,
+      "theme_share": 0.397,
+      "d2_regime": {
+        "1": {
+          "n": 858,
+          "mean_ret": 0.0022488789487502283
+        },
+        "5": {
+          "n": 280,
+          "mean_ret": 0.030363727379891823
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": 0.006467918819483984
+        },
+        "0": {
+          "n": 3322,
+          "mean_ret": -0.015514251655518885
+        },
+        "2": {
+          "n": 1605,
+          "mean_ret": 0.016779291418561132
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": 0.00046420286980653695
+        }
+      },
+      "_d3": {
+        "allowed": [
+          5,
+          1
+        ],
+        "gated_n": 1138,
+        "gated_mean_ret": 0.009166416348328123,
+        "gated_win_rate": 0.4973637961335677,
+        "wf_occurrences": 0,
+        "max_episode_share": null
+      },
+      "d3_allowed": [
+        5,
+        1
+      ],
+      "d3_gated_n": 1138,
+      "d3_gated_mean_ret": 0.009166416348328123,
+      "d3_wf_occurrences": 0,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.49469911900851127,
+      "expectancy": -0.001918797089948256,
+      "profit_factor": 0.9683884303176246,
+      "avg_hold_days": 26.42063610571898,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "adx_dir",
+      "data_class": "EQUITY",
+      "train_dsr": 2.5709311254589303e-05,
+      "wf_dsr": 0.0077956687555817,
+      "cohort_wf_dd": 0.5288127305098248,
+      "true_account_dd": 0.6396816510836866,
+      "n_train": 9238,
+      "n_wf": 6700,
+      "wf_cagr": -0.05900697175859837,
+      "excess_spy": -0.21286591682469602,
+      "excess_qqq": -0.27584888287129994,
+      "theme_bet": false,
+      "theme_share": 0.296,
+      "d2_regime": {
+        "1": {
+          "n": 859,
+          "mean_ret": -0.0063757452563079344
+        },
+        "5": {
+          "n": 281,
+          "mean_ret": 0.02254463685966947
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": 0.03615426368686001
+        },
+        "0": {
+          "n": 3323,
+          "mean_ret": -0.003479915704495104
+        },
+        "2": {
+          "n": 1605,
+          "mean_ret": 0.0034486721038423747
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": 0.006135080031042862
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3,
+          2
+        ],
+        "gated_n": 2065,
+        "gated_mean_ret": 0.004047097114259919,
+        "gated_win_rate": 0.5012106537530266,
+        "wf_occurrences": 3,
+        "max_episode_share": 0.4236111111111111
+      },
+      "d3_allowed": [
+        3,
+        2
+      ],
+      "d3_gated_n": 2065,
+      "d3_gated_mean_ret": 0.004047097114259919,
+      "d3_wf_occurrences": 3,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.49716417910447763,
+      "expectancy": 0.0005776577300668693,
+      "profit_factor": 1.0123379564933992,
+      "avg_hold_days": 26.421044776119402,
+      "label": "REGIME_SUSPECT"
+    },
+    {
+      "signal": "bb_width",
+      "data_class": "EQUITY",
+      "train_dsr": 1.226104095578158e-06,
+      "wf_dsr": 1.836825174063767e-08,
+      "cohort_wf_dd": 0.9788751557670219,
+      "true_account_dd": 0.9422863848157347,
+      "n_train": 9238,
+      "n_wf": 6693,
+      "wf_cagr": -0.28961961893726684,
+      "excess_spy": -0.4434785640033645,
+      "excess_qqq": -0.5064615300499684,
+      "theme_bet": true,
+      "theme_share": 0.72,
+      "d2_regime": {
+        "1": {
+          "n": 860,
+          "mean_ret": -0.017047580054207645
+        },
+        "5": {
+          "n": 280,
+          "mean_ret": -0.014799468658103233
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": -0.007287892396669321
+        },
+        "0": {
+          "n": 3317,
+          "mean_ret": -0.024803878711616073
+        },
+        "2": {
+          "n": 1604,
+          "mean_ret": -0.03325264520848674
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": 0.026301346919511855
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.4988794262662483,
+      "expectancy": -0.02145097513536268,
+      "profit_factor": 0.6860798389967705,
+      "avg_hold_days": 26.422232182877632,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "atr_pct",
+      "data_class": "EQUITY",
+      "train_dsr": 1.3133888745318536e-06,
+      "wf_dsr": 1.2626510487987265e-08,
+      "cohort_wf_dd": 0.9894515151187782,
+      "true_account_dd": 0.9644162342700856,
+      "n_train": 9238,
+      "n_wf": 6692,
+      "wf_cagr": -0.34297150414891,
+      "excess_spy": -0.49683044921500763,
+      "excess_qqq": -0.5598134152616115,
+      "theme_bet": true,
+      "theme_share": 0.818,
+      "d2_regime": {
+        "1": {
+          "n": 860,
+          "mean_ret": -0.021391995550933483
+        },
+        "5": {
+          "n": 280,
+          "mean_ret": -0.022746010103380135
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": -0.006658546277417016
+        },
+        "0": {
+          "n": 3316,
+          "mean_ret": -0.024976351763514065
+        },
+        "2": {
+          "n": 1604,
+          "mean_ret": -0.044542482901615284
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": 0.03083901531900218
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3
+        ],
+        "gated_n": 460,
+        "gated_mean_ret": 0.03083901531900218,
+        "gated_win_rate": 0.6739130434782609,
+        "wf_occurrences": 0,
+        "max_episode_share": null
+      },
+      "d3_allowed": [
+        3
+      ],
+      "d3_gated_n": 460,
+      "d3_gated_mean_ret": 0.03083901531900218,
+      "d3_wf_occurrences": 0,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5046323968918112,
+      "expectancy": -0.024804699183760836,
+      "profit_factor": 0.6552143689903291,
+      "avg_hold_days": 26.422145845786012,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "rvol",
+      "data_class": "EQUITY",
+      "train_dsr": 4.853812810304738e-06,
+      "wf_dsr": 1.0017225105604076e-08,
+      "cohort_wf_dd": 0.989592069161921,
+      "true_account_dd": 0.9635468711359876,
+      "n_train": 9238,
+      "n_wf": 6695,
+      "wf_cagr": -0.33849134038862805,
+      "excess_spy": -0.4923502854547257,
+      "excess_qqq": -0.5553332515013296,
+      "theme_bet": true,
+      "theme_share": 0.752,
+      "d2_regime": {
+        "1": {
+          "n": 860,
+          "mean_ret": -0.020616547240275916
+        },
+        "5": {
+          "n": 280,
+          "mean_ret": -0.01884562529515693
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": -0.018171367357147715
+        },
+        "0": {
+          "n": 3319,
+          "mean_ret": -0.024344021844768672
+        },
+        "2": {
+          "n": 1604,
+          "mean_ret": -0.045733504744867266
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": 0.02970724840724238
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3
+        ],
+        "gated_n": 460,
+        "gated_mean_ret": 0.02970724840724238,
+        "gated_win_rate": 0.6760869565217391,
+        "wf_occurrences": 0,
+        "max_episode_share": null
+      },
+      "d3_allowed": [
+        3
+      ],
+      "d3_gated_n": 460,
+      "d3_gated_mean_ret": 0.02970724840724238,
+      "d3_wf_occurrences": 0,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5035100821508588,
+      "expectancy": -0.024887452836584535,
+      "profit_factor": 0.6506865373465333,
+      "avg_hold_days": 26.42150858849888,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "support_res",
+      "data_class": "EQUITY",
+      "train_dsr": 0.0004848050687896712,
+      "wf_dsr": 0.0015713181053250561,
+      "cohort_wf_dd": 0.7258256070711152,
+      "true_account_dd": 0.7109192142239817,
+      "n_train": 9238,
+      "n_wf": 6700,
+      "wf_cagr": -0.0697694755299817,
+      "excess_spy": -0.22362842059607935,
+      "excess_qqq": -0.28661138664268326,
+      "theme_bet": true,
+      "theme_share": 0.485,
+      "d2_regime": {
+        "1": {
+          "n": 859,
+          "mean_ret": -0.0003018494914808416
+        },
+        "5": {
+          "n": 281,
+          "mean_ret": 0.02652925000598284
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": 0.008269141904574645
+        },
+        "0": {
+          "n": 3320,
+          "mean_ret": -0.009359870367377723
+        },
+        "2": {
+          "n": 1608,
+          "mean_ret": 0.00036776548534199103
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": 0.01678623062301925
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5207462686567165,
+      "expectancy": -0.0021110468188939233,
+      "profit_factor": 0.9582391504825528,
+      "avg_hold_days": 26.421194029850746,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "trend",
+      "data_class": "EQUITY",
+      "train_dsr": 0.0033194591550126966,
+      "wf_dsr": 0.004402992666459691,
+      "cohort_wf_dd": 0.6901755930368836,
+      "true_account_dd": 0.7408963674274656,
+      "n_train": 9142,
+      "n_wf": 6599,
+      "wf_cagr": -0.08596777363162,
+      "excess_spy": -0.23982671869771766,
+      "excess_qqq": -0.30280968474432157,
+      "theme_bet": false,
+      "theme_share": 0.372,
+      "d2_regime": {
+        "1": {
+          "n": 852,
+          "mean_ret": 0.0021033175132997603
+        },
+        "5": {
+          "n": 276,
+          "mean_ret": 0.042943186455080176
+        },
+        "4": {
+          "n": 168,
+          "mean_ret": 0.023395016900392623
+        },
+        "0": {
+          "n": 3280,
+          "mean_ret": -0.01345185114635635
+        },
+        "2": {
+          "n": 1583,
+          "mean_ret": 0.01530987755002664
+        },
+        "3": {
+          "n": 440,
+          "mean_ret": 0.0006168064397253199
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5014396120624337,
+      "expectancy": -0.0003092032039215075,
+      "profit_factor": 0.9944453380231124,
+      "avg_hold_days": 26.42203364146083,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "risk",
+      "data_class": "EQUITY",
+      "train_dsr": 1.5519950901963735e-06,
+      "wf_dsr": 8.084688477712043e-09,
+      "cohort_wf_dd": 0.9900614932084023,
+      "true_account_dd": 0.964422919632104,
+      "n_train": 9238,
+      "n_wf": 6692,
+      "wf_cagr": -0.33754025413919897,
+      "excess_spy": -0.4913991992052966,
+      "excess_qqq": -0.5543821652519005,
+      "theme_bet": true,
+      "theme_share": 0.755,
+      "d2_regime": {
+        "1": {
+          "n": 860,
+          "mean_ret": -0.02224009387871704
+        },
+        "5": {
+          "n": 280,
+          "mean_ret": -0.020759555644220457
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": -0.006306374867271925
+        },
+        "0": {
+          "n": 3316,
+          "mean_ret": -0.025568581404532956
+        },
+        "2": {
+          "n": 1604,
+          "mean_ret": -0.04437213740477783
+        },
+        "3": {
+          "n": 460,
+          "mean_ret": 0.02918020843745854
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.4967124925283921,
+      "expectancy": -0.02518817711397387,
+      "profit_factor": 0.6496600367584898,
+      "avg_hold_days": 26.422295277943814,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "beat_and_raise_pead",
+      "data_class": "FMP",
+      "train_dsr": 0.3380932712124967,
+      "wf_dsr": 0.11935622287528747,
+      "cohort_wf_dd": 0.7997069157758623,
+      "true_account_dd": 0.4595078081699109,
+      "n_train": 4334,
+      "n_wf": 3715,
+      "wf_cagr": 0.030722782352049505,
+      "excess_spy": -0.12313616271404815,
+      "excess_qqq": -0.18611912876065206,
+      "theme_bet": true,
+      "theme_share": 0.447,
+      "d2_regime": {
+        "2": {
+          "n": 1186,
+          "mean_ret": 0.0005902960269612268
+        },
+        "0": {
+          "n": 1768,
+          "mean_ret": 0.011646784555330067
+        },
+        "1": {
+          "n": 238,
+          "mean_ret": 0.0050003093720056005
+        },
+        "3": {
+          "n": 215,
+          "mean_ret": 0.0016113591585700192
+        },
+        "4": {
+          "n": 126,
+          "mean_ret": 0.023350898304152698
+        },
+        "5": {
+          "n": 182,
+          "mean_ret": 0.011955209386725825
+        }
+      },
+      "_d3": {
+        "allowed": [
+          1,
+          0
+        ],
+        "gated_n": 2006,
+        "gated_mean_ret": 0.010858219703071232,
+        "gated_win_rate": 0.5588235294117647,
+        "wf_occurrences": 2,
+        "max_episode_share": 0.6804123711340206
+      },
+      "d3_allowed": [
+        1,
+        0
+      ],
+      "d3_gated_n": 2006,
+      "d3_gated_mean_ret": 0.010858219703071232,
+      "d3_wf_occurrences": 2,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5407806191117093,
+      "expectancy": 0.007522525794384065,
+      "profit_factor": 1.2644056760418991,
+      "avg_hold_days": 12.807267833109018,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "insider_cluster",
+      "data_class": "FMP",
+      "train_dsr": null,
+      "wf_dsr": 0.01676882808316841,
+      "cohort_wf_dd": 0.5030565295209862,
+      "true_account_dd": 0.465557720213422,
+      "n_train": 0,
+      "n_wf": 14,
+      "wf_cagr": -0.2385934822364678,
+      "excess_spy": -0.39245242730256547,
+      "excess_qqq": -0.4554353933491694,
+      "theme_bet": true,
+      "theme_share": 0.565,
+      "d2_regime": {
+        "0": {
+          "n": 3,
+          "mean_ret": 0.017045827774959037
+        },
+        "2": {
+          "n": 9,
+          "mean_ret": 0.006573521656880275
+        },
+        "1": {
+          "n": 2,
+          "mean_ret": 0.09695428750754348
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.35714285714285715,
+      "expectancy": 0.02172912523227761,
+      "profit_factor": 1.3726843617315612,
+      "avg_hold_days": 73.92857142857143,
+      "label": "SMALL_N"
+    },
+    {
+      "signal": "short_squeeze_bearish",
+      "data_class": "SI",
+      "train_dsr": null,
+      "wf_dsr": 0.044337166522863646,
+      "cohort_wf_dd": 0.306577731809358,
+      "true_account_dd": 0.29033726122840364,
+      "n_train": 0,
+      "n_wf": 8292,
+      "wf_cagr": 0.010716138501803973,
+      "excess_spy": -0.14314280656429368,
+      "excess_qqq": -0.2061257726108976,
+      "theme_bet": true,
+      "theme_share": 0.421,
+      "d2_regime": {
+        "2": {
+          "n": 2005,
+          "mean_ret": 0.01840318680625731
+        },
+        "3": {
+          "n": 665,
+          "mean_ret": -0.0014511706809913086
+        },
+        "0": {
+          "n": 4179,
+          "mean_ret": -0.004084132088860227
+        },
+        "5": {
+          "n": 290,
+          "mean_ret": 0.018610926687108276
+        },
+        "1": {
+          "n": 1153,
+          "mean_ret": -0.0028391277559456007
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5090448625180898,
+      "expectancy": 0.0025312864786536326,
+      "profit_factor": 1.0514612135983867,
+      "avg_hold_days": 25.58357452966715,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "squeeze_candidate",
+      "data_class": "SI",
+      "train_dsr": null,
+      "wf_dsr": 9.770878257517072e-05,
+      "cohort_wf_dd": 0.6776513961618235,
+      "true_account_dd": 0.6541196245096887,
+      "n_train": 0,
+      "n_wf": 2286,
+      "wf_cagr": -0.19130484692811822,
+      "excess_spy": -0.3451637919942159,
+      "excess_qqq": -0.4081467580408198,
+      "theme_bet": true,
+      "theme_share": 0.445,
+      "d2_regime": {
+        "2": {
+          "n": 511,
+          "mean_ret": 0.0007843506795296594
+        },
+        "3": {
+          "n": 218,
+          "mean_ret": 0.007107489802785754
+        },
+        "0": {
+          "n": 1176,
+          "mean_ret": -0.014026246394384588
+        },
+        "5": {
+          "n": 94,
+          "mean_ret": 0.008127216816029268
+        },
+        "1": {
+          "n": 287,
+          "mean_ret": -0.0053696365795534865
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5043744531933508,
+      "expectancy": -0.006702430928772715,
+      "profit_factor": 0.8863594924878105,
+      "avg_hold_days": 25.483377077865267,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "residual_momentum",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.0468102551139352,
+      "wf_dsr": 0.11026877666475338,
+      "cohort_wf_dd": 0.3963163669824012,
+      "true_account_dd": 0.4538837300415154,
+      "n_train": 8660,
+      "n_wf": 6390,
+      "wf_cagr": 0.07157542186709498,
+      "excess_spy": -0.08228352319900267,
+      "excess_qqq": -0.1452664892456066,
+      "theme_bet": true,
+      "theme_share": 0.424,
+      "d2_regime": {
+        "1": {
+          "n": 819,
+          "mean_ret": 0.013052763810501808
+        },
+        "5": {
+          "n": 266,
+          "mean_ret": 0.017101932328789184
+        },
+        "4": {
+          "n": 160,
+          "mean_ret": 0.027067746985590772
+        },
+        "0": {
+          "n": 3163,
+          "mean_ret": 0.0017944483681877207
+        },
+        "2": {
+          "n": 1546,
+          "mean_ret": 0.016218861342122533
+        },
+        "3": {
+          "n": 436,
+          "mean_ret": 0.004215136961267009
+        }
+      },
+      "_d3": {
+        "allowed": [
+          0,
+          1
+        ],
+        "gated_n": 3982,
+        "gated_mean_ret": 0.004110008475484365,
+        "gated_win_rate": 0.5100452034153692,
+        "wf_occurrences": 2,
+        "max_episode_share": 0.6804123711340206
+      },
+      "d3_allowed": [
+        0,
+        1
+      ],
+      "d3_gated_n": 3982,
+      "d3_gated_mean_ret": 0.004110008475484365,
+      "d3_wf_occurrences": 2,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5111111111111111,
+      "expectancy": 0.008162467389133806,
+      "profit_factor": 1.157883864190403,
+      "avg_hold_days": 26.433489827856025,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "high_52w_proximity",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 1.4081056663857113e-05,
+      "wf_dsr": 0.00021779486963962482,
+      "cohort_wf_dd": 0.7434404430976644,
+      "true_account_dd": 0.7942038212145612,
+      "n_train": 8732,
+      "n_wf": 6378,
+      "wf_cagr": -0.1633871687913241,
+      "excess_spy": -0.31724611385742174,
+      "excess_qqq": -0.38022907990402566,
+      "theme_bet": true,
+      "theme_share": 0.493,
+      "d2_regime": {
+        "1": {
+          "n": 818,
+          "mean_ret": -0.004153478576763909
+        },
+        "5": {
+          "n": 265,
+          "mean_ret": 0.03103700715849006
+        },
+        "4": {
+          "n": 160,
+          "mean_ret": 0.005986128781506959
+        },
+        "0": {
+          "n": 3158,
+          "mean_ret": -0.00977544713479173
+        },
+        "2": {
+          "n": 1541,
+          "mean_ret": -0.01174807902827911
+        },
+        "3": {
+          "n": 436,
+          "mean_ret": 0.01762690049032017
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5186578864847915,
+      "expectancy": -0.005566679397024567,
+      "profit_factor": 0.8966280100418971,
+      "avg_hold_days": 26.43524615867043,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "time_series_momentum",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.00890006024699352,
+      "wf_dsr": 0.018390673724812852,
+      "cohort_wf_dd": 0.5949864431636772,
+      "true_account_dd": 0.5792506498765532,
+      "n_train": 9034,
+      "n_wf": 6567,
+      "wf_cagr": 0.013003150902059613,
+      "excess_spy": -0.14085579416403804,
+      "excess_qqq": -0.20383876021064196,
+      "theme_bet": false,
+      "theme_share": 0.358,
+      "d2_regime": {
+        "1": {
+          "n": 854,
+          "mean_ret": 0.007720881317944773
+        },
+        "5": {
+          "n": 276,
+          "mean_ret": 0.020103166877945947
+        },
+        "4": {
+          "n": 168,
+          "mean_ret": 0.023050766807258934
+        },
+        "0": {
+          "n": 3258,
+          "mean_ret": -0.004401864304178103
+        },
+        "2": {
+          "n": 1571,
+          "mean_ret": 0.00866457070676875
+        },
+        "3": {
+          "n": 440,
+          "mean_ret": 0.0055221459903101785
+        }
+      },
+      "_d3": {
+        "allowed": [
+          1
+        ],
+        "gated_n": 854,
+        "gated_mean_ret": 0.007720881317944773,
+        "gated_win_rate": 0.5245901639344263,
+        "wf_occurrences": 0,
+        "max_episode_share": null
+      },
+      "d3_allowed": [
+        1
+      ],
+      "d3_gated_n": 854,
+      "d3_gated_mean_ret": 0.007720881317944773,
+      "d3_wf_occurrences": 0,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5149992386173291,
+      "expectancy": 0.002697601102560581,
+      "profit_factor": 1.054591224435336,
+      "avg_hold_days": 26.421044617024517,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "short_term_reversal",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.07554116077991967,
+      "wf_dsr": 0.00014901035129738632,
+      "cohort_wf_dd": 0.6720066102737751,
+      "true_account_dd": 0.36465924102184155,
+      "n_train": 8858,
+      "n_wf": 6501,
+      "wf_cagr": -0.018859469278640018,
+      "excess_spy": -0.17271841434473767,
+      "excess_qqq": -0.2357013803913416,
+      "theme_bet": true,
+      "theme_share": 0.542,
+      "d2_regime": {
+        "1": {
+          "n": 825,
+          "mean_ret": -0.011813157591563128
+        },
+        "5": {
+          "n": 270,
+          "mean_ret": -0.028454894901163295
+        },
+        "4": {
+          "n": 164,
+          "mean_ret": -0.02729953180527063
+        },
+        "0": {
+          "n": 3211,
+          "mean_ret": -0.00019816734846502806
+        },
+        "2": {
+          "n": 1577,
+          "mean_ret": -0.011212790440274532
+        },
+        "3": {
+          "n": 454,
+          "mean_ret": 0.008227325968284236
+        }
+      },
+      "_d3": {
+        "allowed": [
+          0,
+          1
+        ],
+        "gated_n": 4036,
+        "gated_mean_ret": -0.0025723910725869155,
+        "gated_win_rate": 0.5014866204162537,
+        "wf_occurrences": 2,
+        "max_episode_share": 0.6804123711340206
+      },
+      "d3_allowed": [
+        0,
+        1
+      ],
+      "d3_gated_n": 4036,
+      "d3_gated_mean_ret": -0.0025723910725869155,
+      "d3_wf_occurrences": 2,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.49546223657898786,
+      "expectancy": -0.00561290259084005,
+      "profit_factor": 0.9022789697368239,
+      "avg_hold_days": 26.43547146592832,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "long_term_reversal",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.00027169145444911306,
+      "wf_dsr": 0.08505398710199297,
+      "cohort_wf_dd": 0.3007942296862076,
+      "true_account_dd": 0.36763205629889906,
+      "n_train": 6832,
+      "n_wf": 6085,
+      "wf_cagr": 0.0989892411199984,
+      "excess_spy": -0.054869703946099246,
+      "excess_qqq": -0.11785266999270316,
+      "theme_bet": false,
+      "theme_share": 0.371,
+      "d2_regime": {
+        "1": {
+          "n": 766,
+          "mean_ret": 0.00024503755608629277
+        },
+        "5": {
+          "n": 254,
+          "mean_ret": -0.004461714509858024
+        },
+        "4": {
+          "n": 156,
+          "mean_ret": -0.03560843890008558
+        },
+        "0": {
+          "n": 3009,
+          "mean_ret": 0.010636101706973312
+        },
+        "2": {
+          "n": 1486,
+          "mean_ret": 0.010709570500765339
+        },
+        "3": {
+          "n": 414,
+          "mean_ret": -0.022029061421962155
+        }
+      },
+      "_d3": {
+        "allowed": [
+          2
+        ],
+        "gated_n": 1486,
+        "gated_mean_ret": 0.010709570500765339,
+        "gated_win_rate": 0.5376850605652759,
+        "wf_occurrences": 3,
+        "max_episode_share": 0.4236111111111111
+      },
+      "d3_allowed": [
+        2
+      ],
+      "d3_gated_n": 1486,
+      "d3_gated_mean_ret": 0.010709570500765339,
+      "d3_wf_occurrences": 3,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5032046014790469,
+      "expectancy": 0.005307794114342228,
+      "profit_factor": 1.1066353529388453,
+      "avg_hold_days": 26.433360723089564,
+      "label": "REGIME_SUSPECT"
+    },
+    {
+      "signal": "idiosyncratic_vol",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 5.355842558425955e-07,
+      "wf_dsr": 3.270582751089991e-09,
+      "cohort_wf_dd": 0.9889885545683297,
+      "true_account_dd": 0.9603800562465961,
+      "n_train": 9142,
+      "n_wf": 6590,
+      "wf_cagr": -0.35225870846930796,
+      "excess_spy": -0.5061176535354056,
+      "excess_qqq": -0.5691006195820095,
+      "theme_bet": true,
+      "theme_share": 0.76,
+      "d2_regime": {
+        "1": {
+          "n": 854,
+          "mean_ret": -0.021070619272019336
+        },
+        "5": {
+          "n": 275,
+          "mean_ret": -0.024944418039309645
+        },
+        "4": {
+          "n": 168,
+          "mean_ret": -0.03577802570488281
+        },
+        "0": {
+          "n": 3274,
+          "mean_ret": -0.024888518704653046
+        },
+        "2": {
+          "n": 1579,
+          "mean_ret": -0.04173789169667033
+        },
+        "3": {
+          "n": 440,
+          "mean_ret": 0.022182098027195302
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.511836115326252,
+      "expectancy": -0.025568095634847587,
+      "profit_factor": 0.6479589820177065,
+      "avg_hold_days": 26.423368740515933,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "max_lottery_avoid",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 2.27909491178612e-05,
+      "wf_dsr": 1.1046107900603567e-07,
+      "cohort_wf_dd": 0.9455261387449658,
+      "true_account_dd": 0.8832237070792723,
+      "n_train": 8858,
+      "n_wf": 6498,
+      "wf_cagr": -0.2407891870754909,
+      "excess_spy": -0.39464813214158856,
+      "excess_qqq": -0.4576310981881925,
+      "theme_bet": true,
+      "theme_share": 0.735,
+      "d2_regime": {
+        "1": {
+          "n": 826,
+          "mean_ret": -0.012261252451701647
+        },
+        "5": {
+          "n": 270,
+          "mean_ret": -0.011809709088130383
+        },
+        "4": {
+          "n": 164,
+          "mean_ret": 0.0037778463673163163
+        },
+        "0": {
+          "n": 3208,
+          "mean_ret": -0.01566154182583893
+        },
+        "2": {
+          "n": 1576,
+          "mean_ret": -0.03643617638384784
+        },
+        "3": {
+          "n": 454,
+          "mean_ret": 0.026083390742093964
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5021545090797168,
+      "expectancy": -0.016700620180976563,
+      "profit_factor": 0.7219108676961086,
+      "avg_hold_days": 26.435364727608494,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "vol_contraction_breakout",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 8.053251859832385e-06,
+      "wf_dsr": 4.488878296694675e-06,
+      "cohort_wf_dd": 0.651032701283024,
+      "true_account_dd": 0.559994761808233,
+      "n_train": 9222,
+      "n_wf": 6678,
+      "wf_cagr": -0.10169207243665435,
+      "excess_spy": -0.255551017502752,
+      "excess_qqq": -0.3185339835493559,
+      "theme_bet": true,
+      "theme_share": 0.409,
+      "d2_regime": {
+        "1": {
+          "n": 856,
+          "mean_ret": -0.0016494593552999598
+        },
+        "5": {
+          "n": 279,
+          "mean_ret": -0.012140475095983181
+        },
+        "4": {
+          "n": 172,
+          "mean_ret": -0.010203461235878494
+        },
+        "0": {
+          "n": 3315,
+          "mean_ret": -0.005061277531180859
+        },
+        "2": {
+          "n": 1598,
+          "mean_ret": -0.011151503698784985
+        },
+        "3": {
+          "n": 458,
+          "mean_ret": -0.00035100225879026195
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.4773884396525906,
+      "expectancy": -0.006186451340751132,
+      "profit_factor": 0.879847621768368,
+      "avg_hold_days": 26.423330338424677,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "betting_against_beta",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 1.1823652345987206e-06,
+      "wf_dsr": 8.593526355355504e-09,
+      "cohort_wf_dd": 0.9887511620021108,
+      "true_account_dd": 0.9636200205161273,
+      "n_train": 9034,
+      "n_wf": 6556,
+      "wf_cagr": -0.35594850862031346,
+      "excess_spy": -0.5098074536864111,
+      "excess_qqq": -0.572790419733015,
+      "theme_bet": true,
+      "theme_share": 0.725,
+      "d2_regime": {
+        "1": {
+          "n": 854,
+          "mean_ret": -0.02252737289038834
+        },
+        "5": {
+          "n": 275,
+          "mean_ret": -0.02462761593762514
+        },
+        "4": {
+          "n": 168,
+          "mean_ret": -0.023966267492587116
+        },
+        "0": {
+          "n": 3252,
+          "mean_ret": -0.0237284006098632
+        },
+        "2": {
+          "n": 1567,
+          "mean_ret": -0.04313477875096338
+        },
+        "3": {
+          "n": 440,
+          "mean_ret": 0.026455922595137717
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.4865771812080537,
+      "expectancy": -0.02488615846768873,
+      "profit_factor": 0.6451085869071,
+      "avg_hold_days": 26.4222086638194,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "volume_confirmed_momentum",
+      "data_class": "RESEARCH:EQUITY",
+      "train_dsr": 0.003412196921379432,
+      "wf_dsr": 0.019823948735652096,
+      "cohort_wf_dd": 0.41151636850186996,
+      "true_account_dd": 0.4930843445795857,
+      "n_train": 8798,
+      "n_wf": 6454,
+      "wf_cagr": -0.020206237285656736,
+      "excess_spy": -0.1740651823517544,
+      "excess_qqq": -0.2370481483983583,
+      "theme_bet": false,
+      "theme_share": 0.361,
+      "d2_regime": {
+        "1": {
+          "n": 821,
+          "mean_ret": -0.0002734862268949197
+        },
+        "5": {
+          "n": 268,
+          "mean_ret": 0.021143752752006157
+        },
+        "4": {
+          "n": 162,
+          "mean_ret": 0.022170200845337492
+        },
+        "0": {
+          "n": 3193,
+          "mean_ret": 0.004563116255755932
+        },
+        "2": {
+          "n": 1572,
+          "mean_ret": -0.004893351400247897
+        },
+        "3": {
+          "n": 438,
+          "mean_ret": 0.0025481232725961984
+        }
+      },
+      "_d3": {
+        "allowed": [
+          1
+        ],
+        "gated_n": 821,
+        "gated_mean_ret": -0.0002734862268949197,
+        "gated_win_rate": 0.5079171741778319,
+        "wf_occurrences": 0,
+        "max_episode_share": null
+      },
+      "d3_allowed": [
+        1
+      ],
+      "d3_gated_n": 821,
+      "d3_gated_mean_ret": -0.0002734862268949197,
+      "d3_wf_occurrences": 0,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.500464828013635,
+      "expectancy": 0.0026382593552893925,
+      "profit_factor": 1.0485045482010258,
+      "avg_hold_days": 26.43368453672141,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "revenue_surprise_drift",
+      "data_class": "RESEARCH:FMP_EARNINGS",
+      "train_dsr": 0.03305102773952934,
+      "wf_dsr": 0.0004037973090465849,
+      "cohort_wf_dd": 0.5691574195273249,
+      "true_account_dd": 0.43004643236419615,
+      "n_train": 6001,
+      "n_wf": 4499,
+      "wf_cagr": -0.0373405523098671,
+      "excess_spy": -0.19119949737596476,
+      "excess_qqq": -0.25418246342256867,
+      "theme_bet": false,
+      "theme_share": 0.392,
+      "d2_regime": {
+        "1": {
+          "n": 576,
+          "mean_ret": -0.011940178434019384
+        },
+        "5": {
+          "n": 190,
+          "mean_ret": -0.024645040041639605
+        },
+        "4": {
+          "n": 114,
+          "mean_ret": 0.004401006146504228
+        },
+        "0": {
+          "n": 2178,
+          "mean_ret": -0.002359426836808654
+        },
+        "2": {
+          "n": 1157,
+          "mean_ret": -0.0041675302745203145
+        },
+        "3": {
+          "n": 284,
+          "mean_ret": 0.020064205494826584
+        }
+      },
+      "_d3": {
+        "allowed": [
+          1
+        ],
+        "gated_n": 576,
+        "gated_mean_ret": -0.011940178434019384,
+        "gated_win_rate": 0.5052083333333334,
+        "wf_occurrences": 0,
+        "max_episode_share": null
+      },
+      "d3_allowed": [
+        1
+      ],
+      "d3_gated_n": 576,
+      "d3_gated_mean_ret": -0.011940178434019384,
+      "d3_wf_occurrences": 0,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5107801733718604,
+      "expectancy": -0.0034053824189517012,
+      "profit_factor": 0.9394760769725763,
+      "avg_hold_days": 26.453211824849966,
+      "label": "NO_EDGE"
+    },
+    {
+      "signal": "earnings_announcement_premium",
+      "data_class": "RESEARCH:FMP_EARNINGS",
+      "train_dsr": 0.9788673039190824,
+      "wf_dsr": 0.6652631801746105,
+      "cohort_wf_dd": 0.20994065305589876,
+      "true_account_dd": 0.30260590981928226,
+      "n_train": 7674,
+      "n_wf": 4943,
+      "wf_cagr": 0.300641455234387,
+      "excess_spy": 0.14678251016828936,
+      "excess_qqq": 0.08379954412168544,
+      "theme_bet": true,
+      "theme_share": 0.409,
+      "d2_regime": {
+        "1": {
+          "n": 582,
+          "mean_ret": 0.011068948005508427
+        },
+        "5": {
+          "n": 237,
+          "mean_ret": -0.039027125492826935
+        },
+        "4": {
+          "n": 179,
+          "mean_ret": 0.07894835940191618
+        },
+        "0": {
+          "n": 2502,
+          "mean_ret": 0.03861311175279215
+        },
+        "2": {
+          "n": 1037,
+          "mean_ret": 0.054776101107260465
+        },
+        "3": {
+          "n": 406,
+          "mean_ret": 0.015046868578633361
+        }
+      },
+      "_d3": {
+        "allowed": [
+          3,
+          0,
+          5,
+          1,
+          2
+        ],
+        "gated_n": 4764,
+        "gated_mean_ret": 0.03289558146390556,
+        "gated_win_rate": 0.5776658270361041,
+        "wf_occurrences": 5,
+        "max_episode_share": 0.6103491271820449
+      },
+      "d3_allowed": [
+        3,
+        0,
+        5,
+        1,
+        2
+      ],
+      "d3_gated_n": 4764,
+      "d3_gated_mean_ret": 0.03289558146390556,
+      "d3_wf_occurrences": 5,
+      "data_flags": "SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.58345134533684,
+      "expectancy": 0.03456328270827212,
+      "profit_factor": 1.9174946556705663,
+      "avg_hold_days": 26.512239530649403,
+      "label": "INSUFFICIENT_REGIME_INSTANCES"
+    },
+    {
+      "signal": "accruals",
+      "data_class": "RESEARCH:FMP_STATEMENT",
+      "train_dsr": null,
+      "wf_dsr": 3.8042624931382934e-11,
+      "cohort_wf_dd": 0.8894434321874178,
+      "true_account_dd": 0.7815557374121165,
+      "n_train": 0,
+      "n_wf": 3199,
+      "wf_cagr": -0.3361750134255147,
+      "excess_spy": -0.49003395849161235,
+      "excess_qqq": -0.5530169245382163,
+      "theme_bet": true,
+      "theme_share": 0.58,
+      "d2_regime": {
+        "0": {
+          "n": 1634,
+          "mean_ret": -0.018196132665230663
+        },
+        "2": {
+          "n": 759,
+          "mean_ret": -0.039112593794880204
+        },
+        "5": {
+          "n": 148,
+          "mean_ret": -0.04273401507867895
+        },
+        "1": {
+          "n": 585,
+          "mean_ret": -0.021774609647383016
+        },
+        "3": {
+          "n": 73,
+          "mean_ret": 0.04671179039614457
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "FUNDAMENTALS_PENDING|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.49171616130040635,
+      "expectancy": -0.02346725840629758,
+      "profit_factor": 0.6841771743315467,
+      "avg_hold_days": 25.255392310096905,
+      "label": "DATA_GATED"
+    },
+    {
+      "signal": "piotroski_fscore",
+      "data_class": "RESEARCH:FMP_STATEMENT",
+      "train_dsr": null,
+      "wf_dsr": 1.1930714224344593e-08,
+      "cohort_wf_dd": 0.9732717669150497,
+      "true_account_dd": 0.8730484102406153,
+      "n_train": 0,
+      "n_wf": 3230,
+      "wf_cagr": -0.4067943590899902,
+      "excess_spy": -0.5606533041560878,
+      "excess_qqq": -0.6236362702026917,
+      "theme_bet": true,
+      "theme_share": 0.741,
+      "d2_regime": {
+        "0": {
+          "n": 1651,
+          "mean_ret": -0.022749422534654295
+        },
+        "2": {
+          "n": 763,
+          "mean_ret": -0.06347080449356797
+        },
+        "5": {
+          "n": 150,
+          "mean_ret": -0.0622773115985679
+        },
+        "1": {
+          "n": 592,
+          "mean_ret": -0.021278597329315307
+        },
+        "3": {
+          "n": 74,
+          "mean_ret": 0.05015839807028156
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "FUNDAMENTALS_PENDING|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.49907120743034056,
+      "expectancy": -0.03226449700769214,
+      "profit_factor": 0.6026719991474743,
+      "avg_hold_days": 25.25479876160991,
+      "label": "DATA_GATED"
+    },
+    {
+      "signal": "net_payout_yield",
+      "data_class": "RESEARCH:FMP_STATEMENT",
+      "train_dsr": 0.01015910913633848,
+      "wf_dsr": 1.3361826584862808e-08,
+      "cohort_wf_dd": 0.9105682868774988,
+      "true_account_dd": 0.7974709583311421,
+      "n_train": 2165,
+      "n_wf": 5254,
+      "wf_cagr": -0.23216519369608268,
+      "excess_spy": -0.38602413876218034,
+      "excess_qqq": -0.44900710480878425,
+      "theme_bet": true,
+      "theme_share": 0.505,
+      "d2_regime": {
+        "1": {
+          "n": 669,
+          "mean_ret": -0.016619987246426375
+        },
+        "5": {
+          "n": 216,
+          "mean_ret": -0.031655375034095344
+        },
+        "4": {
+          "n": 125,
+          "mean_ret": -0.03823912445236853
+        },
+        "0": {
+          "n": 2614,
+          "mean_ret": -0.013404253558473238
+        },
+        "2": {
+          "n": 1273,
+          "mean_ret": -0.022492445464207585
+        },
+        "3": {
+          "n": 357,
+          "mean_ret": 0.017303455030481526
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "FUNDAMENTALS_PENDING|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.523030072325847,
+      "expectancy": -0.015270363811129293,
+      "profit_factor": 0.7611227845794188,
+      "avg_hold_days": 26.37419109250095,
+      "label": "DATA_GATED"
+    },
+    {
+      "signal": "net_operating_assets",
+      "data_class": "RESEARCH:FMP_STATEMENT",
+      "train_dsr": 1.177925992410714e-05,
+      "wf_dsr": 1.2497917015881078e-05,
+      "cohort_wf_dd": 0.4824791745484436,
+      "true_account_dd": 0.44590327428020105,
+      "n_train": 2683,
+      "n_wf": 6539,
+      "wf_cagr": -0.06353387050661319,
+      "excess_spy": -0.21739281557271084,
+      "excess_qqq": -0.28037578161931476,
+      "theme_bet": true,
+      "theme_share": 0.526,
+      "d2_regime": {
+        "1": {
+          "n": 832,
+          "mean_ret": -0.005848626111215415
+        },
+        "5": {
+          "n": 269,
+          "mean_ret": -0.0018882606764262307
+        },
+        "4": {
+          "n": 158,
+          "mean_ret": -0.013274614164084632
+        },
+        "0": {
+          "n": 3255,
+          "mean_ret": 0.0019069871116353019
+        },
+        "2": {
+          "n": 1580,
+          "mean_ret": -0.01496361056985576
+        },
+        "3": {
+          "n": 445,
+          "mean_ret": -0.0013435142337883392
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "FUNDAMENTALS_PENDING|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.5069582504970179,
+      "expectancy": -0.0039003691039073644,
+      "profit_factor": 0.9305329940042133,
+      "avg_hold_days": 26.374675026762503,
+      "label": "DATA_GATED"
+    },
+    {
+      "signal": "distress_risk_avoid",
+      "data_class": "RESEARCH:FMP_STATEMENT",
+      "train_dsr": null,
+      "wf_dsr": 2.8592684005767316e-05,
+      "cohort_wf_dd": 0.6327918346614421,
+      "true_account_dd": 0.5061460911678337,
+      "n_train": 0,
+      "n_wf": 4145,
+      "wf_cagr": -0.09203323775466365,
+      "excess_spy": -0.2458921828207613,
+      "excess_qqq": -0.3088751488673652,
+      "theme_bet": true,
+      "theme_share": 0.521,
+      "d2_regime": {
+        "0": {
+          "n": 2118,
+          "mean_ret": -0.00932362155990254
+        },
+        "2": {
+          "n": 978,
+          "mean_ret": -0.0004844245313887099
+        },
+        "5": {
+          "n": 191,
+          "mean_ret": -0.02530850250695513
+        },
+        "1": {
+          "n": 763,
+          "mean_ret": -0.014231911811104257
+        },
+        "3": {
+          "n": 95,
+          "mean_ret": 0.01668431261301481
+        }
+      },
+      "_d3": {
+        "allowed": [],
+        "gated_n": 0,
+        "verdict": "no_allowed_regime"
+      },
+      "d3_allowed": [],
+      "d3_gated_n": 0,
+      "d3_gated_mean_ret": null,
+      "d3_wf_occurrences": null,
+      "data_flags": "FUNDAMENTALS_PENDING|SURVIVORSHIP",
+      "source_report": "REGIME_SWEEP_2010_2026",
+      "git_sha": "53d1caf",
+      "num_trials": 105,
+      "win_rate": 0.4810615199034982,
+      "expectancy": -0.00828204116961069,
+      "profit_factor": 0.869417663115074,
+      "avg_hold_days": 25.254282267792522,
+      "label": "DATA_GATED"
+    }
+  ]
+}

@@ -61,9 +61,14 @@ def passes_promotion_gates(
     when supplied (None = not yet computed, skipped rather than silently passed).
     """
     fails: list[str] = []
-    dd = wf_metrics.get("max_drawdown")
+    # 0620.3 Phase 4.5: grade on the TRUE daily-portfolio account drawdown (Phase 2.0)
+    # when available; only fall back to cohort max_drawdown if it isn't provided.
+    dd = wf_metrics.get("true_account_dd")
+    if dd is None:
+        dd = wf_metrics.get("max_drawdown")
     if dd is not None and dd >= HARD_GATES["max_wf_drawdown"]:
-        fails.append(f"WF max_drawdown {dd:.0%} >= {HARD_GATES['max_wf_drawdown']:.0%}")
+        fails.append(f"WF drawdown {dd:.0%} >= {HARD_GATES['max_wf_drawdown']:.0%} "
+                     f"({'true-account' if wf_metrics.get('true_account_dd') is not None else 'cohort'})")
     n = int(wf_metrics.get("num_trades") or 0)
     if n < HARD_GATES["min_wf_trades"]:
         fails.append(f"WF trades {n} < {HARD_GATES['min_wf_trades']}")

@@ -315,6 +315,51 @@ def _expiry_to_dte(expiry: str) -> int:
         return 21
 
 
+async def _simulate_paper_fill(req) -> dict:
+    """0620.3 Phase 4.4: paper-open must SIMULATE the fill from live quotes, not journal a
+    user price. Fetches current bid/ask/OI per leg, runs PaperFillModel, rejects no-fill.
+    Returns {filled, fill_price, slippage, reason, legs}. fill_price is per-contract debit.
+    """
+    from backtest.fills import PaperFillModel
+    from data.marketdata import MarketDataClient
+
+    # build leg specs: explicit multi-leg, else a single leg from the top-level fields
+    raw_legs = req.legs or [{"strike": req.strike, "option_type": req.option_type,
+                             "side": ("long" if req.direction == "bullish" else "short"),
+                             "qty": req.contracts}]
+    client = MarketDataClient()
+    try:
+        chain = await client.get_options_chain(req.symbol, expiry=str(req.expiry)[:10])
+    except Exception as e:
+        return {"filled": False, "reason": f"no_quote ({e})", "fill_price": None}
+    by_key = {}
+    for c in chain or []:
+        try:
+            by_key[(round(float(c.get("strike") or 0), 2), (c.get("option_type") or "").upper()[:1])] = c
+        except (TypeError, ValueError):
+            continue
+
+    legs = []
+    for lg in raw_legs:
+        k = (round(float(lg.get("strike") or 0), 2), str(lg.get("option_type") or "").upper()[:1])
+        q = by_key.get(k)
+        if not q:
+            return {"filled": False, "reason": f"no_quote for leg {k}", "fill_price": None}
+        side = str(lg.get("side") or "long").lower()
+        qty = int(lg.get("qty") or req.contracts) * (1 if side == "long" else -1)
+        legs.append({"bid": q.get("bid"), "ask": q.get("ask"), "qty": qty,
+                     "open_interest": q.get("open_interest"),
+                     "stale_seconds": 0.0})
+    fill = PaperFillModel().fill_ticket(legs, opening=True)
+    if not fill.filled:
+        return {"filled": False, "reason": fill.reason, "fill_price": None}
+    per_contract = abs(fill.net_price) / max(req.contracts, 1)
+    slippage = (per_contract - req.entry_price) if req.entry_price else None
+    return {"filled": True, "fill_price": round(per_contract, 4),
+            "slippage": round(slippage, 4) if slippage is not None else None,
+            "reason": "filled"}
+
+
 @router.post("/trades/paper/open")
 async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTasks):
     """Open a new paper trade. Checks circuit breakers and freshness first."""
@@ -375,6 +420,18 @@ async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTa
                         "reasons": [f"{f.name}: {f.message}" for f in criticals]},
             )
 
+        # 0620.3 Phase 4.4: SIMULATE the fill from live quotes; reject no-fill; the stored
+        # entry is the MODEL fill, never the user-supplied price (which is ignored).
+        sim = await _simulate_paper_fill(req)
+        if not sim["filled"]:
+            raise HTTPException(
+                status_code=422,
+                detail={"status": "no_fill",
+                        "message": f"PaperFillModel rejected the ticket: {sim['reason']}. "
+                                   "Paper fills are simulated from live quotes, not user-entered."},
+            )
+        model_entry = sim["fill_price"]
+
         # paper_trades.expiry is a DATE column — coerce the string (e.g. a "~21-45
         # DTE" placeholder won't parse, store NULL rather than crash the insert).
         from datetime import date as _date
@@ -396,7 +453,7 @@ async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTa
             "sym": req.symbol, "aid": req.analysis_id, "dir": req.direction,
             "strat": req.strategy, "exp": exp_val, "strike": req.strike,
             "strm": rec_stream,
-            "contracts": req.contracts, "entry": req.entry_price,
+            "contracts": req.contracts, "entry": model_entry,
             "max_loss": req.max_loss, "max_profit": req.max_profit,
             "conviction": req.conviction,
             "legs": orjson.dumps(req.legs or []).decode(),
@@ -410,7 +467,9 @@ async def open_paper_trade(req: OpenTradeRequest, background_tasks: BackgroundTa
         await session.commit()
 
     return {"status": "opened", "trade_id": trade_id,
-            "recommendation_id": req.recommendation_id}
+            "recommendation_id": req.recommendation_id,
+            "model_fill_price": model_entry, "user_price_ignored": req.entry_price,
+            "expected_vs_actual_slippage": sim.get("slippage")}
 
 
 @router.get("/trades/paper")

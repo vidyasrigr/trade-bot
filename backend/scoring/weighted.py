@@ -173,10 +173,14 @@ async def compute_final_score(
     else:
         direction = "neutral"
 
-    # 5. Count independent signal groups that fired (score > 5 = firing)
+    # 5. Count independent signal groups that fired (score > 5 = firing).
+    # 0620.3 Phase 4.2: a signal blocked by mode/ledger contributes 0 to score, so it
+    # must NOT count toward the independent-confirmation gate either. Exclude blocked.
+    _blocked_set = set(_blocked_signals)
     independent_count = 0
     for group_name, group_cats in INDEPENDENT_GROUPS.items():
-        group_scores = [category_scores[c].raw_score for c in group_cats if c in category_scores]
+        group_scores = [category_scores[c].raw_score for c in group_cats
+                        if c in category_scores and c not in _blocked_set]
         if group_scores and max(group_scores) > 5.5:
             independent_count += 1
 
@@ -204,7 +208,9 @@ async def compute_final_score(
     #     3-4 groups          → half-Kelly  (current behavior)
     #     5 groups            → 0.75 Kelly
     #     6+ groups + tail    → full Kelly  (subject to MAX_POSITION_SIZE_PCT cap)
-    tail_aligned = _detect_tail_alignment(category_scores)
+    # 0620.3 Phase 4.2: tail-alignment must also ignore blocked signals.
+    _unblocked_cats = {k: v for k, v in category_scores.items() if k not in _blocked_set}
+    tail_aligned = _detect_tail_alignment(_unblocked_cats)
     account = account_value or portfolio_value or settings.PAPER_PORTFOLIO_VALUE
     position_size_pct, suggested_contracts, kelly_used = _kelly_size(
         conviction_score=conviction_score,
@@ -283,13 +289,19 @@ def _choose_kelly_fraction(independent_signals_count: int, tail_signal_aligned: 
       >= 6 groups, no tail      → 0.75 Kelly (still bumped, but cautiously)
     """
     base = float(settings.KELLY_FRACTION)
+    cap = float(getattr(settings, "KELLY_FRACTION_MAX", 0.25))
+    # 0620.3 Phase 4.3: the conviction-stack LIFT is DISABLED until paper calibration.
+    # No matter how many groups fire, the fraction stays at base (tenth-Kelly), hard-capped.
+    if not getattr(settings, "KELLY_LIFT_ENABLED", False):
+        return min(base, cap)
+    # (legacy lift path, only if explicitly re-enabled)
     if independent_signals_count <= 4:
-        return base
+        return min(base, cap)
     if independent_signals_count == 5:
-        return min(1.0, base + (1.0 - base) * 0.5)
+        return min(cap, base + (cap - base) * 0.5)
     if independent_signals_count >= 6 and tail_signal_aligned:
-        return 1.0
-    return min(1.0, base + (1.0 - base) * 0.5)
+        return cap
+    return min(cap, base + (cap - base) * 0.5)
 
 
 def _kelly_size(

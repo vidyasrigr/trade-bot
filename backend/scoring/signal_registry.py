@@ -295,7 +295,14 @@ def contributes_in_mode(signal_name: str, mode: str = "paper") -> bool:
         return True
     if not spec.influences_conviction:
         return False
-    return spec.promotion_status in MODE_ALLOWED.get(mode, MODE_ALLOWED["paper"])
+    if spec.promotion_status not in MODE_ALLOWED.get(mode, MODE_ALLOWED["paper"]):
+        return False
+    # 0620.3 Phase 4.1: also require the EARNED validation ledger, not just the legacy
+    # registry label. Many engine signals are live_full by inheritance but none have
+    # cleared validation -> the (currently empty) ledger blocks them from live/paper
+    # conviction until V promotes them. Backtest already returned True above.
+    from scoring.validation_ledger import is_validated
+    return is_validated(signal_name)
 
 
 def by_category(cat: str) -> list[SignalSpec]:

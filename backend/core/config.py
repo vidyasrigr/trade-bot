@@ -97,7 +97,13 @@ class Settings(BaseSettings):
     # Position sizing — half-Kelly (professional standard)
     # Full Kelly = max growth but massive drawdown. Half-Kelly = ~75% optimal growth, ~50% less drawdown.
     # Reference: NBER 2025 options sizing research, tastytrade capital allocation research
-    KELLY_FRACTION: float = 0.50          # half-Kelly (was 0.25 quarter-Kelly — updated per research)
+    # 0620.3 Phase 4.3: hard de-risk before paper. At 0 promoted signals and no paper
+    # calibration, half-Kelly + a lift to full is far too aggressive. Tenth-Kelly, hard
+    # cap a quarter, and the conviction-stack LIFT is DISABLED (KELLY_LIFT_ENABLED=False)
+    # until paper calibration justifies more. Revisit only with live track record.
+    KELLY_FRACTION: float = 0.10          # tenth-Kelly (was 0.50)
+    KELLY_FRACTION_MAX: float = 0.25      # hard ceiling regardless of stacking
+    KELLY_LIFT_ENABLED: bool = False      # disable the 0.75/full-Kelly conviction-stack lift
     BASE_POSITION_SIZE_PCT: float = 0.02  # 2% base size per trade
     MAX_POSITION_SIZE_PCT: float = 0.04   # 4% maximum (conviction-scaled)
     MIN_SIGNALS_REQUIRED: int = 3         # minimum independent category signals before any entry

@@ -15,26 +15,23 @@ def test_base_weights_sum_to_100():
     assert active == 100, f"BASE_WEIGHTS active sum {active}, expected 100"
 
 
-def test_kelly_tier_3_groups_default():
-    assert _choose_kelly_fraction(3, False) == 0.5
+# 0620.3 Phase 4.3: the conviction-stack Kelly LIFT is DISABLED until paper calibration.
+# The fraction now stays at base (tenth-Kelly) regardless of stacking, hard-capped at 0.25.
+
+def test_kelly_lift_disabled_stays_at_base():
+    from core.config import settings
+    base = settings.KELLY_FRACTION
+    assert base == 0.10
+    for n in (3, 4, 5, 6, 10):
+        for tail in (False, True):
+            assert _choose_kelly_fraction(n, tail) == base, (
+                f"Kelly lift must be disabled: n={n} tail={tail} -> expected {base}")
 
 
-def test_kelly_tier_4_groups_with_tail_still_default():
-    assert _choose_kelly_fraction(4, True) == 0.5
-
-
-def test_kelly_tier_5_groups_bumped_to_075():
-    assert _choose_kelly_fraction(5, False) == 0.75
-    assert _choose_kelly_fraction(5, True) == 0.75
-
-
-def test_kelly_tier_6plus_tail_aligned_full_kelly():
-    assert _choose_kelly_fraction(6, True) == 1.0
-    assert _choose_kelly_fraction(10, True) == 1.0
-
-
-def test_kelly_tier_6_no_tail_capped_at_075():
-    assert _choose_kelly_fraction(6, False) == 0.75
+def test_kelly_fraction_never_exceeds_cap():
+    from core.config import settings
+    for n in (3, 5, 8, 12):
+        assert _choose_kelly_fraction(n, True) <= settings.KELLY_FRACTION_MAX
 
 
 def test_kelly_size_zero_when_confirmation_fails():
@@ -66,18 +63,18 @@ def test_kelly_size_capped_at_max():
     assert pct <= settings.MAX_POSITION_SIZE_PCT
 
 
-def test_kelly_size_full_kelly_returns_higher_pct_than_half():
-    """Sanity — 6 stacked signals + tail should size BIGGER than 3 signals."""
-    pct_half, _, _ = _kelly_size(
+def test_kelly_size_lift_disabled_stacking_does_not_increase_size():
+    """0620.3 Phase 4.3: with the lift disabled, 6 stacked + tail sizes the SAME as 3."""
+    pct_3, _, _ = _kelly_size(
         conviction_score=80, portfolio_value=100_000,
         confirmation_met=True, independent_signals_count=3,
     )
-    pct_full, _, _ = _kelly_size(
+    pct_6, _, _ = _kelly_size(
         conviction_score=80, portfolio_value=100_000,
         confirmation_met=True, independent_signals_count=6,
         tail_signal_aligned=True,
     )
-    assert pct_full > pct_half
+    assert pct_6 == pct_3
 
 
 class _FakeCat:

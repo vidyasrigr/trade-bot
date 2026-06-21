@@ -202,3 +202,17 @@ async def generate_iv_cp_spread_trades(universe, start, end, **kw):
 async def generate_iv_term_slope_trades(universe, start, end, **kw):
     return await _xs_generate(universe, start, end, metric=_m_term_slope, sign=+1,
                               needs_term=True, **kw)
+
+
+def _m_rv_minus_iv(sym, t, df, near_df=None, far_df=None):
+    """Goyal-Saretto 2009: realized vol minus ATM implied vol. High (cheap implied) ->
+    options/underlying outperform. CACHE_LIMITED. (= -VRP.)"""
+    iv = _atm_iv(df)
+    rv = _realized_vol(sym, t)
+    if iv is None or rv is None:
+        return None
+    return rv - iv
+
+
+async def generate_rv_minus_iv_trades(universe, start, end, **kw):
+    return await _xs_generate(universe, start, end, metric=_m_rv_minus_iv, sign=+1, **kw)
